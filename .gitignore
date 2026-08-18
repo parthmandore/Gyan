@@ -33,3 +33,76 @@ Thumbs.db
 *.p8
 *.p12
 *.key
+
+# =========================
+# Python / AI
+# =========================
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyd
+
+# Virtual environments
+venv/
+.venv/
+env/
+tts_env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# =========================
+# AI Datasets
+# =========================
+
+data/raw/
+data/processed/
+dataset/
+datasets/
+
+# Audio files
+*.wav
+*.mp3
+*.flac
+*.ogg
+*.m4a
+
+# =========================
+# AI Models / Checkpoints
+# =========================
+
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.bin
+
+models/checkpoints/
+checkpoints/
+
+# =========================
+# Training Outputs
+# =========================
+
+runs/
+outputs/
+wandb/
+tensorboard/
+generated_audio/
+
+# =========================
+# Python Testing
+# =========================
+
+.pytest_cache/
+.coverage
+htmlcov/
+
+# =========================
+# Temporary Files
+# =========================
+
+*.tmp
+*.temp
+*.bak
