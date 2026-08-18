@@ -1,0 +1,4 @@
+split,total_samples,english,hindi,marathi
+train,41338,0,0,0
+validation,2295,0,0,0
+test,2299,0,0,0
