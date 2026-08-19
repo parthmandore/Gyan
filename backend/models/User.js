@@ -20,8 +20,8 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: [true, "Language is required"],
             enum: {
-                values: ["English", "Hindi", "Marathi"],
-                message: "Language must be English, Hindi, or Marathi"
+                values: ["en", "hi", "mr"],
+                message: "Language must be en, hi, or mr"
             }
         }
     },

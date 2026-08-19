@@ -1,20 +1,20 @@
 const express = require("express");
 
 const {
-    createProgress,
-    getProgress,
-    getUserProgress
+    submitProgress,
+    getUserProgress,
+    getUserProgressSummary,
+    getProgressByGame
 } = require("../controllers/progressController");
 
 const router = express.Router();
 
-// Save progress
-router.post("/", createProgress);
+router.post("/submit", submitProgress);
 
-// Get all progress
-router.get("/", getProgress);
-
-// Get progress for a specific user
 router.get("/user/:userId", getUserProgress);
+
+router.get("/user/:userId/summary", getUserProgressSummary);
+
+router.get("/user/:userId/by-game", getProgressByGame);
 
 module.exports = router;

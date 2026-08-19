@@ -2,28 +2,25 @@ const mongoose = require("mongoose");
 
 const activitySchema = new mongoose.Schema(
     {
-        title: {
+        game_type: {
             type: String,
-            required: [true, "Activity title is required"],
+            required: [true, "Game type is required"],
             trim: true
-        },
-
-        type: {
-            type: String,
-            required: [true, "Activity type is required"],
-            enum: {
-                values: ["alphabet", "word", "reading", "game"],
-                message: "Invalid activity type"
-            }
         },
 
         language: {
             type: String,
             required: [true, "Language is required"],
             enum: {
-                values: ["English", "Hindi", "Marathi"],
-                message: "Language must be English, Hindi, or Marathi"
+                values: ["en", "hi", "mr"],
+                message: "Language must be en, hi, or mr"
             }
+        },
+
+        title: {
+            type: String,
+            required: [true, "Activity title is required"],
+            trim: true
         },
 
         description: {
@@ -32,15 +29,14 @@ const activitySchema = new mongoose.Schema(
         },
 
         difficulty: {
-            type: String,
-            enum: ["easy", "medium", "hard"],
-            default: "easy"
+            type: Number,
+            required: [true, "Difficulty is required"],
+            min: [1, "Difficulty must be at least 1"]
         },
 
         content: {
-            type: String,
-            required: [true, "Activity content is required"],
-            trim: true
+            type: mongoose.Schema.Types.Mixed,
+            required: [true, "Activity content is required"]
         }
     },
     {

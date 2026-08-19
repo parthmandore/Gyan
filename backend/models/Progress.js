@@ -5,31 +5,37 @@ const progressSchema = new mongoose.Schema(
         user: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
-            required: [true, "User ID is required"]
+            required: [true, "User is required"]
         },
 
-        activity: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Activity",
-            required: [true, "Activity ID is required"]
+        game_type: {
+            type: String,
+            required: [true, "Game type is required"],
+            trim: true
         },
 
-        score: {
+        difficulty: {
             type: Number,
-            required: [true, "Score is required"],
-            min: [0, "Score cannot be negative"],
-            max: [100, "Score cannot exceed 100"]
+            required: [true, "Difficulty is required"],
+            min: [1, "Difficulty must be at least 1"]
         },
 
-        attempts: {
+        items_attempted: {
             type: Number,
-            default: 1,
-            min: [1, "Attempts must be at least 1"]
+            required: [true, "Items attempted is required"],
+            min: [0, "Items attempted cannot be negative"]
         },
 
-        completed: {
-            type: Boolean,
-            default: false
+        items_correct: {
+            type: Number,
+            required: [true, "Items correct is required"],
+            min: [0, "Items correct cannot be negative"]
+        },
+
+        time_taken_seconds: {
+            type: Number,
+            required: [true, "Time taken is required"],
+            min: [0, "Time cannot be negative"]
         }
     },
     {
