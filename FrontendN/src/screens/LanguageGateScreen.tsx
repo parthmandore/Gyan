@@ -138,8 +138,8 @@ export const LanguageGateScreen: React.FC = React.memo(() => {
     await setSelectedLanguage(lang);
 
     navigation.reset({
-      index: 0,
-      routes: [{ name: 'GameCatalog' }],
+     index: 0,
+     routes: [{ name: 'RoleSelection' }],
     });
   };
 

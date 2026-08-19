@@ -10,8 +10,11 @@ export interface AppState {
 
 export type RootStackParamList = {
   LanguageGate: undefined;
-  GameCatalog: undefined;
+  RoleSelection: undefined;
   Home: undefined;
+  GameCatalog: undefined;
   SpeechSynthesis: undefined;
+  ParentDashboard: undefined;
+  TeacherDashboard: undefined;
   Games: NavigatorScreenParams<GamesStackParamList>;
 };

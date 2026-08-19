@@ -32,9 +32,7 @@ export const HomeScreen: React.FC = () => {
   return (
     <View style={styles.container}>
 
-      {/* ═══════════════════════════════════════
-          FIXED HEADER
-      ═══════════════════════════════════════ */}
+      {/* HEADER */}
 
       <View
         style={[
@@ -56,19 +54,27 @@ export const HomeScreen: React.FC = () => {
           </Text>
         </View>
 
-        <View
-          style={styles.profileBubble}
-          accessibilityLabel="Learning garden mascot"
+        {/* PROFILE / ROLE ACCESS */}
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Open profile and role selection"
+          accessibilityHint="Choose Student, Parent or Teacher"
+          onPress={() =>
+            navigation.navigate('RoleSelection')
+          }
+          style={({ pressed }) => [
+            styles.profileBubble,
+            pressed && styles.pressed,
+          ]}
         >
           <Text style={styles.profileEmoji}>
             🌱
           </Text>
-        </View>
+        </Pressable>
       </View>
 
-      {/* ═══════════════════════════════════════
-          SCROLLABLE CONTENT
-      ═══════════════════════════════════════ */}
+      {/* SCROLLABLE CONTENT */}
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -82,9 +88,7 @@ export const HomeScreen: React.FC = () => {
         ]}
       >
 
-        {/* ═══════════════════════════════════════
-            LEARNING JOURNEY
-        ═══════════════════════════════════════ */}
+        {/* LEARNING JOURNEY */}
 
         <View style={styles.journeyCard}>
 
@@ -164,9 +168,7 @@ export const HomeScreen: React.FC = () => {
 
         </View>
 
-        {/* ═══════════════════════════════════════
-            TODAY'S LEARNING
-        ═══════════════════════════════════════ */}
+        {/* TODAY'S LEARNING */}
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>
@@ -178,9 +180,7 @@ export const HomeScreen: React.FC = () => {
           </Text>
         </View>
 
-        {/* ═══════════════════════════════════════
-            SPEECH STUDIO
-        ═══════════════════════════════════════ */}
+        {/* SPEECH STUDIO */}
 
         <Pressable
           accessibilityRole="button"
@@ -240,9 +240,7 @@ export const HomeScreen: React.FC = () => {
 
         </Pressable>
 
-        {/* ═══════════════════════════════════════
-            PRACTICE & PLAY
-        ═══════════════════════════════════════ */}
+        {/* PRACTICE & PLAY */}
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>
@@ -327,9 +325,7 @@ export const HomeScreen: React.FC = () => {
 
         </View>
 
-        {/* ═══════════════════════════════════════
-            ENCOURAGEMENT
-        ═══════════════════════════════════════ */}
+        {/* ENCOURAGEMENT */}
 
         <View style={styles.encouragementCard}>
 
@@ -361,9 +357,7 @@ export const HomeScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
 
-  /* ═══════════════════════════════════════
-     PAGE
-  ═══════════════════════════════════════ */
+  /* PAGE */
 
   container: {
     flex: 1,
@@ -375,9 +369,7 @@ const styles = StyleSheet.create({
     paddingBottom: 42,
   },
 
-  /* ═══════════════════════════════════════
-     FIXED HEADER
-  ═══════════════════════════════════════ */
+  /* HEADER */
 
   header: {
     flexDirection: 'row',
@@ -432,9 +424,7 @@ const styles = StyleSheet.create({
     fontSize: 30,
   },
 
-  /* ═══════════════════════════════════════
-     LEARNING JOURNEY
-  ═══════════════════════════════════════ */
+  /* LEARNING JOURNEY */
 
   journeyCard: {
     marginTop: 8,
@@ -570,9 +560,7 @@ const styles = StyleSheet.create({
     color: '#F2EFFF',
   },
 
-  /* ═══════════════════════════════════════
-     SECTION HEADERS
-  ═══════════════════════════════════════ */
+  /* SECTION HEADERS */
 
   sectionHeader: {
     marginTop: 25,
@@ -592,9 +580,7 @@ const styles = StyleSheet.create({
     color: '#527087',
   },
 
-  /* ═══════════════════════════════════════
-     SPEECH STUDIO
-  ═══════════════════════════════════════ */
+  /* SPEECH STUDIO */
 
   speechCard: {
     padding: 18,
@@ -687,9 +673,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#6655D8',
   },
 
-  /* ═══════════════════════════════════════
-     PRACTICE & PLAY
-  ═══════════════════════════════════════ */
+  /* PRACTICE & PLAY */
 
   practiceRow: {
     flexDirection: 'row',
@@ -781,9 +765,7 @@ const styles = StyleSheet.create({
     color: '#A85B00',
   },
 
-  /* ═══════════════════════════════════════
-     ENCOURAGEMENT
-  ═══════════════════════════════════════ */
+  /* ENCOURAGEMENT */
 
   encouragementCard: {
     marginTop: 14,
@@ -828,9 +810,7 @@ const styles = StyleSheet.create({
     color: '#347A66',
   },
 
-  /* ═══════════════════════════════════════
-     PRESS FEEDBACK
-  ═══════════════════════════════════════ */
+  /* PRESS FEEDBACK */
 
   pressed: {
     opacity: 0.82,

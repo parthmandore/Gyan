@@ -4,7 +4,12 @@
  * Folder: frontend/src/screens
  */
 
-import React, { useState } from 'react';
+import React, {
+  memo,
+  useCallback,
+  useRef,
+  useState,
+} from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -18,34 +23,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
+import { Colors } from '../theme/colors';
 import { Typography } from '../theme/typography';
-
-const COLORS = {
-  background: '#F1FBFB',
-  white: '#FFFDFC',
-  navy: '#173B5E',
-  muted: '#527087',
-
-  lavender: '#8B7CF6',
-  lavenderDark: '#6655D8',
-  lavenderLight: '#F0EDFF',
-  lavenderBorder: '#C4BCFF',
-
-  coral: '#FF8A7A',
-  coralLight: '#FFE5E0',
-
-  mint: '#55CFA3',
-  mintLight: '#E5F8F0',
-  mintDark: '#217A5D',
-
-  yellow: '#FFD45C',
-  yellowLight: '#FFF4C7',
-  yellowDark: '#A85B00',
-
-  border: '#DCE8EC',
-  green: '#2F9E67',
-  greenLight: '#E8F8EF',
-};
 
 const languages = [
   {
@@ -53,39 +32,138 @@ const languages = [
     name: 'English',
     native: 'English',
     flag: '🇬🇧',
-    color: COLORS.lavender,
-    lightColor: COLORS.lavenderLight,
   },
   {
     code: 'hi',
     name: 'Hindi',
     native: 'हिन्दी',
     flag: '🇮🇳',
-    color: COLORS.coral,
-    lightColor: COLORS.coralLight,
   },
   {
     code: 'mr',
     name: 'Marathi',
     native: 'मराठी',
     flag: '🇮🇳',
-    color: COLORS.mint,
-    lightColor: COLORS.mintLight,
   },
 ];
+
+interface TextInputSectionProps {
+  textRef: React.MutableRefObject<string>;
+  onHasTextChange: (hasText: boolean) => void;
+  onTyping: () => void;
+}
+
+/*
+ * IMPORTANT:
+ * The typing state lives INSIDE this small component.
+ * The entire Speech Studio screen does not re-render
+ * every time the user presses a key.
+ */
+const TextInputSection = memo(
+  ({
+    textRef,
+    onHasTextChange,
+    onTyping,
+  }: TextInputSectionProps) => {
+    const [characterCount, setCharacterCount] = useState(0);
+
+    const handleChangeText = useCallback(
+      (value: string) => {
+        textRef.current = value;
+
+        setCharacterCount(value.length);
+
+        onHasTextChange(value.trim().length > 0);
+        onTyping();
+      },
+      [textRef, onHasTextChange, onTyping]
+    );
+
+    return (
+      <View style={styles.inputCard}>
+        <View style={styles.inputTopRow}>
+          <View style={styles.inputIcon}>
+            <Ionicons
+              name="create-outline"
+              size={20}
+              color={Colors.primary.main}
+            />
+          </View>
+
+          <Text style={styles.inputHint}>
+            Your text
+          </Text>
+        </View>
+
+        <TextInput
+          defaultValue=""
+          onChangeText={handleChangeText}
+          placeholder="Type a word or sentence..."
+          placeholderTextColor={Colors.neutral.textMuted}
+          multiline
+          maxLength={200}
+          style={styles.input}
+          textAlignVertical="top"
+          autoCorrect
+          autoCapitalize="sentences"
+          keyboardType="default"
+          returnKeyType="default"
+          blurOnSubmit={false}
+          accessibilityLabel="Speech text input"
+        />
+
+        <View style={styles.inputFooter}>
+          <Text style={styles.exampleText}>
+            Example: butterfly
+          </Text>
+
+          <Text style={styles.characterCount}>
+            {characterCount}/200
+          </Text>
+        </View>
+      </View>
+    );
+  }
+);
+
+TextInputSection.displayName = 'TextInputSection';
 
 export const SpeechSynthesisScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
 
+  const textRef = useRef('');
   const [selectedLanguage, setSelectedLanguage] = useState(languages[0]);
-  const [text, setText] = useState('');
+
+  const [hasText, setHasText] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [hasAudio, setHasAudio] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const handleGenerate = () => {
-    if (!text.trim()) {
+  const handleHasTextChange = useCallback(
+    (value: boolean) => {
+      setHasText((previous) => {
+        if (previous === value) {
+          return previous;
+        }
+
+        return value;
+      });
+    },
+    []
+  );
+
+  const handleTyping = useCallback(() => {
+    if (hasAudio) {
+      setHasAudio(false);
+      setIsPlaying(false);
+    }
+  }, [hasAudio]);
+
+  const handleGenerate = useCallback(() => {
+    const currentText = textRef.current.trim();
+
+    if (!currentText || isGenerating) {
       return;
     }
 
@@ -93,15 +171,26 @@ export const SpeechSynthesisScreen: React.FC = () => {
     setHasAudio(false);
     setIsPlaying(false);
 
+    // Temporary frontend mock.
+    // Backend team can replace this with the MelGAN/API call.
     setTimeout(() => {
       setIsGenerating(false);
       setHasAudio(true);
     }, 1500);
-  };
+  }, [isGenerating]);
 
-  const handlePlay = () => {
+  const handlePlay = useCallback(() => {
     setIsPlaying((previous) => !previous);
-  };
+  }, []);
+
+  const handleLanguageSelect = useCallback(
+    (language: (typeof languages)[number]) => {
+      setSelectedLanguage(language);
+      setHasAudio(false);
+      setIsPlaying(false);
+    },
+    []
+  );
 
   return (
     <View
@@ -114,7 +203,6 @@ export const SpeechSynthesisScreen: React.FC = () => {
       ]}
     >
       {/* HEADER */}
-
       <View style={styles.header}>
         <Pressable
           style={({ pressed }) => [
@@ -127,8 +215,8 @@ export const SpeechSynthesisScreen: React.FC = () => {
         >
           <Ionicons
             name="arrow-back"
-            size={24}
-            color={COLORS.navy}
+            size={23}
+            color={Colors.neutral.textDark}
           />
         </Pressable>
 
@@ -146,36 +234,31 @@ export const SpeechSynthesisScreen: React.FC = () => {
           <Ionicons
             name="volume-high"
             size={24}
-            color={COLORS.lavenderDark}
+            color={Colors.primary.main}
           />
         </View>
       </View>
 
-      {/* CONTENT */}
-
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="always"
+        keyboardShouldPersistTaps="handled"
         keyboardDismissMode="none"
       >
         {/* HERO */}
-
         <View style={styles.heroCard}>
-          <View style={styles.heroTopRow}>
-            <View style={styles.heroIcon}>
-              <Ionicons
-                name="volume-high"
-                size={30}
-                color={COLORS.lavenderDark}
-              />
-            </View>
+          <View style={styles.heroIcon}>
+            <Ionicons
+              name="volume-high"
+              size={30}
+              color={Colors.primary.main}
+            />
+          </View>
 
-            <View style={styles.heroBadge}>
-              <Text style={styles.heroBadgeText}>
-                AI SPEECH
-              </Text>
-            </View>
+          <View style={styles.heroBadge}>
+            <Text style={styles.heroBadgeText}>
+              AI SPEECH
+            </Text>
           </View>
 
           <Text style={styles.heroTitle}>
@@ -183,16 +266,12 @@ export const SpeechSynthesisScreen: React.FC = () => {
           </Text>
 
           <Text style={styles.heroDescription}>
-            Type a word or sentence and hear how it sounds
-            in your chosen language.
+            Type a word or sentence and hear how it sounds in your chosen
+            language.
           </Text>
-
-          <View style={styles.heroDecorationOne} />
-          <View style={styles.heroDecorationTwo} />
         </View>
 
         {/* LANGUAGE */}
-
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>
             Choose your language
@@ -213,21 +292,10 @@ export const SpeechSynthesisScreen: React.FC = () => {
                 key={language.code}
                 style={({ pressed }) => [
                   styles.languageCard,
-                  {
-                    borderColor: selected
-                      ? language.color
-                      : COLORS.border,
-                    backgroundColor: selected
-                      ? language.lightColor
-                      : COLORS.white,
-                  },
+                  selected && styles.languageCardSelected,
                   pressed && styles.pressedSmall,
                 ]}
-                onPress={() => {
-                  setSelectedLanguage(language);
-                  setHasAudio(false);
-                  setIsPlaying(false);
-                }}
+                onPress={() => handleLanguageSelect(language)}
                 accessibilityRole="button"
                 accessibilityLabel={`Select ${language.name}`}
                 accessibilityState={{ selected }}
@@ -239,33 +307,18 @@ export const SpeechSynthesisScreen: React.FC = () => {
                 <Text
                   style={[
                     styles.languageName,
-                    {
-                      color: selected
-                        ? language.color === COLORS.coral
-                          ? '#C75447'
-                          : language.color === COLORS.mint
-                            ? COLORS.mintDark
-                            : COLORS.lavenderDark
-                        : COLORS.navy,
-                    },
+                    selected && styles.languageNameSelected,
                   ]}
                 >
                   {language.native}
                 </Text>
 
                 {selected && (
-                  <View
-                    style={[
-                      styles.check,
-                      {
-                        backgroundColor: language.color,
-                      },
-                    ]}
-                  >
+                  <View style={styles.check}>
                     <Ionicons
                       name="checkmark"
                       size={14}
-                      color="#FFFFFF"
+                      color={Colors.neutral.surface}
                     />
                   </View>
                 )}
@@ -274,8 +327,7 @@ export const SpeechSynthesisScreen: React.FC = () => {
           })}
         </View>
 
-        {/* TEXT INPUT */}
-
+        {/* INPUT SECTION */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>
             What do you want to hear?
@@ -286,69 +338,24 @@ export const SpeechSynthesisScreen: React.FC = () => {
           </Text>
         </View>
 
-        <View style={styles.inputCard}>
-          <View style={styles.inputTopRow}>
-            <View style={styles.inputIcon}>
-              <Ionicons
-                name="create-outline"
-                size={20}
-                color={COLORS.lavenderDark}
-              />
-            </View>
-
-            <Text style={styles.inputHint}>
-              Your text
-            </Text>
-          </View>
-
-          {/* NATIVE TEXT INPUT — NO PRESSABLE WRAPPER */}
-
-          <TextInput
-            value={text}
-            onChangeText={(value) => {
-              setText(value);
-
-              if (hasAudio) {
-                setHasAudio(false);
-                setIsPlaying(false);
-              }
-            }}
-            placeholder="Type a word or sentence..."
-            placeholderTextColor="#8AA0AF"
-            multiline
-            maxLength={200}
-            style={styles.input}
-            textAlignVertical="top"
-            autoCorrect
-            autoCapitalize="sentences"
-            blurOnSubmit={false}
-            returnKeyType="default"
-            accessibilityLabel="Speech text input"
-          />
-
-          <View style={styles.inputFooter}>
-            <Text style={styles.exampleText}>
-              Example: butterfly
-            </Text>
-
-            <Text style={styles.characterCount}>
-              {text.length}/200
-            </Text>
-          </View>
-        </View>
+        <TextInputSection
+          textRef={textRef}
+          onHasTextChange={handleHasTextChange}
+          onTyping={handleTyping}
+        />
 
         {/* GENERATE BUTTON */}
-
         <Pressable
           style={({ pressed }) => [
             styles.generateButton,
-            !text.trim() && styles.generateButtonDisabled,
+            !hasText && styles.generateButtonDisabled,
             pressed &&
-              !!text.trim() &&
+              hasText &&
+              !isGenerating &&
               styles.generateButtonPressed,
           ]}
           onPress={handleGenerate}
-          disabled={!text.trim() || isGenerating}
+          disabled={!hasText || isGenerating}
           accessibilityRole="button"
           accessibilityLabel="Generate speech"
         >
@@ -356,7 +363,7 @@ export const SpeechSynthesisScreen: React.FC = () => {
             <>
               <ActivityIndicator
                 size="small"
-                color="#FFFFFF"
+                color={Colors.neutral.surface}
               />
 
               <Text style={styles.generateButtonText}>
@@ -368,7 +375,7 @@ export const SpeechSynthesisScreen: React.FC = () => {
               <Ionicons
                 name="volume-high"
                 size={23}
-                color="#FFFFFF"
+                color={Colors.neutral.surface}
               />
 
               <Text style={styles.generateButtonText}>
@@ -378,8 +385,8 @@ export const SpeechSynthesisScreen: React.FC = () => {
               <View style={styles.generateArrow}>
                 <Ionicons
                   name="arrow-forward"
-                  size={18}
-                  color="#FFFFFF"
+                  size={17}
+                  color={Colors.neutral.surface}
                 />
               </View>
             </>
@@ -387,14 +394,13 @@ export const SpeechSynthesisScreen: React.FC = () => {
         </Pressable>
 
         {/* AUDIO RESULT */}
-
         {hasAudio && (
           <View style={styles.audioCard}>
             <View style={styles.readyBadge}>
               <Ionicons
                 name="checkmark-circle"
                 size={17}
-                color={COLORS.green}
+                color={Colors.feedback.correctText}
               />
 
               <Text style={styles.readyBadgeText}>
@@ -417,14 +423,14 @@ export const SpeechSynthesisScreen: React.FC = () => {
                 <Ionicons
                   name="volume-high"
                   size={23}
-                  color={COLORS.lavenderDark}
+                  color={Colors.primary.main}
                 />
               </View>
             </View>
 
             <View style={styles.wordPreview}>
               <Text style={styles.wordPreviewText}>
-                “{text.trim()}”
+                “{textRef.current.trim()}”
               </Text>
             </View>
 
@@ -437,15 +443,13 @@ export const SpeechSynthesisScreen: React.FC = () => {
                 onPress={handlePlay}
                 accessibilityRole="button"
                 accessibilityLabel={
-                  isPlaying
-                    ? 'Pause audio'
-                    : 'Play audio'
+                  isPlaying ? 'Pause audio' : 'Play audio'
                 }
               >
                 <Ionicons
                   name={isPlaying ? 'pause' : 'play'}
                   size={23}
-                  color="#FFFFFF"
+                  color={Colors.neutral.surface}
                 />
               </Pressable>
 
@@ -455,9 +459,7 @@ export const SpeechSynthesisScreen: React.FC = () => {
                     style={[
                       styles.progressFill,
                       {
-                        width: isPlaying
-                          ? '35%'
-                          : '0%',
+                        width: isPlaying ? '35%' : '0%',
                       },
                     ]}
                   />
@@ -487,7 +489,7 @@ export const SpeechSynthesisScreen: React.FC = () => {
               <Ionicons
                 name="refresh"
                 size={18}
-                color={COLORS.lavenderDark}
+                color={Colors.primary.main}
               />
 
               <Text style={styles.regenerateText}>
@@ -498,13 +500,12 @@ export const SpeechSynthesisScreen: React.FC = () => {
         )}
 
         {/* INFO */}
-
         <View style={styles.infoCard}>
           <View style={styles.infoIcon}>
             <Ionicons
               name="sparkles"
-              size={19}
-              color={COLORS.yellowDark}
+              size={18}
+              color={Colors.accent.amberDark}
             />
           </View>
 
@@ -514,8 +515,7 @@ export const SpeechSynthesisScreen: React.FC = () => {
             </Text>
 
             <Text style={styles.infoText}>
-              Speech generation will use the LingoBloom
-              AI voice engine.
+              Speech generation will use the LingoBloom AI voice engine.
             </Text>
           </View>
         </View>
@@ -529,7 +529,7 @@ export const SpeechSynthesisScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: Colors.neutral.background,
   },
 
   content: {
@@ -538,17 +538,14 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
 
-  /* HEADER */
-
   header: {
     minHeight: 76,
     paddingHorizontal: 20,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.white,
+    backgroundColor: Colors.neutral.surface,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-    zIndex: 20,
+    borderBottomColor: Colors.neutral.border,
   },
 
   backButton: {
@@ -557,7 +554,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F4F8F9',
+    backgroundColor: Colors.neutral.background,
   },
 
   headerTextContainer: {
@@ -568,135 +565,90 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontFamily: Typography.fonts.bold,
     fontSize: 24,
-    color: COLORS.navy,
+    color: Colors.neutral.textDark,
   },
 
   headerSubtitle: {
     marginTop: 2,
-    fontFamily: Typography.fonts.medium,
+    fontFamily: Typography.fonts.regular,
     fontSize: 14,
-    color: COLORS.muted,
+    color: Colors.neutral.textMuted,
   },
 
   headerIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.lavenderLight,
-    borderWidth: 1.5,
-    borderColor: COLORS.lavenderBorder,
+    backgroundColor: Colors.primary.surface,
   },
-
-  /* HERO */
 
   heroCard: {
-    minHeight: 230,
-    padding: 22,
-    borderRadius: 26,
-    backgroundColor: COLORS.lavender,
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-    borderBottomWidth: 7,
-    borderBottomColor: COLORS.lavenderDark,
+    padding: 20,
+    borderRadius: 24,
+    backgroundColor: Colors.primary.main,
     overflow: 'hidden',
-
-    shadowColor: COLORS.navy,
-    shadowOffset: {
-      width: 0,
-      height: 7,
-    },
-    shadowOpacity: 0.17,
-    shadowRadius: 9,
-    elevation: 7,
-  },
-
-  heroTopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
   },
 
   heroIcon: {
-    width: 62,
-    height: 62,
-    borderRadius: 31,
+    width: 58,
+    height: 58,
+    borderRadius: 29,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.neutral.surface,
   },
 
   heroBadge: {
-    paddingHorizontal: 13,
-    paddingVertical: 8,
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
     borderRadius: 999,
-    backgroundColor: COLORS.yellowLight,
+    backgroundColor: Colors.accent.amberSurface,
   },
 
   heroBadgeText: {
     fontFamily: Typography.fonts.bold,
     fontSize: 11,
-    color: COLORS.yellowDark,
+    color: Colors.accent.amberDark,
   },
 
   heroTitle: {
-    marginTop: 18,
+    marginTop: 16,
     fontFamily: Typography.fonts.bold,
-    fontSize: 29,
-    color: '#FFFFFF',
+    fontSize: 28,
+    color: Colors.neutral.surface,
   },
 
   heroDescription: {
     marginTop: 6,
-    maxWidth: 345,
-    fontFamily: Typography.fonts.medium,
+    maxWidth: 340,
+    fontFamily: Typography.fonts.regular,
     fontSize: 15,
     lineHeight: 22,
-    color: '#F4F1FF',
+    color: '#E8F0FF',
   },
-
-  heroDecorationOne: {
-    position: 'absolute',
-    width: 110,
-    height: 110,
-    borderRadius: 55,
-    right: -45,
-    bottom: -65,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-  },
-
-  heroDecorationTwo: {
-    position: 'absolute',
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    right: 55,
-    top: -35,
-    backgroundColor: 'rgba(255,255,255,0.06)',
-  },
-
-  /* SECTION */
 
   sectionHeader: {
-    marginTop: 25,
-    marginBottom: 11,
+    marginTop: 24,
+    marginBottom: 12,
   },
 
   sectionTitle: {
     fontFamily: Typography.fonts.bold,
-    fontSize: 20,
-    color: COLORS.navy,
+    fontSize: 19,
+    color: Colors.neutral.textDark,
   },
 
   sectionSubtitle: {
-    marginTop: 4,
-    fontFamily: Typography.fonts.medium,
+    marginTop: 3,
+    fontFamily: Typography.fonts.regular,
     fontSize: 13,
-    color: COLORS.muted,
+    color: Colors.neutral.textMuted,
   },
-
-  /* LANGUAGE */
 
   languageRow: {
     flexDirection: 'row',
@@ -705,54 +657,55 @@ const styles = StyleSheet.create({
 
   languageCard: {
     flex: 1,
-    minHeight: 104,
+    minHeight: 94,
     padding: 10,
-    borderRadius: 20,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: Colors.neutral.surface,
     borderWidth: 2,
+    borderColor: Colors.neutral.border,
+  },
+
+  languageCardSelected: {
+    borderColor: Colors.primary.main,
+    backgroundColor: Colors.primary.surface,
   },
 
   flag: {
-    fontSize: 26,
+    fontSize: 25,
   },
 
   languageName: {
-    marginTop: 7,
-    fontFamily: Typography.fonts.bold,
+    marginTop: 6,
+    fontFamily: Typography.fonts.semibold,
     fontSize: 16,
+    color: Colors.neutral.textDark,
+  },
+
+  languageNameSelected: {
+    color: Colors.primary.dark,
   },
 
   check: {
     position: 'absolute',
     top: 7,
     right: 7,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: Colors.primary.main,
   },
 
-  /* INPUT */
-
   inputCard: {
+    minHeight: 175,
     padding: 16,
-    borderRadius: 23,
-    backgroundColor: COLORS.white,
+    borderRadius: 22,
+    backgroundColor: Colors.neutral.surface,
     borderWidth: 2,
-    borderColor: COLORS.lavender,
-    borderBottomWidth: 4,
-    borderBottomColor: COLORS.lavenderBorder,
-
-    shadowColor: COLORS.navy,
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 7,
-    elevation: 4,
+    borderColor: Colors.primary.light,
   },
 
   inputTopRow: {
@@ -761,84 +714,60 @@ const styles = StyleSheet.create({
   },
 
   inputIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.lavenderLight,
+    backgroundColor: Colors.primary.surface,
   },
 
   inputHint: {
     marginLeft: 9,
-    fontFamily: Typography.fonts.bold,
+    fontFamily: Typography.fonts.semibold,
     fontSize: 13,
-    color: COLORS.muted,
+    color: Colors.neutral.textMuted,
   },
 
-  /*
-   * The TextInput itself owns the complete typing area.
-   * There is intentionally NO Pressable wrapper here.
-   */
-
   input: {
-    width: '100%',
-    height: 115,
-    marginTop: 10,
-    paddingHorizontal: 5,
-    paddingTop: 8,
-    paddingBottom: 8,
-
-    fontFamily: Typography.fonts.medium,
+    minHeight: 85,
+    marginTop: 8,
+    padding: 0,
+    fontFamily: Typography.fonts.regular,
     fontSize: 19,
     lineHeight: 28,
-    color: COLORS.navy,
-
-    textAlignVertical: 'top',
-    includeFontPadding: true,
+    color: Colors.neutral.textDark,
   },
 
   inputFooter: {
-    marginTop: 4,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
 
   exampleText: {
-    fontFamily: Typography.fonts.medium,
+    fontFamily: Typography.fonts.regular,
     fontSize: 12,
-    color: COLORS.muted,
+    color: Colors.neutral.textMuted,
   },
 
   characterCount: {
-    fontFamily: Typography.fonts.bold,
+    fontFamily: Typography.fonts.regular,
     fontSize: 12,
-    color: COLORS.muted,
+    color: Colors.neutral.textMuted,
   },
-
-  /* GENERATE */
 
   generateButton: {
     minHeight: 60,
     marginTop: 18,
     paddingLeft: 20,
     paddingRight: 8,
-    borderRadius: 20,
+    borderRadius: 19,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    backgroundColor: COLORS.lavender,
-
-    shadowColor: COLORS.navy,
-    shadowOffset: {
-      width: 0,
-      height: 5,
-    },
-    shadowOpacity: 0.14,
-    shadowRadius: 7,
-    elevation: 5,
+    backgroundColor: Colors.primary.main,
   },
 
   generateButtonDisabled: {
@@ -852,39 +781,26 @@ const styles = StyleSheet.create({
   generateButtonText: {
     fontFamily: Typography.fonts.bold,
     fontSize: 18,
-    color: '#FFFFFF',
+    color: Colors.neutral.surface,
   },
 
   generateArrow: {
-    width: 43,
-    height: 43,
+    width: 42,
+    height: 42,
     marginLeft: 4,
-    borderRadius: 22,
+    borderRadius: 21,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.lavenderDark,
+    backgroundColor: Colors.primary.dark,
   },
-
-  /* AUDIO */
 
   audioCard: {
     marginTop: 20,
     padding: 20,
-    borderRadius: 25,
-    backgroundColor: COLORS.white,
+    borderRadius: 24,
+    backgroundColor: Colors.neutral.surface,
     borderWidth: 2,
-    borderColor: COLORS.mint,
-    borderBottomWidth: 5,
-    borderBottomColor: '#2B9F78',
-
-    shadowColor: COLORS.navy,
-    shadowOffset: {
-      width: 0,
-      height: 5,
-    },
-    shadowOpacity: 0.10,
-    shadowRadius: 8,
-    elevation: 5,
+    borderColor: Colors.primary.light,
   },
 
   readyBadge: {
@@ -895,17 +811,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: COLORS.greenLight,
+    backgroundColor: Colors.feedback.correctSurface,
   },
 
   readyBadgeText: {
     fontFamily: Typography.fonts.bold,
     fontSize: 12,
-    color: COLORS.green,
+    color: Colors.feedback.correctText,
   },
 
   audioHeader: {
-    marginTop: 16,
+    marginTop: 15,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -917,37 +833,37 @@ const styles = StyleSheet.create({
 
   audioTitle: {
     fontFamily: Typography.fonts.bold,
-    fontSize: 22,
-    color: COLORS.navy,
+    fontSize: 21,
+    color: Colors.neutral.textDark,
   },
 
   audioSubtitle: {
     marginTop: 3,
-    fontFamily: Typography.fonts.medium,
+    fontFamily: Typography.fonts.regular,
     fontSize: 14,
-    color: COLORS.muted,
+    color: Colors.neutral.textMuted,
   },
 
   audioIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.lavenderLight,
+    backgroundColor: Colors.primary.surface,
   },
 
   wordPreview: {
-    marginTop: 17,
-    padding: 15,
-    borderRadius: 15,
-    backgroundColor: '#F5F8FA',
+    marginTop: 16,
+    padding: 14,
+    borderRadius: 14,
+    backgroundColor: Colors.neutral.background,
   },
 
   wordPreviewText: {
     fontFamily: Typography.fonts.semibold,
-    fontSize: 17,
-    color: COLORS.navy,
+    fontSize: 16,
+    color: Colors.neutral.textDark,
   },
 
   player: {
@@ -957,12 +873,12 @@ const styles = StyleSheet.create({
   },
 
   playButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 54,
+    height: 54,
+    borderRadius: 27,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.lavender,
+    backgroundColor: Colors.primary.main,
   },
 
   progressContainer: {
@@ -974,13 +890,13 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
     overflow: 'hidden',
-    backgroundColor: '#E1E9ED',
+    backgroundColor: Colors.neutral.border,
   },
 
   progressFill: {
     height: '100%',
     borderRadius: 4,
-    backgroundColor: COLORS.lavender,
+    backgroundColor: Colors.primary.main,
   },
 
   timeRow: {
@@ -990,48 +906,44 @@ const styles = StyleSheet.create({
   },
 
   timeText: {
-    fontFamily: Typography.fonts.medium,
+    fontFamily: Typography.fonts.regular,
     fontSize: 12,
-    color: COLORS.muted,
+    color: Colors.neutral.textMuted,
   },
 
   regenerateButton: {
     marginTop: 18,
-    minHeight: 48,
-    borderRadius: 16,
+    minHeight: 46,
+    borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
     gap: 8,
-    backgroundColor: COLORS.lavenderLight,
+    backgroundColor: Colors.primary.surface,
   },
 
   regenerateText: {
-    fontFamily: Typography.fonts.bold,
+    fontFamily: Typography.fonts.semibold,
     fontSize: 15,
-    color: COLORS.lavenderDark,
+    color: Colors.primary.dark,
   },
-
-  /* INFO */
 
   infoCard: {
     marginTop: 20,
     padding: 15,
-    borderRadius: 20,
+    borderRadius: 18,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.yellowLight,
-    borderWidth: 1.5,
-    borderColor: '#FFE49A',
+    backgroundColor: Colors.accent.amberSurface,
   },
 
   infoIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.neutral.surface,
   },
 
   infoContent: {
@@ -1042,15 +954,15 @@ const styles = StyleSheet.create({
   infoTitle: {
     fontFamily: Typography.fonts.bold,
     fontSize: 13,
-    color: COLORS.yellowDark,
+    color: Colors.accent.amberDark,
   },
 
   infoText: {
-    marginTop: 3,
-    fontFamily: Typography.fonts.medium,
+    marginTop: 2,
+    fontFamily: Typography.fonts.regular,
     fontSize: 12,
     lineHeight: 18,
-    color: COLORS.muted,
+    color: Colors.neutral.textMuted,
   },
 
   bottomSpacing: {
