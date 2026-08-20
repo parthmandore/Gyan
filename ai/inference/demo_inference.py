@@ -1,19 +1,34 @@
 """
 Gyan Multilingual TTS — Demo Inference
 
-Loads the demo-trained acoustic model and generates
-a predicted mel spectrogram from input text.
+Complete demo pipeline:
+
+    Input Text
+        ↓
+    Multilingual Vocabulary
+        ↓
+    Multilingual Acoustic Model
+        ↓
+    Predicted Log-Mel Spectrogram
+        ↓
+    Mel Visualization
+        ↓
+    Griffin-Lim Reconstruction
+        ↓
+    WAV Audio
 
 Usage:
     python -m ai.inference.demo_inference
 """
 
 from pathlib import Path
+from typing import Tuple
 
 import matplotlib.pyplot as plt
 import torch
 
 from ai.configs.tts_config import TTSConfig
+from ai.inference.mel_to_audio import MelToAudio
 from ai.models.multilingual_tts import MultilingualTTS
 from ai.utils.text_utils import MultilingualVocabulary
 
@@ -31,14 +46,12 @@ OUTPUT_DIR = Path(
 )
 
 
-LANGUAGE_MAP = {
-    "en": 0,
-    "hi": 1,
-    "mr": 2,
-}
+# ============================================================
+# DEVICE
+# ============================================================
 
-
-def get_device():
+def get_device() -> torch.device:
+    """Returns CUDA device if available, otherwise CPU."""
 
     if torch.cuda.is_available():
 
@@ -61,7 +74,24 @@ def get_device():
     return device
 
 
-def load_model_and_vocab(device):
+# ============================================================
+# LOAD MODEL AND VOCABULARY
+# ============================================================
+
+def load_model_and_vocab(
+    device: torch.device,
+) -> Tuple[
+    MultilingualTTS,
+    MultilingualVocabulary,
+    TTSConfig,
+]:
+    """
+    Loads:
+
+    - TTS configuration
+    - multilingual vocabulary
+    - trained acoustic model checkpoint
+    """
 
     config = TTSConfig()
 
@@ -84,6 +114,7 @@ def load_model_and_vocab(device):
         config.data.vocab_file
     )
 
+    # Ensure model vocabulary size matches saved vocabulary.
     config.model.vocab_size = len(vocab)
 
     print(
@@ -111,11 +142,20 @@ def load_model_and_vocab(device):
             f"{CHECKPOINT_PATH}"
         )
 
+    # weights_only=False is required because the checkpoint
+    # may contain the TTSConfig object.
     checkpoint = torch.load(
-    CHECKPOINT_PATH,
-    map_location=device,
-    weights_only=False,
-)
+        CHECKPOINT_PATH,
+        map_location=device,
+        weights_only=False,
+    )
+
+    if "model_state_dict" not in checkpoint:
+
+        raise KeyError(
+            "Checkpoint does not contain "
+            "'model_state_dict'."
+        )
 
     model.load_state_dict(
         checkpoint["model_state_dict"]
@@ -138,50 +178,97 @@ def load_model_and_vocab(device):
     return model, vocab, config
 
 
-def estimate_mel_length(text):
+# ============================================================
+# MEL LENGTH ESTIMATION
+# ============================================================
 
+def estimate_mel_length(
+    text: str,
+) -> int:
     """
-    Simple heuristic for demo inference.
+    Estimates output mel length.
 
-    During training, the decoder receives the target mel
-    length. For standalone inference we need to estimate
-    an output length.
+    The current acoustic model requires mel_lengths as an
+    input because the decoder is not yet autoregressive and
+    does not predict a stop token or duration.
 
-    This will later be replaced with a proper duration /
-    stop-token prediction mechanism.
+    This heuristic is used only for demonstration.
     """
 
     text_length = len(text)
 
     estimated_length = max(
         100,
-        text_length * 8
+        text_length * 8,
     )
 
     estimated_length = min(
         estimated_length,
-        1500
+        1500,
     )
 
     return estimated_length
 
 
+# ============================================================
+# TEXT -> MEL SYNTHESIS
+# ============================================================
+
 @torch.no_grad()
 def synthesize_mel(
-    model,
-    vocab,
-    config,
-    text,
-    language,
-    device,
-):
+    model: MultilingualTTS,
+    vocab: MultilingualVocabulary,
+    config: TTSConfig,
+    text: str,
+    language: str,
+    device: torch.device,
+) -> torch.Tensor:
+    """
+    Generates a predicted log-mel spectrogram from text.
 
-    if language not in LANGUAGE_MAP:
+    Args:
+        model:
+            Loaded MultilingualTTS model.
+
+        vocab:
+            Multilingual vocabulary.
+
+        config:
+            TTS configuration.
+
+        text:
+            Input text.
+
+        language:
+            Language code:
+            en / hi / mr
+
+        device:
+            CPU or CUDA device.
+
+    Returns:
+        Predicted log-mel tensor with shape:
+
+            [n_mels, frames]
+    """
+
+    # --------------------------------------------------------
+    # Validate language
+    # --------------------------------------------------------
+
+    language = language.strip().lower()
+
+    if language not in config.language.language_map:
 
         raise ValueError(
             f"Unsupported language: {language}. "
-            f"Choose from {list(LANGUAGE_MAP.keys())}"
+            f"Choose from "
+            f"{list(config.language.language_map.keys())}"
         )
+
+    language_id = (
+        config.language.language_map[language]
+    )
 
     # --------------------------------------------------------
     # Text encoding
@@ -192,6 +279,12 @@ def synthesize_mel(
         add_bos=config.text.add_bos,
         add_eos=config.text.add_eos,
     )
+
+    if len(sequence) == 0:
+
+        raise ValueError(
+            "Input text produced an empty token sequence."
+        )
 
     text_ids = torch.tensor(
         sequence,
@@ -205,13 +298,13 @@ def synthesize_mel(
     )
 
     language_ids = torch.tensor(
-        [LANGUAGE_MAP[language]],
+        [language_id],
         dtype=torch.long,
         device=device,
     )
 
     # --------------------------------------------------------
-    # Estimate output mel length
+    # Estimate mel length
     # --------------------------------------------------------
 
     mel_length = estimate_mel_length(
@@ -223,6 +316,10 @@ def synthesize_mel(
         dtype=torch.long,
         device=device,
     )
+
+    # --------------------------------------------------------
+    # Print inference details
+    # --------------------------------------------------------
 
     print()
     print("Inference details")
@@ -236,6 +333,11 @@ def synthesize_mel(
     )
 
     print(
+        f"Language ID: "
+        f"{language_id}"
+    )
+
+    print(
         f"Text tokens: "
         f"{len(sequence)}"
     )
@@ -246,7 +348,7 @@ def synthesize_mel(
     )
 
     # --------------------------------------------------------
-    # Forward pass
+    # Model forward pass
     # --------------------------------------------------------
 
     coarse_mel, refined_mel = model(
@@ -256,7 +358,24 @@ def synthesize_mel(
         mel_lengths=mel_lengths,
     )
 
-    mel = refined_mel.squeeze(0).cpu()
+    # Remove batch dimension.
+    mel = refined_mel.squeeze(0).detach().cpu()
+
+    # --------------------------------------------------------
+    # Validate output
+    # --------------------------------------------------------
+
+    if torch.isnan(mel).any():
+
+        raise ValueError(
+            "Generated mel contains NaN values."
+        )
+
+    if torch.isinf(mel).any():
+
+        raise ValueError(
+            "Generated mel contains Inf values."
+        )
 
     print(
         f"Generated mel shape: "
@@ -266,16 +385,24 @@ def synthesize_mel(
     return mel
 
 
-def save_mel(mel, output_path):
+# ============================================================
+# SAVE MEL TENSOR
+# ============================================================
 
-    OUTPUT_DIR.mkdir(
+def save_mel(
+    mel: torch.Tensor,
+    output_path: Path,
+) -> None:
+    """Saves predicted mel tensor."""
+
+    output_path.parent.mkdir(
         parents=True,
-        exist_ok=True
+        exist_ok=True,
     )
 
     torch.save(
         mel,
-        output_path
+        output_path,
     )
 
     print(
@@ -284,10 +411,21 @@ def save_mel(mel, output_path):
     )
 
 
+# ============================================================
+# VISUALIZE MEL
+# ============================================================
+
 def plot_mel(
-    mel,
-    image_path,
-):
+    mel: torch.Tensor,
+    image_path: Path,
+    language: str,
+) -> None:
+    """Saves a visualization of the predicted mel spectrogram."""
+
+    image_path.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
 
     plt.figure(
         figsize=(12, 5)
@@ -299,7 +437,9 @@ def plot_mel(
         origin="lower",
     )
 
-    plt.colorbar()
+    plt.colorbar(
+        label="Log-Mel Value"
+    )
 
     plt.xlabel(
         "Time Frames"
@@ -310,7 +450,8 @@ def plot_mel(
     )
 
     plt.title(
-        "Gyan Multilingual TTS — Predicted Mel Spectrogram"
+        f"Gyan Multilingual TTS — "
+        f"Predicted Mel ({language.upper()})"
     )
 
     plt.tight_layout()
@@ -328,6 +469,84 @@ def plot_mel(
     )
 
 
+# ============================================================
+# MEL -> AUDIO
+# ============================================================
+
+def generate_audio(
+    mel: torch.Tensor,
+    config: TTSConfig,
+    device: torch.device,
+    output_path: Path,
+) -> Path:
+    """
+    Converts predicted log-mel spectrogram to WAV audio.
+
+    Pipeline:
+
+        Predicted Log-Mel
+                ↓
+              exp()
+                ↓
+          Inverse Mel
+                ↓
+          Griffin-Lim
+                ↓
+            Waveform
+                ↓
+              WAV
+    """
+
+    print()
+    print(
+        "Reconstructing audio from predicted mel..."
+    )
+
+    # --------------------------------------------------------
+    # Create converter
+    # --------------------------------------------------------
+
+    audio_converter = MelToAudio(
+        config=config.audio,
+        device=device,
+    )
+
+    # --------------------------------------------------------
+    # Convert mel -> waveform
+    #
+    # IMPORTANT:
+    # We call the object's method.
+    # Do NOT do:
+    #
+    # waveform = audio_converter(mel)
+    #
+    # --------------------------------------------------------
+
+    waveform = audio_converter.mel_to_waveform(
+        mel
+    )
+
+    print(
+        f"Generated waveform shape: "
+        f"{tuple(waveform.shape)}"
+    )
+
+    # --------------------------------------------------------
+    # Save waveform
+    # --------------------------------------------------------
+
+    saved_path = audio_converter.save_wav(
+        waveform=waveform,
+        output_path=output_path,
+    )
+
+    return saved_path
+
+
+# ============================================================
+# MAIN
+# ============================================================
+
 def main():
 
     print()
@@ -340,7 +559,7 @@ def main():
     print("=" * 60)
 
     # --------------------------------------------------------
-    # Example inputs
+    # Example multilingual inputs
     # --------------------------------------------------------
 
     examples = [
@@ -365,16 +584,32 @@ def main():
 
     ]
 
+    # --------------------------------------------------------
+    # Device
+    # --------------------------------------------------------
+
     device = get_device()
+
+    # --------------------------------------------------------
+    # Load model
+    # --------------------------------------------------------
 
     model, vocab, config = load_model_and_vocab(
         device
     )
 
+    # --------------------------------------------------------
+    # Create output directory
+    # --------------------------------------------------------
+
     OUTPUT_DIR.mkdir(
         parents=True,
-        exist_ok=True
+        exist_ok=True,
     )
+
+    # --------------------------------------------------------
+    # Generate for every language
+    # --------------------------------------------------------
 
     for text, language, name in examples:
 
@@ -388,6 +623,10 @@ def main():
 
         print("=" * 60)
 
+        # ----------------------------------------------------
+        # Text -> Mel
+        # ----------------------------------------------------
+
         mel = synthesize_mel(
             model=model,
             vocab=vocab,
@@ -396,6 +635,10 @@ def main():
             language=language,
             device=device,
         )
+
+        # ----------------------------------------------------
+        # Output paths
+        # ----------------------------------------------------
 
         mel_path = (
             OUTPUT_DIR
@@ -407,15 +650,50 @@ def main():
             / f"{name}_mel.png"
         )
 
-        save_mel(
-            mel,
-            mel_path
+        audio_path = (
+            OUTPUT_DIR
+            / f"{name}.wav"
         )
 
-        plot_mel(
-            mel,
-            image_path
+        # ----------------------------------------------------
+        # Save mel tensor
+        # ----------------------------------------------------
+
+        save_mel(
+            mel=mel,
+            output_path=mel_path,
         )
+
+        # ----------------------------------------------------
+        # Save mel visualization
+        # ----------------------------------------------------
+
+        plot_mel(
+            mel=mel,
+            image_path=image_path,
+            language=language,
+        )
+
+        # ----------------------------------------------------
+        # Mel -> WAV
+        # ----------------------------------------------------
+
+        generate_audio(
+            mel=mel,
+            config=config,
+            device=device,
+            output_path=audio_path,
+        )
+
+        print()
+
+        print(
+            f"{language.upper()} generation complete."
+        )
+
+    # --------------------------------------------------------
+    # Complete
+    # --------------------------------------------------------
 
     print()
 
@@ -434,6 +712,26 @@ def main():
         f"{OUTPUT_DIR}"
     )
 
+    print()
+
+    print(
+        "Generated files:"
+    )
+
+    for path in sorted(
+        OUTPUT_DIR.iterdir()
+    ):
+
+        if path.is_file():
+
+            print(
+                f"  - {path.name}"
+            )
+
+
+# ============================================================
+# ENTRY POINT
+# ============================================================
 
 if __name__ == "__main__":
     main()
