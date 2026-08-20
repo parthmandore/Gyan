@@ -46,6 +46,7 @@ __pycache__/
 # Virtual environments
 venv/
 .venv/
+.venv_tts/
 env/
 tts_env/
 
