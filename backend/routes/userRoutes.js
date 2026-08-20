@@ -1,17 +1,34 @@
 const express = require("express");
 
 const {
-    createUser,
-    getUsers,
-    getUserById
+  getMyProfile,
+  updateMyProfile,
+  updateLanguage,
 } = require("../controllers/userController");
+
+const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.post("/", createUser);
+// Get logged-in user's profile
+router.get(
+  "/me",
+  authMiddleware,
+  getMyProfile
+);
 
-router.get("/", getUsers);
+// Update logged-in user's profile
+router.put(
+  "/me",
+  authMiddleware,
+  updateMyProfile
+);
 
-router.get("/:id", getUserById);
+// Update logged-in user's language
+router.put(
+  "/me/language",
+  authMiddleware,
+  updateLanguage
+);
 
 module.exports = router;

@@ -1,340 +1,342 @@
 const Progress = require("../models/Progress");
+const Reward = require("../models/Reward");
 const User = require("../models/User");
 
-// Submit progress for a completed game session
+const {
+  calculateXP,
+  calculateLevel,
+  getXPProgress,
+} = require("../services/xpService");
+
+// --------------------------------------------------
+// SUBMIT GAME PROGRESS
+// --------------------------------------------------
+
 const submitProgress = async (req, res) => {
-    try {
-        const {
-            userId,
-            game_type,
-            difficulty,
-            items_attempted,
-            items_correct,
-            time_taken_seconds
-        } = req.body;
+  try {
+    const {
+      game_type,
+      language,
+      difficulty,
+      mode,
+      items_attempted,
+      items_correct,
+      time_taken_seconds,
+    } = req.body;
 
-        // Check required fields
-        if (
-            !userId ||
-            !game_type ||
-            difficulty === undefined ||
-            items_attempted === undefined ||
-            items_correct === undefined ||
-            time_taken_seconds === undefined
-        ) {
-            return res.status(400).json({
-                success: false,
-                message: "All progress fields are required"
-            });
-        }
+    // ----------------------------------------------
+    // Validate required fields
+    // ----------------------------------------------
 
-        // Check if user exists
-        const user = await User.findById(userId);
-
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found"
-            });
-        }
-
-        // Validate score
-        if (items_correct > items_attempted) {
-            return res.status(400).json({
-                success: false,
-                message: "Items correct cannot be greater than items attempted"
-            });
-        }
-
-        // Create progress record
-        const progress = await Progress.create({
-            user: userId,
-            game_type,
-            difficulty,
-            items_attempted,
-            items_correct,
-            time_taken_seconds
-        });
-
-        res.status(201).json({
-            success: true,
-            message: "Progress submitted successfully",
-            data: progress
-        });
-
-    } catch (error) {
-        console.error("Submit progress error:", error);
-
-        // Invalid MongoDB ID
-        if (error.name === "CastError") {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid user ID"
-            });
-        }
-
-        // Mongoose validation error
-        if (error.name === "ValidationError") {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid progress data",
-                errors: Object.values(error.errors).map(
-                    (err) => err.message
-                )
-            });
-        }
-
-        res.status(500).json({
-            success: false,
-            message: "Failed to submit progress",
-            error: error.message
-        });
+    if (
+      !game_type ||
+      difficulty === undefined ||
+      items_attempted === undefined ||
+      items_correct === undefined ||
+      time_taken_seconds === undefined
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "game_type, difficulty, items_attempted, items_correct and time_taken_seconds are required",
+      });
     }
+
+    // ----------------------------------------------
+    // Validate numbers
+    // ----------------------------------------------
+
+    if (
+      !Number.isInteger(Number(difficulty)) ||
+      Number(difficulty) < 1 ||
+      Number(difficulty) > 5
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Difficulty must be between 1 and 5",
+      });
+    }
+
+    if (
+      !Number.isInteger(Number(items_attempted)) ||
+      Number(items_attempted) <= 0
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "items_attempted must be greater than 0",
+      });
+    }
+
+    if (
+      !Number.isInteger(Number(items_correct)) ||
+      Number(items_correct) < 0 ||
+      Number(items_correct) > Number(items_attempted)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "items_correct must be between 0 and items_attempted",
+      });
+    }
+
+    if (
+      Number(time_taken_seconds) < 0
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "time_taken_seconds cannot be negative",
+      });
+    }
+
+    // ----------------------------------------------
+    // Calculate accuracy
+    // ----------------------------------------------
+
+    const accuracy =
+      (Number(items_correct) /
+        Number(items_attempted)) *
+      100;
+
+    // ----------------------------------------------
+    // Calculate XP
+    // ----------------------------------------------
+
+    const xpEarned = calculateXP({
+      accuracy,
+      difficulty: Number(difficulty),
+      timeTakenSeconds: Number(
+        time_taken_seconds
+      ),
+    });
+
+    // ----------------------------------------------
+    // Create progress record
+    // ----------------------------------------------
+
+    const progress = await Progress.create({
+      user: req.user._id,
+      game_type,
+      language: language || req.user.language,
+      difficulty: Number(difficulty),
+      mode: mode || null,
+      items_attempted: Number(items_attempted),
+      items_correct: Number(items_correct),
+      accuracy: Number(accuracy.toFixed(2)),
+      time_taken_seconds: Number(
+        time_taken_seconds
+      ),
+      xp_earned: xpEarned,
+    });
+
+    // ----------------------------------------------
+    // Update user XP
+    // ----------------------------------------------
+
+    const user = await User.findById(
+      req.user._id
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const oldXP = user.xpTotal;
+
+    const newXP = oldXP + xpEarned;
+
+    const newLevel = calculateLevel(newXP);
+
+    user.xpTotal = newXP;
+    user.level = newLevel;
+    user.lastActiveAt = new Date();
+
+    await user.save();
+
+    // ----------------------------------------------
+    // Create reward record
+    // ----------------------------------------------
+
+    const reward = await Reward.create({
+      user: user._id,
+      xp: xpEarned,
+      reason: `Completed ${game_type}`,
+      game_type,
+    });
+
+    // ----------------------------------------------
+    // Get XP dashboard information
+    // ----------------------------------------------
+
+    const xpProgress = getXPProgress(
+      user.xpTotal
+    );
+
+    // ----------------------------------------------
+    // Response
+    // ----------------------------------------------
+
+    return res.status(201).json({
+      success: true,
+      message: "Progress submitted successfully",
+
+      data: {
+        progress: {
+          id: progress._id,
+          game_type: progress.game_type,
+          difficulty: progress.difficulty,
+          accuracy: progress.accuracy,
+          items_attempted:
+            progress.items_attempted,
+          items_correct:
+            progress.items_correct,
+          time_taken_seconds:
+            progress.time_taken_seconds,
+        },
+
+        reward: {
+          id: reward._id,
+          xpEarned,
+        },
+
+        xp: {
+          total: xpProgress.xpTotal,
+          level: xpProgress.level,
+          xpEarnedInLevel:
+            xpProgress.xpEarnedInLevel,
+          xpToNextLevel:
+            xpProgress.xpToNextLevel,
+        },
+      },
+    });
+  } catch (error) {
+    console.error(
+      "Submit progress error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Server error while submitting progress",
+    });
+  }
 };
 
+// --------------------------------------------------
+// GET CURRENT USER PROGRESS
+// --------------------------------------------------
 
-// Get all progress for a specific user
-const getUserProgress = async (req, res) => {
-    try {
-        const { userId } = req.params;
+const getMyProgress = async (req, res) => {
+  try {
+    const progress = await Progress.find({
+      user: req.user._id,
+    })
+      .sort({ createdAt: -1 })
+      .limit(100);
 
-        // Check if user exists
-        const user = await User.findById(userId);
+    return res.status(200).json({
+      success: true,
+      data: progress,
+    });
+  } catch (error) {
+    console.error(
+      "Get progress error:",
+      error
+    );
 
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found"
-            });
-        }
-
-        // Get user's progress
-        const progress = await Progress.find({
-            user: userId
-        }).sort({ createdAt: -1 });
-
-        res.status(200).json({
-            success: true,
-            count: progress.length,
-            data: progress
-        });
-
-    } catch (error) {
-        console.error("Get user progress error:", error);
-
-        // Invalid MongoDB ID
-        if (error.name === "CastError") {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid user ID"
-            });
-        }
-
-        res.status(500).json({
-            success: false,
-            message: "Failed to fetch user progress",
-            error: error.message
-        });
-    }
+    return res.status(500).json({
+      success: false,
+      message:
+        "Server error while fetching progress",
+    });
+  }
 };
 
-// Get progress summary for a specific user
-const getUserProgressSummary = async (req, res) => {
-    try {
-        const { userId } = req.params;
+// --------------------------------------------------
+// GET PROGRESS SUMMARY
+// --------------------------------------------------
 
-        // Check if user exists
-        const user = await User.findById(userId);
+const getProgressSummary = async (
+  req,
+  res
+) => {
+  try {
+    const progress = await Progress.find({
+      user: req.user._id,
+    });
 
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found"
-            });
-        }
-
-        // Get all progress records
-        const progress = await Progress.find({
-            user: userId
-        });
-
-        // No progress yet
-        if (progress.length === 0) {
-            return res.status(200).json({
-                success: true,
-                message: "No progress available yet",
-                data: {
-                    total_games: 0,
-                    total_questions: 0,
-                    correct_answers: 0,
-                    accuracy: 0,
-                    average_time_seconds: 0
-                }
-            });
-        }
-
-        // Calculate totals
-        const totalGames = progress.length;
-
-        const totalQuestions = progress.reduce(
-            (total, item) => total + item.items_attempted,
-            0
-        );
-
-        const correctAnswers = progress.reduce(
-            (total, item) => total + item.items_correct,
-            0
-        );
-
-        const totalTime = progress.reduce(
-            (total, item) => total + item.time_taken_seconds,
-            0
-        );
-
-        // Calculate accuracy
-        const accuracy =
-            totalQuestions > 0
-                ? Number(((correctAnswers / totalQuestions) * 100).toFixed(2))
-                : 0;
-
-        // Calculate average time per game
-        const averageTimeSeconds =
-            Number((totalTime / totalGames).toFixed(2));
-
-        res.status(200).json({
-            success: true,
-            data: {
-                total_games: totalGames,
-                total_questions: totalQuestions,
-                correct_answers: correctAnswers,
-                accuracy: accuracy,
-                average_time_seconds: averageTimeSeconds
-            }
-        });
-
-    } catch (error) {
-        console.error("Get progress summary error:", error);
-
-        if (error.name === "CastError") {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid user ID"
-            });
-        }
-
-        res.status(500).json({
-            success: false,
-            message: "Failed to calculate progress summary",
-            error: error.message
-        });
+    if (progress.length === 0) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          totalGames: 0,
+          totalAttempts: 0,
+          totalCorrect: 0,
+          averageAccuracy: 0,
+          totalTimeSeconds: 0,
+        },
+      });
     }
+
+    const totalGames = progress.length;
+
+    const totalAttempts = progress.reduce(
+      (sum, item) =>
+        sum + item.items_attempted,
+      0
+    );
+
+    const totalCorrect = progress.reduce(
+      (sum, item) =>
+        sum + item.items_correct,
+      0
+    );
+
+    const totalTimeSeconds =
+      progress.reduce(
+        (sum, item) =>
+          sum + item.time_taken_seconds,
+        0
+      );
+
+    const averageAccuracy =
+      totalAttempts > 0
+        ? (totalCorrect / totalAttempts) *
+          100
+        : 0;
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        totalGames,
+        totalAttempts,
+        totalCorrect,
+        averageAccuracy:
+          Number(averageAccuracy.toFixed(2)),
+        totalTimeSeconds,
+      },
+    });
+  } catch (error) {
+    console.error(
+      "Progress summary error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Server error while fetching progress summary",
+    });
+  }
 };
-// Get progress grouped by game type for a specific user
-const getProgressByGame = async (req, res) => {
-    try {
-        const { userId } = req.params;
 
-        // Check if user exists
-        const user = await User.findById(userId);
-
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found"
-            });
-        }
-
-        // Group progress by game type
-        const progressByGame = await Progress.aggregate([
-            {
-                $match: {
-                    user: user._id
-                }
-            },
-            {
-                $group: {
-                    _id: "$game_type",
-
-                    games_played: {
-                        $sum: 1
-                    },
-
-                    total_questions: {
-                        $sum: "$items_attempted"
-                    },
-
-                    correct_answers: {
-                        $sum: "$items_correct"
-                    }
-                }
-            },
-            {
-                $project: {
-                    _id: 0,
-                    game_type: "$_id",
-                    games_played: 1,
-                    total_questions: 1,
-                    correct_answers: 1,
-
-                    accuracy: {
-                        $cond: [
-                            {
-                                $gt: ["$total_questions", 0]
-                            },
-                            {
-                                $round: [
-                                    {
-                                        $multiply: [
-                                            {
-                                                $divide: [
-                                                    "$correct_answers",
-                                                    "$total_questions"
-                                                ]
-                                            },
-                                            100
-                                        ]
-                                    },
-                                    2
-                                ]
-                            },
-                            0
-                        ]
-                    }
-                }
-            },
-            {
-                $sort: {
-                    games_played: -1
-                }
-            }
-        ]);
-
-        res.status(200).json({
-            success: true,
-            count: progressByGame.length,
-            data: progressByGame
-        });
-
-    } catch (error) {
-        console.error("Get progress by game error:", error);
-
-        if (error.name === "CastError") {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid user ID"
-            });
-        }
-
-        res.status(500).json({
-            success: false,
-            message: "Failed to fetch progress by game",
-            error: error.message
-        });
-    }
-};
 module.exports = {
-    submitProgress,
-    getUserProgress,
-    getUserProgressSummary,
-    getProgressByGame
+  submitProgress,
+  getMyProgress,
+  getProgressSummary,
 };

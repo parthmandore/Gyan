@@ -1,20 +1,34 @@
 const express = require("express");
 
 const {
-    submitProgress,
-    getUserProgress,
-    getUserProgressSummary,
-    getProgressByGame
+  submitProgress,
+  getMyProgress,
+  getProgressSummary,
 } = require("../controllers/progressController");
+
+const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.post("/submit", submitProgress);
+// Submit completed game
+router.post(
+  "/submit",
+  authMiddleware,
+  submitProgress
+);
 
-router.get("/user/:userId", getUserProgress);
+// Get current user's progress
+router.get(
+  "/me",
+  authMiddleware,
+  getMyProgress
+);
 
-router.get("/user/:userId/summary", getUserProgressSummary);
-
-router.get("/user/:userId/by-game", getProgressByGame);
+// Get current user's progress summary
+router.get(
+  "/me/summary",
+  authMiddleware,
+  getProgressSummary
+);
 
 module.exports = router;
