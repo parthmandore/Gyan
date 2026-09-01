@@ -1,0 +1,11 @@
+# Gyan Speech AI Module - Pinned Dependencies
+openai-whisper==20250625
+torch==2.13.0
+fastapi==0.141.1
+uvicorn==0.52.4
+python-multipart==0.0.32
+librosa==1.0.0
+soundfile==0.14.0
+numpy==2.5.2
+httpx==0.28.1
+pytest==9.1.1
