@@ -41,6 +41,11 @@
     "vowelMatraMatch": {
       "title": "Vowel & Matra Match",
       "description": "Match independent vowels to their consonant matra forms!"
+    },
+    "speechWordChallenge": {
+      "title": "Speech Word Challenge",
+      "subtitle": "Speak words into the microphone!",
+      "description": "Look at the picture and speak the word aloud into the microphone!"
     }
   },
   "alphabetMatching": {
@@ -170,5 +175,31 @@
     "tryAgain": "Try again!",
     "greatJob": "Great Job!",
     "finishedGame": "You finished today's game!"
+  },
+  "speechWordChallenge": {
+    "sayTheWord": "Say the word.",
+    "tapMicPrompt": "Tap the microphone and say the word.",
+    "listening": "I'm listening...",
+    "checking": "Checking...",
+    "almostTryAgain": "Almost! Try again.",
+    "noSpeech": "Could not hear you. Tap the mic and try again!",
+    "technicalIssue": "Speech helper is taking a break. Tap to retry!",
+    "praise1": "Great job!",
+    "praise2": "Wonderful!",
+    "praise3": "Excellent!",
+    "praise4": "Super!",
+    "sessionCompleteTitle": "Session Complete! 🎉",
+    "sessionCompleteDesc": "You correctly spoke {{correct}} of {{total}} words!",
+    "stars": "Stars",
+    "accuracy": "Accuracy",
+    "xp": "XP",
+    "playAgain": "PLAY AGAIN",
+    "gameCatalog": "GAME CATALOG",
+    "debugExpected": "Expected: {{word}}",
+    "debugHeard": "Heard: {{heard}}",
+    "micButtonIdle": "Microphone button. Tap and say the word.",
+    "micButtonRecording": "Microphone recording active. Tap to stop.",
+    "micButtonProcessing": "Checking your speech.",
+    "audioReplayHint": "Tap to hear the target word pronounced aloud."
   }
 }

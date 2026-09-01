@@ -41,6 +41,11 @@
     "vowelMatraMatch": {
       "title": "स्वर आणि मात्रा जुळवणी",
       "description": "स्वरांना त्यांच्या व्यंजन+मात्रा रूपांशी जुळवा!"
+    },
+    "speechWordChallenge": {
+      "title": "शब्द उच्चार आव्हान",
+      "subtitle": "माइकवर शब्द बोला!",
+      "description": "चित्र पहा आणि माइकवर स्पष्टपणे शब्द बोला!"
     }
   },
   "alphabetMatching": {
@@ -170,5 +175,31 @@
     "tryAgain": "पुन्हा प्रयत्न करा!",
     "greatJob": "खूप छान!",
     "finishedGame": "तुम्ही आजचा खेळ पूर्ण केला!"
+  },
+  "speechWordChallenge": {
+    "sayTheWord": "शब्द बोला.",
+    "tapMicPrompt": "माइक दाबा आणि शब्द बोला.",
+    "listening": "मी ऐकत आहे...",
+    "checking": "तपासत आहे...",
+    "almostTryAgain": "जवळपास! पुन्हा प्रयत्न करा.",
+    "noSpeech": "आवाज आला नाही. माइक दाबून पुन्हा बोला!",
+    "technicalIssue": "सर्व्हरशी संपर्क होऊ शकला नाही. पुन्हा प्रयत्न करा!",
+    "praise1": "खूप छान!",
+    "praise2": "शाब्बास!",
+    "praise3": "उत्तम!",
+    "praise4": "छान काम!",
+    "sessionCompleteTitle": "सत्र पूर्ण झाले! 🎉",
+    "sessionCompleteDesc": "तुम्ही {{total}} पैकी {{correct}} शब्द बरोबर बोललात!",
+    "stars": "तारे",
+    "accuracy": "अचूकता",
+    "xp": "एक्सपी",
+    "playAgain": "पुन्हा खेळा",
+    "gameCatalog": "खेळ सूची",
+    "debugExpected": "अपेक्षित: {{word}}",
+    "debugHeard": "ऐकले: {{heard}}",
+    "micButtonIdle": "माइक बटण. दाबा आणि शब्द बोला.",
+    "micButtonRecording": "माइक चालू आहे. थांबवण्यासाठी दाबा.",
+    "micButtonProcessing": "तुमच्या आवाजाची तपासणी होत आहे.",
+    "audioReplayHint": "शब्दाचा योग्य उच्चार पुन्हा ऐकण्यासाठी दाबा."
   }
 }

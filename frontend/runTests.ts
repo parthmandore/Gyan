@@ -2,6 +2,7 @@ import { runGridArrangementTests } from './src/screens/games/AlphabetMatching/ut
 import { runDifficultyConfigTests } from './src/screens/games/AlphabetMatching/utils/__tests__/difficultyConfig.test';
 import { runRoundGeneratorTests } from './src/screens/games/CapitalSmallMatch/logic/__tests__/roundGenerator.test';
 import { runTutorialServiceTests } from './src/services/__tests__/tutorialService.test';
+import { runSpeechAnswerMatcherTests } from './src/services/__tests__/speechAnswerMatcher.test';
 
 async function main() {
   console.log('=== GRID ARRANGEMENT UNIT TEST RESULTS ===');
@@ -20,10 +21,19 @@ async function main() {
   const tutorialResult = await runTutorialServiceTests();
   tutorialResult.results.forEach((r) => console.log(r));
 
-  const overallPassed = gridResult.passed && diffResult.passed && roundResult.passed && tutorialResult.passed;
+  console.log('\n=== SPEECH ANSWER MATCHER UNIT TEST RESULTS ===');
+  const speechMatcherResult = runSpeechAnswerMatcherTests();
+  speechMatcherResult.results.forEach((r) => console.log(r));
+
+  const overallPassed =
+    gridResult.passed &&
+    diffResult.passed &&
+    roundResult.passed &&
+    tutorialResult.passed &&
+    speechMatcherResult.passed;
   console.log('\nOVERALL STATUS:', overallPassed ? 'PASSED' : 'FAILED');
   if (!overallPassed) {
-    process.exit(1);
+    (globalThis as any).process?.exit(1);
   }
 }
 

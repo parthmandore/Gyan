@@ -41,6 +41,11 @@
     "vowelMatraMatch": {
       "title": "स्वर और मात्रा मिलान",
       "description": "स्वरों को उनके व्यंजन+मात्रा रूपों से मिलाएं!"
+    },
+    "speechWordChallenge": {
+      "title": "शब्द उच्चारण चुनौती",
+      "subtitle": "माइक में शब्द बोलें!",
+      "description": "चित्र देखें और माइक में साफ-साफ शब्द बोलें!"
     }
   },
   "alphabetMatching": {
@@ -170,5 +175,31 @@
     "tryAgain": "फिर से प्रयास करें!",
     "greatJob": "शाबाश!",
     "finishedGame": "आपने आज का खेल पूरा कर लिया!"
+  },
+  "speechWordChallenge": {
+    "sayTheWord": "शब्द बोलो।",
+    "tapMicPrompt": "माइक दबाएं और शब्द बोलें।",
+    "listening": "मैं सुन रहा हूँ...",
+    "checking": "जाँच हो रही है...",
+    "almostTryAgain": "लगभग! फिर से कोशिश करो।",
+    "noSpeech": "आवाज नहीं आई। माइक दबाकर फिर से बोलें!",
+    "technicalIssue": "सर्वर से संपर्क नहीं हो पाया। फिर से कोशिश करें!",
+    "praise1": "बहुत बढ़िया!",
+    "praise2": "शाबाश!",
+    "praise3": "बहुत अच्छा!",
+    "praise4": "शानदार!",
+    "sessionCompleteTitle": "सत्र पूरा हुआ! 🎉",
+    "sessionCompleteDesc": "आपने {{total}} में से {{correct}} शब्द सही बोले!",
+    "stars": "स्टार्स",
+    "accuracy": "सटीकता",
+    "xp": "एक्सपी",
+    "playAgain": "फिर से खेलें",
+    "gameCatalog": "खेल सूची",
+    "debugExpected": "अपेक्षित: {{word}}",
+    "debugHeard": "सुना: {{heard}}",
+    "micButtonIdle": "माइक बटन। दबाएं और शब्द बोलें।",
+    "micButtonRecording": "माइक चालू है। रोकने के लिए दबाएं।",
+    "micButtonProcessing": "आपकी आवाज की जाँच हो रही है।",
+    "audioReplayHint": "शब्द का सही उच्चारण फिर से सुनने के लिए दबाएं।"
   }
 }

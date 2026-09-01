@@ -1,6 +1,8 @@
 /**
- * Purpose: First-launch Language Gate Screen
- *          LingoBloom branded language selection experience.
+ * Purpose: First-launch Onboarding Screen — 2-step onboarding:
+ *          Step 1: Choose Learning Language (English / हिन्दी / मराठी)
+ *          Step 2: Choose Age (Age 5 / Age 6)
+ *          Child-friendly cards, mascot companion, and WCAG AA accessible 84dp targets.
  * Module: Screens
  * Folder: frontend/src/screens
  */
@@ -28,17 +30,12 @@ import Animated, {
 
 import { BigTouchTarget } from '../components/BigTouchTarget';
 import { CartoonBackground } from '../components/CartoonBackground';
+import { Colors } from '../theme/colors';
 import { Typography } from '../theme/typography';
-import {
-  AppLanguage,
-  useAppLanguageStore,
-} from '../state/appLanguageStore';
+import { AppLanguage, AppAge, useAppLanguageStore } from '../state/appLanguageStore';
 import { RootStackParamList } from '../types';
 
-type NavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  'LanguageGate'
->;
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'LanguageGate'>;
 
 interface LanguageCardOption {
   id: AppLanguage;
@@ -46,8 +43,7 @@ interface LanguageCardOption {
   subtitleKey: string;
   icon: string;
   bgColor: string;
-  darkColor: string;
-  accentColor: string;
+  bevelColor: string;
 }
 
 const LANGUAGE_CARDS: readonly LanguageCardOption[] = [
@@ -56,265 +52,227 @@ const LANGUAGE_CARDS: readonly LanguageCardOption[] = [
     nativeTitleKey: 'languageGate.english',
     subtitleKey: 'languageGate.englishSub',
     icon: '🔤',
-    bgColor: '#8B7CF6',
-    darkColor: '#6655D8',
-    accentColor: '#C4BCFF',
+    bgColor: '#3B82F6',
+    bevelColor: '#1D4ED8',
   },
   {
     id: 'hi',
     nativeTitleKey: 'languageGate.hindi',
     subtitleKey: 'languageGate.hindiSub',
     icon: '🗣️',
-    bgColor: '#FF8A7A',
-    darkColor: '#D96558',
-    accentColor: '#FFC4BC',
+    bgColor: '#F59E0B',
+    bevelColor: '#D97706',
   },
   {
     id: 'mr',
     nativeTitleKey: 'languageGate.marathi',
     subtitleKey: 'languageGate.marathiSub',
     icon: '📚',
-    bgColor: '#55CFA3',
-    darkColor: '#2B9F78',
-    accentColor: '#A7EED2',
+    bgColor: '#10B981',
+    bevelColor: '#047857',
   },
-];
+] as const;
+
+interface AgeCardOption {
+  age: AppAge;
+  titleKey: string;
+  subtitleKey: string;
+  icon: string;
+  bgColor: string;
+  bevelColor: string;
+}
+
+const AGE_CARDS: readonly AgeCardOption[] = [
+  {
+    age: 5,
+    titleKey: 'ageGate.age5Title',
+    subtitleKey: 'ageGate.age5Desc',
+    icon: '⭐',
+    bgColor: '#EC4899',
+    bevelColor: '#BE185D',
+  },
+  {
+    age: 6,
+    titleKey: 'ageGate.age6Title',
+    subtitleKey: 'ageGate.age6Desc',
+    icon: '🚀',
+    bgColor: '#8B5CF6',
+    bevelColor: '#6D28D9',
+  },
+] as const;
 
 export const LanguageGateScreen: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const navigation = useNavigation<NavigationProp>();
   const { width: screenWidth } = useWindowDimensions();
+  const setSelectedLanguage = useAppLanguageStore((s) => s.setSelectedLanguage);
+  const setSelectedAge = useAppLanguageStore((s) => s.setSelectedAge);
+  const currentLanguage = useAppLanguageStore((s) => s.selectedLanguage);
 
-  const setSelectedLanguage = useAppLanguageStore(
-    (s) => s.setSelectedLanguage
-  );
+  const [step, setStep] = useState<'language' | 'age'>('language');
+  const [chosenLang, setChosenLang] = useState<AppLanguage>(currentLanguage || 'en');
 
   const [reduceMotion, setReduceMotion] = useState(false);
-
-  const contentOpacity = useSharedValue(0);
-  const contentScale = useSharedValue(0.96);
+  const cardScale = useSharedValue(0.92);
+  const cardOpacity = useSharedValue(0);
 
   useEffect(() => {
-    let mounted = true;
-
+    let isMounted = true;
     AccessibilityInfo.isReduceMotionEnabled().then((enabled) => {
-      if (mounted) {
-        setReduceMotion(enabled);
-      }
+      if (isMounted) setReduceMotion(enabled);
     });
 
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  useEffect(() => {
     if (reduceMotion) {
-      contentOpacity.value = 1;
-      contentScale.value = 1;
-      return;
+      cardScale.value = 1;
+      cardOpacity.value = 1;
+    } else {
+      cardOpacity.value = withTiming(1, { duration: 300 });
+      cardScale.value = withSpring(1, { damping: 14, stiffness: 140 });
     }
 
-    contentOpacity.value = withTiming(1, {
-      duration: 450,
-    });
+    return () => {
+      isMounted = false;
+    };
+  }, [cardOpacity, cardScale, reduceMotion, step]);
 
-    contentScale.value = withSpring(1, {
-      damping: 16,
-      stiffness: 120,
-    });
-  }, [reduceMotion, contentOpacity, contentScale]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: contentOpacity.value,
-    transform: [
-      {
-        scale: contentScale.value,
-      },
-    ],
-  }));
+  const animatedStyle = useAnimatedStyle(() => {
+    if (reduceMotion) return { opacity: 1, transform: [{ scale: 1 }] };
+    return {
+      opacity: cardOpacity.value,
+      transform: [{ scale: cardScale.value }],
+    };
+  });
 
   const handleSelectLanguage = async (lang: AppLanguage) => {
+    setChosenLang(lang);
     await setSelectedLanguage(lang);
+    setStep('age');
+  };
 
+  const handleSelectAge = async (age: AppAge) => {
+    await setSelectedAge(age);
     navigation.reset({
-     index: 0,
-     routes: [{ name: 'RoleSelection' }],
+      index: 0,
+      routes: [{ name: 'GameCatalog' }],
     });
   };
 
-  const cardWidth = Math.min(screenWidth - 32, 420);
+  const cardWidth = Math.min(screenWidth - 32, 400);
 
   return (
-    <View style={styles.outerContainer}>
+    <View style={styles.webOuterContainer}>
       <SafeAreaView style={styles.safeArea}>
-        <StatusBar
-          barStyle="dark-content"
-          backgroundColor="#DDF7F7"
-        />
+        <StatusBar barStyle="light-content" backgroundColor="#1B2B5A" />
 
+        {/* Decorative Scenery — Hub Theme */}
         <CartoonBackground theme="hub" />
 
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
-          bounces={false}
         >
-          <Animated.View
-            style={[
-              styles.contentContainer,
-              animatedStyle,
-            ]}
-          >
-            {/* BRAND */}
-            <View style={styles.brandRow}>
-              <View style={styles.brandIcon}>
-                <Text style={styles.brandIconText}>🌱</Text>
+          {step === 'language' ? (
+            <>
+              {/* Header Banner: Language */}
+              <View style={styles.headerSection}>
+                <Text style={styles.titleText}>{t('languageGate.title')}</Text>
+                <Text style={styles.subtitleText}>{t('languageGate.subtitle')}</Text>
               </View>
 
-              <View>
-                <Text style={styles.brandName}>
-                  LingoBloom
-                </Text>
+              {/* Language Cards */}
+              <Animated.View style={[styles.cardsContainer, animatedStyle]}>
+                {LANGUAGE_CARDS.map((card) => {
+                  const title = t(card.nativeTitleKey);
+                  const subtitle = t(card.subtitleKey);
 
-                <Text style={styles.brandTagline}>
-                  Learn • Play • Grow
-                </Text>
-              </View>
-            </View>
-
-            {/* HERO */}
-            <View style={styles.heroSection}>
-              <View style={styles.sparkleBubble}>
-                <Text style={styles.sparkleText}>✨</Text>
-              </View>
-
-              <Text style={styles.titleText}>
-                {t('languageGate.title')}
-              </Text>
-
-              <Text style={styles.subtitleText}>
-                {t('languageGate.subtitle')}
-              </Text>
-
-              <View style={styles.helperPill}>
-                <Text style={styles.helperPillText}>
-                  🌍 Choose your learning language
-                </Text>
-              </View>
-            </View>
-
-            {/* LANGUAGE CARDS */}
-            <View
-              style={[
-                styles.cardsContainer,
-                {
-                  width: cardWidth,
-                },
-              ]}
-            >
-              {LANGUAGE_CARDS.map((card, index) => {
-                const title = t(card.nativeTitleKey);
-                const subtitle = t(card.subtitleKey);
-
-                return (
-                  <Animated.View
-                    key={card.id}
-                    style={styles.cardAnimationWrapper}
-                  >
+                  return (
                     <BigTouchTarget
-                      onPress={() =>
-                        handleSelectLanguage(card.id)
-                      }
+                      key={card.id}
+                      onPress={() => handleSelectLanguage(card.id)}
                       accessibilityLabel={`${title}, ${subtitle}`}
-                      accessibilityHint={t(
-                        'languageGate.accessibilityHint',
-                        {
-                          language: title,
-                        }
-                      )}
+                      accessibilityHint={t('languageGate.accessibilityHint', { language: title })}
                       accessibilityRole="button"
                       style={[
-                        styles.languageCard,
+                        styles.selectionCard,
                         {
+                          width: cardWidth,
                           backgroundColor: card.bgColor,
-                          borderBottomColor: card.darkColor,
+                          borderBottomColor: card.bevelColor,
                         },
                       ]}
                     >
-                      {/* Shine */}
-                      <View
-                        style={[
-                          styles.cardShine,
-                          {
-                            backgroundColor:
-                              card.accentColor,
-                          },
-                        ]}
-                      />
-
-                      {/* Number */}
-                      <View style={styles.numberBadge}>
-                        <Text style={styles.numberBadgeText}>
-                          {index + 1}
-                        </Text>
-                      </View>
-
-                      {/* Content */}
+                      <View style={styles.innerHighlightRibbon} />
                       <View style={styles.cardContentRow}>
                         <View style={styles.iconCircle}>
-                          <Text style={styles.cardIconText}>
-                            {card.icon}
-                          </Text>
+                          <Text style={styles.cardIconText}>{card.icon}</Text>
                         </View>
 
                         <View style={styles.cardTextContainer}>
-                          <Text
-                            style={styles.cardTitleText}
-                            numberOfLines={1}
-                          >
-                            {title}
-                          </Text>
-
-                          <Text
-                            style={styles.cardSubtitleText}
-                            numberOfLines={2}
-                          >
-                            {subtitle}
-                          </Text>
-                        </View>
-
-                        {/* Arrow */}
-                        <View style={styles.arrowCircle}>
-                          <Text style={styles.arrowText}>
-                            →
-                          </Text>
+                          <Text style={styles.cardTitleText}>{title}</Text>
+                          <Text style={styles.cardSubtitleText}>{subtitle}</Text>
                         </View>
                       </View>
                     </BigTouchTarget>
-                  </Animated.View>
-                );
-              })}
-            </View>
+                  );
+                })}
+              </Animated.View>
+            </>
+          ) : (
+            <>
+              {/* Header Banner: Age */}
+              <View style={styles.headerSection}>
+                <BigTouchTarget
+                  onPress={() => setStep('language')}
+                  accessibilityLabel="Change Language"
+                  accessibilityRole="button"
+                  style={styles.backButton}
+                >
+                  <Text style={styles.backButtonText}>← {t('common.back')}</Text>
+                </BigTouchTarget>
 
-            {/* BOTTOM MESSAGE */}
-            <View style={styles.bottomMessage}>
-              <View style={styles.bottomEmojiBubble}>
-                <Text style={styles.bottomEmoji}>🌸</Text>
+                <Text style={styles.titleText}>{t('ageGate.title')}</Text>
+                <Text style={styles.subtitleText}>{t('ageGate.subtitle')}</Text>
               </View>
 
-              <View style={styles.bottomTextContainer}>
-                <Text style={styles.bottomTitle}>
-                  Your learning journey starts here
-                </Text>
+              {/* Age Cards */}
+              <Animated.View style={[styles.cardsContainer, animatedStyle]}>
+                {AGE_CARDS.map((card) => {
+                  const title = t(card.titleKey);
+                  const subtitle = t(card.subtitleKey);
 
-                <Text style={styles.bottomSubtitle}>
-                  Pick a language and let's grow together!
-                </Text>
-              </View>
-            </View>
-          </Animated.View>
+                  return (
+                    <BigTouchTarget
+                      key={card.age}
+                      onPress={() => handleSelectAge(card.age)}
+                      accessibilityLabel={`${title}, ${subtitle}`}
+                      accessibilityRole="button"
+                      style={[
+                        styles.selectionCard,
+                        {
+                          width: cardWidth,
+                          backgroundColor: card.bgColor,
+                          borderBottomColor: card.bevelColor,
+                        },
+                      ]}
+                    >
+                      <View style={styles.innerHighlightRibbon} />
+                      <View style={styles.cardContentRow}>
+                        <View style={styles.iconCircle}>
+                          <Text style={styles.cardIconText}>{card.icon}</Text>
+                        </View>
+
+                        <View style={styles.cardTextContainer}>
+                          <Text style={styles.cardTitleText}>{title}</Text>
+                          <Text style={styles.cardSubtitleText}>{subtitle}</Text>
+                        </View>
+                      </View>
+                    </BigTouchTarget>
+                  );
+                })}
+              </Animated.View>
+            </>
+          )}
         </ScrollView>
       </SafeAreaView>
     </View>
@@ -324,362 +282,133 @@ export const LanguageGateScreen: React.FC = React.memo(() => {
 LanguageGateScreen.displayName = 'LanguageGateScreen';
 
 const styles = StyleSheet.create({
-  outerContainer: {
+  webOuterContainer: {
     flex: 1,
-    backgroundColor: '#DDF7F7',
-    alignItems: 'center',
+    backgroundColor: '#1B2B5A',
     justifyContent: 'center',
+    alignItems: 'center',
   },
-
   safeArea: {
     flex: 1,
     width: '100%',
     maxWidth: 480,
     maxHeight: 920,
-    backgroundColor: 'transparent',
+    backgroundColor: '#1B2B5A',
   },
-
   scrollView: {
     flex: 1,
     zIndex: 10,
   },
-
   scrollContent: {
     paddingHorizontal: 16,
-    paddingTop: 18,
-    paddingBottom: 32,
+    paddingTop: 36,
+    paddingBottom: 40,
     alignItems: 'center',
   },
-
-  contentContainer: {
+  headerSection: {
+    alignItems: 'center',
+    marginBottom: 28,
     width: '100%',
-    alignItems: 'center',
   },
-
-  /* BRAND */
-
-  brandRow: {
+  backButton: {
     alignSelf: 'flex-start',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 20,
+    paddingHorizontal: 14,
     paddingVertical: 6,
-    paddingRight: 14,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.82)',
-    borderWidth: 1.5,
-    borderColor: '#FFFFFF',
-    marginBottom: 18,
-
-    shadowColor: '#173B5E',
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
+    marginBottom: 12,
   },
-
-  brandIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
-    backgroundColor: '#FFF9EF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
-
-    shadowColor: '#173B5E',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.16,
-    shadowRadius: 6,
-    elevation: 5,
-  },
-
-  brandIconText: {
-    fontSize: 25,
-  },
-
-  brandName: {
+  backButtonText: {
     fontFamily: Typography.fonts.bold,
-    fontSize: 20,
-    color: '#173B5E',
-    letterSpacing: 0.3,
+    fontSize: 14,
+    color: '#FFFFFF',
   },
-
-  brandTagline: {
-    fontFamily: Typography.fonts.medium,
-    fontSize: 11,
-    color: '#527087',
-    marginTop: 1,
-  },
-
-  /* HERO */
-
-  heroSection: {
-    width: '100%',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-
-  sparkleBubble: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
-    backgroundColor: '#FFF4C7',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 10,
-    borderWidth: 3,
-    borderColor: '#FFFFFF',
-
-    shadowColor: '#173B5E',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 5,
-  },
-
-  sparkleText: {
-    fontSize: 28,
-  },
-
   titleText: {
     fontFamily: Typography.fonts.bold,
-    fontSize: 29,
-    lineHeight: 35,
-    color: '#173B5E',
+    fontSize: 26,
+    color: '#FFFFFF',
     textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
-
   subtitleText: {
     fontFamily: Typography.fonts.medium,
-    fontSize: 15,
-    lineHeight: 21,
-    color: '#42657E',
+    fontSize: 16,
+    color: '#E2E8F0',
     textAlign: 'center',
     marginTop: 6,
     paddingHorizontal: 16,
   },
-
-  helperPill: {
-    marginTop: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.68)',
-    borderWidth: 1.5,
-    borderColor: '#FFFFFF',
-
-    shadowColor: '#173B5E',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-
-  helperPillText: {
-    fontFamily: Typography.fonts.bold,
-    fontSize: 11,
-    color: '#365A73',
-  },
-
-  /* CARDS */
-
   cardsContainer: {
+    width: '100%',
     alignItems: 'center',
-    gap: 15,
+    gap: 18,
   },
-
-  cardAnimationWrapper: {
-    width: '100%',
-  },
-
-  languageCard: {
-    width: '100%',
-    minHeight: 112,
-    borderRadius: 25,
-    borderWidth: 3,
+  selectionCard: {
+    height: 110,
+    minHeight: 84,
+    borderRadius: 26,
+    borderWidth: 4,
     borderColor: '#FFFFFF',
     borderBottomWidth: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: 18,
     justifyContent: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 8,
+    position: 'relative',
     overflow: 'hidden',
-
-    shadowColor: '#173B5E',
-    shadowOffset: {
-      width: 0,
-      height: 7,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 9,
-    elevation: 7,
   },
-
-  cardShine: {
+  innerHighlightRibbon: {
     position: 'absolute',
-    top: 4,
-    left: 10,
-    right: 10,
-    height: 9,
-    borderRadius: 8,
-    opacity: 0.65,
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '40%',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderTopLeftRadius: 22,
+    borderTopRightRadius: 22,
   },
-
-  numberBadge: {
-    position: 'absolute',
-    top: 15,
-    right: 14,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.28)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  numberBadgeText: {
-    fontFamily: Typography.fonts.bold,
-    fontSize: 11,
-    color: '#FFFFFF',
-  },
-
   cardContentRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingRight: 24,
+    gap: 16,
   },
-
   iconCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#FFFDF8',
+    width: 62,
+    height: 62,
+    borderRadius: 31,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 14,
-
-    shadowColor: '#173B5E',
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
-    shadowOpacity: 0.14,
-    shadowRadius: 5,
-    elevation: 4,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
-
   cardIconText: {
-    fontSize: 31,
+    fontSize: 32,
   },
-
   cardTextContainer: {
     flex: 1,
-  },
-
-  cardTitleText: {
-    fontFamily: Typography.fonts.bold,
-    fontSize: 23,
-    lineHeight: 28,
-    color: '#FFFFFF',
-
-    textShadowColor: 'rgba(23,59,94,0.22)',
-    textShadowOffset: {
-      width: 1,
-      height: 1,
-    },
-    textShadowRadius: 2,
-  },
-
-  cardSubtitleText: {
-    fontFamily: Typography.fonts.medium,
-    fontSize: 13,
-    lineHeight: 18,
-    color: 'rgba(255,255,255,0.96)',
-    marginTop: 2,
-  },
-
-  arrowCircle: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: 'rgba(255,255,255,0.22)',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.8)',
     justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 7,
   },
-
-  arrowText: {
+  cardTitleText: {
     fontFamily: Typography.fonts.bold,
     fontSize: 22,
     color: '#FFFFFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
-
-  /* BOTTOM MESSAGE */
-
-  bottomMessage: {
-    width: '100%',
-    marginTop: 20,
-    paddingHorizontal: 15,
-    paddingVertical: 13,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.72)',
-    borderWidth: 1.5,
-    borderColor: '#FFFFFF',
-    flexDirection: 'row',
-    alignItems: 'center',
-
-    shadowColor: '#173B5E',
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
-  },
-
-  bottomEmojiBubble: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: '#FFF4C7',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
-  },
-
-  bottomEmoji: {
-    fontSize: 21,
-  },
-
-  bottomTextContainer: {
-    flex: 1,
-  },
-
-  bottomTitle: {
-    fontFamily: Typography.fonts.bold,
-    fontSize: 12,
-    color: '#173B5E',
-  },
-
-  bottomSubtitle: {
+  cardSubtitleText: {
     fontFamily: Typography.fonts.medium,
-    fontSize: 11,
-    color: '#527087',
-    marginTop: 2,
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.9)',
+    marginTop: 3,
   },
 });

@@ -1,6 +1,8 @@
 /**
- * Purpose: First-launch Language Gate Screen — Presents language options (English / हिन्दी / मराठी)
- *          using child-friendly cards, mascot companion, and WCAG AA accessible 84dp targets.
+ * Purpose: First-launch Onboarding Screen — 2-step onboarding:
+ *          Step 1: Choose Learning Language (English / हिन्दी / मराठी)
+ *          Step 2: Choose Age (Age 5 / Age 6)
+ *          Child-friendly cards, mascot companion, and WCAG AA accessible 84dp targets.
  * Module: Screens
  * Folder: frontend/src/screens
  */
@@ -28,10 +30,9 @@ import Animated, {
 
 import { BigTouchTarget } from '../components/BigTouchTarget';
 import { CartoonBackground } from '../components/CartoonBackground';
-import { MascotCharacter } from '../components/MascotCharacter';
 import { Colors } from '../theme/colors';
 import { Typography } from '../theme/typography';
-import { AppLanguage, useAppLanguageStore } from '../state/appLanguageStore';
+import { AppLanguage, AppAge, useAppLanguageStore } from '../state/appLanguageStore';
 import { RootStackParamList } from '../types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'LanguageGate'>;
@@ -72,11 +73,44 @@ const LANGUAGE_CARDS: readonly LanguageCardOption[] = [
   },
 ] as const;
 
+interface AgeCardOption {
+  age: AppAge;
+  titleKey: string;
+  subtitleKey: string;
+  icon: string;
+  bgColor: string;
+  bevelColor: string;
+}
+
+const AGE_CARDS: readonly AgeCardOption[] = [
+  {
+    age: 5,
+    titleKey: 'ageGate.age5Title',
+    subtitleKey: 'ageGate.age5Desc',
+    icon: '⭐',
+    bgColor: '#EC4899',
+    bevelColor: '#BE185D',
+  },
+  {
+    age: 6,
+    titleKey: 'ageGate.age6Title',
+    subtitleKey: 'ageGate.age6Desc',
+    icon: '🚀',
+    bgColor: '#8B5CF6',
+    bevelColor: '#6D28D9',
+  },
+] as const;
+
 export const LanguageGateScreen: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const navigation = useNavigation<NavigationProp>();
   const { width: screenWidth } = useWindowDimensions();
   const setSelectedLanguage = useAppLanguageStore((s) => s.setSelectedLanguage);
+  const setSelectedAge = useAppLanguageStore((s) => s.setSelectedAge);
+  const currentLanguage = useAppLanguageStore((s) => s.selectedLanguage);
+
+  const [step, setStep] = useState<'language' | 'age'>('language');
+  const [chosenLang, setChosenLang] = useState<AppLanguage>(currentLanguage || 'en');
 
   const [reduceMotion, setReduceMotion] = useState(false);
   const cardScale = useSharedValue(0.92);
@@ -99,7 +133,7 @@ export const LanguageGateScreen: React.FC = React.memo(() => {
     return () => {
       isMounted = false;
     };
-  }, [cardOpacity, cardScale, reduceMotion]);
+  }, [cardOpacity, cardScale, reduceMotion, step]);
 
   const animatedStyle = useAnimatedStyle(() => {
     if (reduceMotion) return { opacity: 1, transform: [{ scale: 1 }] };
@@ -110,7 +144,13 @@ export const LanguageGateScreen: React.FC = React.memo(() => {
   });
 
   const handleSelectLanguage = async (lang: AppLanguage) => {
+    setChosenLang(lang);
     await setSelectedLanguage(lang);
+    setStep('age');
+  };
+
+  const handleSelectAge = async (age: AppAge) => {
+    await setSelectedAge(age);
     navigation.reset({
       index: 0,
       routes: [{ name: 'GameCatalog' }],
@@ -132,49 +172,107 @@ export const LanguageGateScreen: React.FC = React.memo(() => {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Header Banner */}
-          <View style={styles.headerSection}>
-            <Text style={styles.titleText}>{t('languageGate.title')}</Text>
-            <Text style={styles.subtitleText}>{t('languageGate.subtitle')}</Text>
-          </View>
+          {step === 'language' ? (
+            <>
+              {/* Header Banner: Language */}
+              <View style={styles.headerSection}>
+                <Text style={styles.titleText}>{t('languageGate.title')}</Text>
+                <Text style={styles.subtitleText}>{t('languageGate.subtitle')}</Text>
+              </View>
 
-          {/* Language Cards */}
-          <Animated.View style={[styles.cardsContainer, animatedStyle]}>
-            {LANGUAGE_CARDS.map((card) => {
-              const title = t(card.nativeTitleKey);
-              const subtitle = t(card.subtitleKey);
+              {/* Language Cards */}
+              <Animated.View style={[styles.cardsContainer, animatedStyle]}>
+                {LANGUAGE_CARDS.map((card) => {
+                  const title = t(card.nativeTitleKey);
+                  const subtitle = t(card.subtitleKey);
 
-              return (
+                  return (
+                    <BigTouchTarget
+                      key={card.id}
+                      onPress={() => handleSelectLanguage(card.id)}
+                      accessibilityLabel={`${title}, ${subtitle}`}
+                      accessibilityHint={t('languageGate.accessibilityHint', { language: title })}
+                      accessibilityRole="button"
+                      style={[
+                        styles.selectionCard,
+                        {
+                          width: cardWidth,
+                          backgroundColor: card.bgColor,
+                          borderBottomColor: card.bevelColor,
+                        },
+                      ]}
+                    >
+                      <View style={styles.innerHighlightRibbon} />
+                      <View style={styles.cardContentRow}>
+                        <View style={styles.iconCircle}>
+                          <Text style={styles.cardIconText}>{card.icon}</Text>
+                        </View>
+
+                        <View style={styles.cardTextContainer}>
+                          <Text style={styles.cardTitleText}>{title}</Text>
+                          <Text style={styles.cardSubtitleText}>{subtitle}</Text>
+                        </View>
+                      </View>
+                    </BigTouchTarget>
+                  );
+                })}
+              </Animated.View>
+            </>
+          ) : (
+            <>
+              {/* Header Banner: Age */}
+              <View style={styles.headerSection}>
                 <BigTouchTarget
-                  key={card.id}
-                  onPress={() => handleSelectLanguage(card.id)}
-                  accessibilityLabel={`${title}, ${subtitle}`}
-                  accessibilityHint={t('languageGate.accessibilityHint', { language: title })}
+                  onPress={() => setStep('language')}
+                  accessibilityLabel="Change Language"
                   accessibilityRole="button"
-                  style={[
-                    styles.languageCard,
-                    {
-                      width: cardWidth,
-                      backgroundColor: card.bgColor,
-                      borderBottomColor: card.bevelColor,
-                    },
-                  ]}
+                  style={styles.backButton}
                 >
-                  <View style={styles.innerHighlightRibbon} />
-                  <View style={styles.cardContentRow}>
-                    <View style={styles.iconCircle}>
-                      <Text style={styles.cardIconText}>{card.icon}</Text>
-                    </View>
-
-                    <View style={styles.cardTextContainer}>
-                      <Text style={styles.cardTitleText}>{title}</Text>
-                      <Text style={styles.cardSubtitleText}>{subtitle}</Text>
-                    </View>
-                  </View>
+                  <Text style={styles.backButtonText}>← {t('common.back')}</Text>
                 </BigTouchTarget>
-              );
-            })}
-          </Animated.View>
+
+                <Text style={styles.titleText}>{t('ageGate.title')}</Text>
+                <Text style={styles.subtitleText}>{t('ageGate.subtitle')}</Text>
+              </View>
+
+              {/* Age Cards */}
+              <Animated.View style={[styles.cardsContainer, animatedStyle]}>
+                {AGE_CARDS.map((card) => {
+                  const title = t(card.titleKey);
+                  const subtitle = t(card.subtitleKey);
+
+                  return (
+                    <BigTouchTarget
+                      key={card.age}
+                      onPress={() => handleSelectAge(card.age)}
+                      accessibilityLabel={`${title}, ${subtitle}`}
+                      accessibilityRole="button"
+                      style={[
+                        styles.selectionCard,
+                        {
+                          width: cardWidth,
+                          backgroundColor: card.bgColor,
+                          borderBottomColor: card.bevelColor,
+                        },
+                      ]}
+                    >
+                      <View style={styles.innerHighlightRibbon} />
+                      <View style={styles.cardContentRow}>
+                        <View style={styles.iconCircle}>
+                          <Text style={styles.cardIconText}>{card.icon}</Text>
+                        </View>
+
+                        <View style={styles.cardTextContainer}>
+                          <Text style={styles.cardTitleText}>{title}</Text>
+                          <Text style={styles.cardSubtitleText}>{subtitle}</Text>
+                        </View>
+                      </View>
+                    </BigTouchTarget>
+                  );
+                })}
+              </Animated.View>
+            </>
+          )}
         </ScrollView>
       </SafeAreaView>
     </View>
@@ -210,15 +308,20 @@ const styles = StyleSheet.create({
   headerSection: {
     alignItems: 'center',
     marginBottom: 28,
+    width: '100%',
   },
-  mascotWrapper: {
-    width: 100,
-    height: 100,
+  backButton: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
     marginBottom: 12,
   },
-  mascot: {
-    width: 100,
-    height: 100,
+  backButtonText: {
+    fontFamily: Typography.fonts.bold,
+    fontSize: 14,
+    color: '#FFFFFF',
   },
   titleText: {
     fontFamily: Typography.fonts.bold,
@@ -242,31 +345,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 18,
   },
-  languageCard: {
+  selectionCard: {
     height: 110,
     minHeight: 84,
     borderRadius: 26,
     borderWidth: 4,
     borderColor: '#FFFFFF',
     borderBottomWidth: 8,
-    paddingHorizontal: 20,
+    paddingHorizontal: 18,
     justifyContent: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 8,
     position: 'relative',
     overflow: 'hidden',
-    shadowColor: Colors.neutral.shadow,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 6,
   },
   innerHighlightRibbon: {
     position: 'absolute',
-    top: 4,
-    left: 8,
-    right: 8,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '40%',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderTopLeftRadius: 22,
+    borderTopRightRadius: 22,
   },
   cardContentRow: {
     flexDirection: 'row',
@@ -274,14 +378,14 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   iconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#FFFFFF',
+    width: 62,
+    height: 62,
+    borderRadius: 31,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: Colors.neutral.shadow,
-    shadowOffset: { width: 0, height: 3 },
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 4,
     elevation: 3,
@@ -291,19 +395,20 @@ const styles = StyleSheet.create({
   },
   cardTextContainer: {
     flex: 1,
+    justifyContent: 'center',
   },
   cardTitleText: {
     fontFamily: Typography.fonts.bold,
-    fontSize: 24,
+    fontSize: 22,
     color: '#FFFFFF',
-    textShadowColor: 'rgba(0, 0, 0, 0.2)',
-    textShadowOffset: { width: 1, height: 1 },
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
   cardSubtitleText: {
     fontFamily: Typography.fonts.medium,
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.95)',
-    marginTop: 2,
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.9)',
+    marginTop: 3,
   },
 });

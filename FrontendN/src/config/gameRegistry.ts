@@ -1,8 +1,11 @@
 /**
  * Purpose: Central Game Registry — Single source of truth for all games in the application.
+ *          Contains multilingual and age-based metadata for catalog filtering.
  * Module: Config
  * Folder: frontend/src/config
  */
+
+import { AppLanguage, AppAge } from '../state/appLanguageStore';
 
 export interface GameRegistryEntry {
   id: string;
@@ -14,7 +17,10 @@ export interface GameRegistryEntry {
   bevelColor: string;
   badgeTag: string;
   navigatorRoute: string;
-  supportedLanguages: ('en' | 'hi' | 'mr')[];
+  supportedLanguages: AppLanguage[];
+  minimumAge: AppAge;
+  maximumAge: AppAge;
+  ageGroups: readonly AppAge[];
 }
 
 export const GAME_REGISTRY: readonly GameRegistryEntry[] = [
@@ -29,6 +35,9 @@ export const GAME_REGISTRY: readonly GameRegistryEntry[] = [
     badgeTag: 'A - Z',
     navigatorRoute: 'AlphabetMatchingModeSelection',
     supportedLanguages: ['en', 'hi', 'mr'],
+    minimumAge: 5,
+    maximumAge: 5,
+    ageGroups: [5],
   },
   {
     id: 'capital_small_match',
@@ -41,6 +50,9 @@ export const GAME_REGISTRY: readonly GameRegistryEntry[] = [
     badgeTag: 'Aa - Zz',
     navigatorRoute: 'CapitalSmallMatchIntro',
     supportedLanguages: ['en'],
+    minimumAge: 5,
+    maximumAge: 5,
+    ageGroups: [5],
   },
   {
     id: 'vowel_matra_match',
@@ -53,5 +65,23 @@ export const GAME_REGISTRY: readonly GameRegistryEntry[] = [
     badgeTag: 'अ - क',
     navigatorRoute: 'VowelMatraMatchIntro',
     supportedLanguages: ['hi', 'mr'],
+    minimumAge: 5,
+    maximumAge: 5,
+    ageGroups: [5],
+  },
+  {
+    id: 'speech_word_challenge',
+    titleKey: 'games.speechWordChallenge.title',
+    descriptionKey: 'games.speechWordChallenge.description',
+    iconAsset: '🎙️',
+    bgColor: '#EC4899',
+    gradientColors: ['#EC4899', '#DB2777', '#BE185D'],
+    bevelColor: '#9D174D',
+    badgeTag: '🎙️ Speak',
+    navigatorRoute: 'SpeechWordChallengeIntro',
+    supportedLanguages: ['en', 'hi', 'mr'],
+    minimumAge: 5,
+    maximumAge: 6,
+    ageGroups: [5, 6],
   },
 ] as const;
