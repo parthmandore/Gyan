@@ -20,7 +20,7 @@ Provides:
 """
 
 import torch
-
+from pathlib import Path
 from ai.configs.tts_config import TTSConfig
 from ai.models.multilingual_tts import MultilingualTTS
 from ai.preprocessing.audio_features import MelSpectrogramExtractor
@@ -153,7 +153,7 @@ def create_datasets(
 
     val_csv = (
         config.data.splits_dir
-        / "val.csv"
+        / "validation.csv"
     )
 
     if not train_csv.exists():
@@ -263,6 +263,11 @@ def main():
     # ========================================================
 
     config = TTSConfig()
+    # Resume from the existing demo training checkpoint
+    config.training.checkpoint_dir = Path(
+    "D:/Gyan/checkpoints/demo"
+     )
+   
 
     print("Configuration loaded.")
 

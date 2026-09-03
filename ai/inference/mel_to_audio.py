@@ -90,7 +90,7 @@ class MelToAudio:
 
         self.griffin_lim = T.GriffinLim(
             n_fft=self.config.n_fft,
-            n_iter=32,
+            n_iter=64,
             win_length=self.config.win_length,
             hop_length=self.config.hop_length,
             power=self.config.mel_power,
