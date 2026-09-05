@@ -23,5 +23,5 @@ const getDefaultSTTUrl = (): string => {
 export const API_CONFIG = {
   STT_BASE_URL: getDefaultSTTUrl(),
   MAIN_API_URL: (process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000').replace(/\/+$/, ''),
-  TIMEOUT_MS: 15000,
+  TIMEOUT_MS: 25000,
 } as const;

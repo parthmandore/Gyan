@@ -11,8 +11,8 @@ from backend.utils.audio_analysis import analyze_audio
 
 router = APIRouter()
 
-# Configurable model size (default to 'small' for rich multilingual phonetic accuracy)
-MODEL_NAME = os.environ.get("WHISPER_MODEL", "small")
+# Configurable model size (default to 'medium' for rich multilingual phonetic accuracy)
+MODEL_NAME = os.environ.get("WHISPER_MODEL", "medium")
 # Maximum allowed audio upload size: 10 MB
 MAX_AUDIO_SIZE_BYTES = 10 * 1024 * 1024
 
