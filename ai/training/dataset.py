@@ -73,6 +73,10 @@ class MultilingualTTSDataset(Dataset):
 
         audio_file = str(row["audio_file"]).strip()
         audio_path = self.preprocessed_dir / lang_dir_name / "wavs" / audio_file
+        if not audio_path.exists():
+            aug_path = self.config.data.data_root / "gan_augmented_full" / lang_dir_name / "wavs" / audio_file
+            if aug_path.exists():
+                audio_path = aug_path
 
         # 1. Lazy Audio Load & Sample Rate Check
         waveform, sr = load_audio(audio_path, target_sr=self.config.audio.sample_rate)
