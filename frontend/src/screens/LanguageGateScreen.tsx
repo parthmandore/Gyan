@@ -19,7 +19,7 @@ import {
   AccessibilityInfo,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Animated, {
   useSharedValue,
@@ -32,7 +32,7 @@ import { BigTouchTarget } from '../components/BigTouchTarget';
 import { CartoonBackground } from '../components/CartoonBackground';
 import { Colors } from '../theme/colors';
 import { Typography } from '../theme/typography';
-import { AppLanguage, LearningLanguage, AppAge, useAppLanguageStore } from '../state/appLanguageStore';
+import { AppLanguage, AppAge, useAppLanguageStore } from '../state/appLanguageStore';
 import { RootStackParamList } from '../types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'LanguageGate'>;
@@ -44,8 +44,6 @@ interface LanguageCardOption {
   icon: string;
   bgColor: string;
   bevelColor: string;
-  titleColor: string;
-  subtitleColor: string;
 }
 
 const LANGUAGE_CARDS: readonly LanguageCardOption[] = [
@@ -54,10 +52,8 @@ const LANGUAGE_CARDS: readonly LanguageCardOption[] = [
     nativeTitleKey: 'languageGate.english',
     subtitleKey: 'languageGate.englishSub',
     icon: '🔤',
-    bgColor: '#2563EB',
+    bgColor: '#3B82F6',
     bevelColor: '#1D4ED8',
-    titleColor: '#FFFFFF',
-    subtitleColor: '#EFF6FF',
   },
   {
     id: 'hi',
@@ -65,9 +61,7 @@ const LANGUAGE_CARDS: readonly LanguageCardOption[] = [
     subtitleKey: 'languageGate.hindiSub',
     icon: '🗣️',
     bgColor: '#F59E0B',
-    bevelColor: '#B45309',
-    titleColor: '#451A03',
-    subtitleColor: '#78350F',
+    bevelColor: '#D97706',
   },
   {
     id: 'mr',
@@ -76,8 +70,6 @@ const LANGUAGE_CARDS: readonly LanguageCardOption[] = [
     icon: '📚',
     bgColor: '#10B981',
     bevelColor: '#047857',
-    titleColor: '#022C22',
-    subtitleColor: '#064E3B',
   },
 ] as const;
 
@@ -88,8 +80,6 @@ interface AgeCardOption {
   icon: string;
   bgColor: string;
   bevelColor: string;
-  titleColor: string;
-  subtitleColor: string;
 }
 
 const AGE_CARDS: readonly AgeCardOption[] = [
@@ -100,8 +90,6 @@ const AGE_CARDS: readonly AgeCardOption[] = [
     icon: '⭐',
     bgColor: '#EC4899',
     bevelColor: '#BE185D',
-    titleColor: '#500724',
-    subtitleColor: '#831843',
   },
   {
     age: 6,
@@ -110,27 +98,19 @@ const AGE_CARDS: readonly AgeCardOption[] = [
     icon: '🚀',
     bgColor: '#8B5CF6',
     bevelColor: '#6D28D9',
-    titleColor: '#2E1065',
-    subtitleColor: '#4C1D95',
   },
 ] as const;
 
 export const LanguageGateScreen: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const navigation = useNavigation<NavigationProp>();
-  const route = useRoute<RouteProp<RootStackParamList, 'LanguageGate'>>();
   const { width: screenWidth } = useWindowDimensions();
-  const setMotherTongue = useAppLanguageStore((s) => s.setMotherTongue);
-  const setLearningLanguage = useAppLanguageStore((s) => s.setLearningLanguage);
-  const setCompleteProfile = useAppLanguageStore((s) => s.setCompleteProfile);
-  const currentMother = useAppLanguageStore((s) => s.motherTongue) || 'en';
-  const currentLearning = useAppLanguageStore((s) => s.learningLanguage) || 'en';
+  const setSelectedLanguage = useAppLanguageStore((s) => s.setSelectedLanguage);
+  const setSelectedAge = useAppLanguageStore((s) => s.setSelectedAge);
+  const currentLanguage = useAppLanguageStore((s) => s.selectedLanguage);
 
-  const [step, setStep] = useState<'motherTongue' | 'learningLanguage' | 'age'>(
-    route.params?.initialStep || 'motherTongue'
-  );
-  const [chosenMother, setChosenMother] = useState<AppLanguage>(currentMother);
-  const [chosenLearning, setChosenLearning] = useState<LearningLanguage>(currentLearning);
+  const [step, setStep] = useState<'language' | 'age'>('language');
+  const [chosenLang, setChosenLang] = useState<AppLanguage>(currentLanguage || 'en');
 
   const [reduceMotion, setReduceMotion] = useState(false);
   const cardScale = useSharedValue(0.92);
@@ -163,20 +143,14 @@ export const LanguageGateScreen: React.FC = React.memo(() => {
     };
   });
 
-  const handleSelectMotherTongue = async (lang: AppLanguage) => {
-    setChosenMother(lang);
-    await setMotherTongue(lang);
-    setStep('learningLanguage');
-  };
-
-  const handleSelectLearningLanguage = async (lang: LearningLanguage) => {
-    setChosenLearning(lang);
-    await setLearningLanguage(lang);
+  const handleSelectLanguage = async (lang: AppLanguage) => {
+    setChosenLang(lang);
+    await setSelectedLanguage(lang);
     setStep('age');
   };
 
   const handleSelectAge = async (age: AppAge) => {
-    await setCompleteProfile(chosenMother, chosenLearning, age);
+    await setSelectedAge(age);
     navigation.reset({
       index: 0,
       routes: [{ name: 'GameCatalog' }],
@@ -198,18 +172,15 @@ export const LanguageGateScreen: React.FC = React.memo(() => {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {step === 'motherTongue' ? (
+          {step === 'language' ? (
             <>
-              {/* Step 1: Mother Tongue / App Language */}
+              {/* Header Banner: Language */}
               <View style={styles.headerSection}>
-                <Text style={styles.titleText}>
-                  {t('languageGate.motherTongueTitle', 'Which language do you speak at home?')}
-                </Text>
-                <Text style={styles.subtitleText}>
-                  {t('languageGate.motherTongueSubtitle', 'The app will talk to you in this language!')}
-                </Text>
+                <Text style={styles.titleText}>{t('languageGate.title')}</Text>
+                <Text style={styles.subtitleText}>{t('languageGate.subtitle')}</Text>
               </View>
 
+              {/* Language Cards */}
               <Animated.View style={[styles.cardsContainer, animatedStyle]}>
                 {LANGUAGE_CARDS.map((card) => {
                   const title = t(card.nativeTitleKey);
@@ -218,8 +189,9 @@ export const LanguageGateScreen: React.FC = React.memo(() => {
                   return (
                     <BigTouchTarget
                       key={card.id}
-                      onPress={() => handleSelectMotherTongue(card.id)}
+                      onPress={() => handleSelectLanguage(card.id)}
                       accessibilityLabel={`${title}, ${subtitle}`}
+                      accessibilityHint={t('languageGate.accessibilityHint', { language: title })}
                       accessibilityRole="button"
                       style={[
                         styles.selectionCard,
@@ -237,65 +209,8 @@ export const LanguageGateScreen: React.FC = React.memo(() => {
                         </View>
 
                         <View style={styles.cardTextContainer}>
-                          <Text style={[styles.cardTitleText, { color: card.titleColor }]}>{title}</Text>
-                          <Text style={[styles.cardSubtitleText, { color: card.subtitleColor }]}>{subtitle}</Text>
-                        </View>
-                      </View>
-                    </BigTouchTarget>
-                  );
-                })}
-              </Animated.View>
-            </>
-          ) : step === 'learningLanguage' ? (
-            <>
-              {/* Step 2: Language to Learn */}
-              <View style={styles.headerSection}>
-                <BigTouchTarget
-                  onPress={() => setStep('motherTongue')}
-                  accessibilityLabel="Back to Mother Tongue"
-                  accessibilityRole="button"
-                  style={styles.backButton}
-                >
-                  <Text style={styles.backButtonText}>← {t('common.back')}</Text>
-                </BigTouchTarget>
-
-                <Text style={styles.titleText}>
-                  {t('languageGate.learningLanguageTitle', 'Which language do you want to learn?')}
-                </Text>
-                <Text style={styles.subtitleText}>
-                  {t('languageGate.learningLanguageSubtitle', 'Choose the language to practice speaking!')}
-                </Text>
-              </View>
-
-              <Animated.View style={[styles.cardsContainer, animatedStyle]}>
-                {LANGUAGE_CARDS.map((card) => {
-                  const title = t(card.nativeTitleKey);
-                  const subtitle = t(card.subtitleKey);
-
-                  return (
-                    <BigTouchTarget
-                      key={card.id}
-                      onPress={() => handleSelectLearningLanguage(card.id)}
-                      accessibilityLabel={`${title}, ${subtitle}`}
-                      accessibilityRole="button"
-                      style={[
-                        styles.selectionCard,
-                        {
-                          width: cardWidth,
-                          backgroundColor: card.bgColor,
-                          borderBottomColor: card.bevelColor,
-                        },
-                      ]}
-                    >
-                      <View style={styles.innerHighlightRibbon} />
-                      <View style={styles.cardContentRow}>
-                        <View style={styles.iconCircle}>
-                          <Text style={styles.cardIconText}>{card.icon}</Text>
-                        </View>
-
-                        <View style={styles.cardTextContainer}>
-                          <Text style={[styles.cardTitleText, { color: card.titleColor }]}>{title}</Text>
-                          <Text style={[styles.cardSubtitleText, { color: card.subtitleColor }]}>{subtitle}</Text>
+                          <Text style={styles.cardTitleText}>{title}</Text>
+                          <Text style={styles.cardSubtitleText}>{subtitle}</Text>
                         </View>
                       </View>
                     </BigTouchTarget>
@@ -305,11 +220,11 @@ export const LanguageGateScreen: React.FC = React.memo(() => {
             </>
           ) : (
             <>
-              {/* Step 3: Choose Age */}
+              {/* Header Banner: Age */}
               <View style={styles.headerSection}>
                 <BigTouchTarget
-                  onPress={() => setStep('learningLanguage')}
-                  accessibilityLabel="Back to Learning Language"
+                  onPress={() => setStep('language')}
+                  accessibilityLabel="Change Language"
                   accessibilityRole="button"
                   style={styles.backButton}
                 >
@@ -320,6 +235,7 @@ export const LanguageGateScreen: React.FC = React.memo(() => {
                 <Text style={styles.subtitleText}>{t('ageGate.subtitle')}</Text>
               </View>
 
+              {/* Age Cards */}
               <Animated.View style={[styles.cardsContainer, animatedStyle]}>
                 {AGE_CARDS.map((card) => {
                   const title = t(card.titleKey);
@@ -347,8 +263,8 @@ export const LanguageGateScreen: React.FC = React.memo(() => {
                         </View>
 
                         <View style={styles.cardTextContainer}>
-                          <Text style={[styles.cardTitleText, { color: card.titleColor }]}>{title}</Text>
-                          <Text style={[styles.cardSubtitleText, { color: card.subtitleColor }]}>{subtitle}</Text>
+                          <Text style={styles.cardTitleText}>{title}</Text>
+                          <Text style={styles.cardSubtitleText}>{subtitle}</Text>
                         </View>
                       </View>
                     </BigTouchTarget>
@@ -484,10 +400,15 @@ const styles = StyleSheet.create({
   cardTitleText: {
     fontFamily: Typography.fonts.bold,
     fontSize: 22,
+    color: '#FFFFFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   cardSubtitleText: {
     fontFamily: Typography.fonts.medium,
     fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.9)',
     marginTop: 3,
   },
 });

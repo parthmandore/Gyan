@@ -40,39 +40,13 @@ let praiseIndex = 0;
 /**
  * Speaks a rotating language-aware praise phrase aloud.
  */
-export const speakPraise = (overrideLang?: 'en' | 'hi' | 'mr' | string): void => {
+export const speakPraise = (): void => {
   let lang = 'english';
-  let speechCode: 'en' | 'hi' | 'mr' | undefined = undefined;
-
-  if (overrideLang) {
-    if (overrideLang === 'hi' || overrideLang === 'hindi') {
-      lang = 'hindi';
-      speechCode = 'hi';
-    } else if (overrideLang === 'mr' || overrideLang === 'marathi') {
-      lang = 'marathi';
-      speechCode = 'mr';
-    } else {
-      lang = 'english';
-      speechCode = 'en';
-    }
-  } else {
-    try {
-      const { useAppLanguageStore } = require('../state/appLanguageStore');
-      const motherTongue = useAppLanguageStore.getState().motherTongue || 'en';
-      if (motherTongue === 'hi') {
-        lang = 'hindi';
-        speechCode = 'hi';
-      } else if (motherTongue === 'mr') {
-        lang = 'marathi';
-        speechCode = 'mr';
-      } else {
-        lang = 'english';
-        speechCode = 'en';
-      }
-    } catch {
-      lang = 'english';
-      speechCode = 'en';
-    }
+  try {
+    const { LanguageManager } = require('../language/LanguageManager');
+    lang = LanguageManager.getLanguage();
+  } catch {
+    lang = 'english';
   }
 
   const phrases = PRAISE_PHRASES_MAP[lang] || PRAISE_PHRASES_MAP.english;
@@ -80,7 +54,7 @@ export const speakPraise = (overrideLang?: 'en' | 'hi' | 'mr' | string): void =>
   praiseIndex++;
 
   try {
-    speakPhrase(phrase, speechCode ? { language: speechCode } : undefined);
+    speakPhrase(phrase);
   } catch (error) {
     console.warn('[praiseService] praise audio failed:', error);
   }

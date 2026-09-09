@@ -6,19 +6,7 @@
     "back": "मागे",
     "next": "आगे",
     "retry": "पुन्हा प्रयत्न करा",
-    "close": "बंद करा",
-    "tryCount": "(प्रयत्न {{count}})",
-    "gotIt": "समजले!",
-    "homeLanguage": "घरची भाषा",
-    "learningLanguage": "शिकायची भाषा",
-    "play": "खेळा ▶",
-    "accuracy": "अचूकता",
-    "correct": "बरोबर जोड्या",
-    "xpEarned": "मिळवलेले XP",
-    "playAgain": "पुन्हा खेळा",
-    "catalog": "गेम्स हब",
-    "practice": "सरावाची गरज",
-    "noAttemptsYet": "अद्याप कोणतेही रेकॉर्ड नाही."
+    "close": "बंद करा"
   },
   "navigation": {
     "home": "मुख्य पृष्ठ",
@@ -27,17 +15,13 @@
   "languageGate": {
     "title": "शिकण्याची भाषा निवडा",
     "subtitle": "तुम्हाला आज जी भाषा शिकायची आहे ती निवडा!",
-    "motherTongueTitle": "तुम्ही घरी कोणती भाषा बोलता?",
-    "motherTongueSubtitle": "अॅप तुमच्याशी याच भाषेत बोलेल!",
-    "learningLanguageTitle": "तुम्हाला कोणती भाषा शिकायची आहे?",
-    "learningLanguageSubtitle": "जी भाषा तुम्हाला शिकायची आणि बोलायची आहे ती निवडा!",
     "english": "English",
-    "englishSub": "इंग्रजी मुळाक्षरे आणि शब्द शिका",
+    "englishSub": "Learn English letters & numbers",
     "hindi": "हिन्दी",
-    "hindiSub": "सीखें हिन्दी वर्णमाला और शब्द",
+    "hindiSub": "सीखें हिन्दी वर्णमाला और संख्याएं",
     "marathi": "मराठी",
-    "marathiSub": "शिका मराठी मुळाक्षरे आणि शब्द",
-    "accessibilityHint": "ॲपची भाषा {{language}} वर सेट करते"
+    "marathiSub": "शिका मराठी मुळाक्षरे आणि संख्या",
+    "accessibilityHint": "ॲपची शिकण्याची भाषा {{language}} वर सेट करते आणि उपलब्ध खेळ उघडते"
   },
   "ageGate": {
     "title": "तुमचे वय निवडा",
@@ -73,30 +57,9 @@
       "description": "स्वरांना त्यांच्या व्यंजन+मात्रा रूपांशी जुळवा!"
     },
     "speechWordChallenge": {
-      "title": "अक्षरे बोला",
+      "title": "शब्द उच्चार आव्हान",
       "subtitle": "माइकवर बोला!",
-      "description": "अक्षर पाहा आणि मोठ्याने बोला!"
-    },
-    "speechLetters": {
-      "title": "अक्षरे बोला",
-      "subtitle": "माइकवर बोला!",
-      "description": "अक्षर पाहा आणि मोठ्याने बोला!"
-    },
-    "speechAnimals": {
-      "title": "प्राण्यांची नावे",
-      "description": "हा कोणता प्राणी आहे? याचे नाव बोला!"
-    },
-    "speechFruits": {
-      "title": "फळे आणि भाज्या",
-      "description": "हे कोणते फळ किंवा भाजी आहे? याचे नाव बोला!"
-    },
-    "speechEveryday": {
-      "title": "आपल्या सभोवतालच्या वस्तू",
-      "description": "हे काय आहे? याचे नाव बोला!"
-    },
-    "languagePairMatch": {
-      "title": "भाषा जोडी जुळवा",
-      "description": "आपल्या भाषेतील शब्द पाहा आणि त्याच्या अनुवादाशी जोडी जुळवा!"
+      "description": "माइकवर स्पष्टपणे अक्षरे किंवा शब्द बोला आणि उच्चार सुधारा!"
     }
   },
   "alphabetMatching": {
@@ -117,9 +80,7 @@
     "step2": "खाली दिलेल्या पर्यायांपैकी योग्य कार्डवर टॅप करा.",
     "step3": "सर्व फेऱ्या पूर्ण करून तारे आणि गुण मिळवा!",
     "howToPlayBtn": "❓ कसे खेळायचे",
-    "gotItBtn": "समजले! ▶",
-    "teachingLetter": "हे अक्षर {{letter}} आहे",
-    "teachingNumber": "हा अंक {{letter}} आहे"
+    "gotItBtn": "समजले! ▶"
   },
   "capitalSmallMatch": {
     "gameTitle": "मोठी व लहान अक्षरे जुळवणी",
@@ -142,9 +103,7 @@
     "wrongMatchLeftLabel": "मोठे",
     "wrongMatchRightLabel": "लहान",
     "wrongMatchGotIt": "समजले! ▶",
-    "wrongMatchSpeak": "हे आहे {{left}} आणि {{right}}",
-    "spokenCapital": "मोठे अक्षर {{letter}}",
-    "spokenSmall": "लहान अक्षर {{letter}}"
+    "wrongMatchSpeak": "हे आहे {{left}} आणि {{right}}"
   },
   "vowelMatraMatch": {
     "gameTitle": "स्वर आणि मात्रा जुळवणी",
@@ -218,7 +177,6 @@
     "leaveGameDesc": "तुम्हाला खेळ सोडायचा आहे का? तुमची सद्य प्रगती अंतिम केली जाईल.",
     "keepPlaying": "खेळत राहा",
     "exitGame": "खेळ सोडा",
-    "quitGame": "खेळ सोडा",
     "listenForLetter": "अक्षर ऐका!",
     "listenForNumber": "संख्या ऐका!",
     "loadingAudio": "लोड होत आहे...",
@@ -233,12 +191,6 @@
     "finishedGame": "तुम्ही आजचा खेळ पूर्ण केला!"
   },
   "speechWordChallenge": {
-    "promptAnimals": "हा कोणता प्राणी आहे? याचे नाव बोला!",
-    "promptFruits": "हे काय आहे? याचे नाव बोला!",
-    "promptNature": "हे काय आहे? याचे नाव बोला!",
-    "promptLetters": "हे अक्षर ओळखा आणि बोला.",
-    "mysteryWhatIsThis": "❓ नाव ओळखा",
-    "mysterySayLetter": "❓ अक्षर बोला",
     "sayTheWord": "शब्द बोला.",
     "sayTheLetter": "अक्षर बोला!",
     "whatIsThis": "हे काय आहे? शब्द बोला!",
@@ -271,47 +223,6 @@
     "debugExpected": "अपेक्षित: {{word}}",
     "debugHeard": "ऐकले: {{heard}}",
     "progressLabel": "{{total}} पैकी {{current}} फेऱ्या",
-    "microphoneHint": "माइक दाबा आणि मोठ्याने बोला",
-    "howToPlayTitle": "कसे खेळायचे",
-    "howToPlayLetters": "1. स्क्रीनवरील मोठे अक्षर पाहा.\n2. मायक्रोफोन बटण दाबा.\n3. अक्षर स्पष्ट आवाजात बोला!\n4. 3 तारे मिळवण्यासाठी सर्व 10 फेऱ्या पूर्ण करा! ⭐",
-    "howToPlayWords": "1. स्क्रीनवरील चित्र पाहा.\n2. शब्द ओळखा (उत्तर लपलेले आहे!).\n3. मायक्रोफोन दाबा आणि नाव मोठ्याने बोला!\n4. 3 तारे मिळवण्यासाठी सर्व 10 फेऱ्या पूर्ण करा! ⭐",
-    "startChallenge": "खेळ सुरू करा ▶",
-    "gotIt": "समजले! ▶",
-    "listenInstruction": "सूचना लक्षपूर्वक ऐका",
-    "introPromptLetters": "अक्षर पाहा आणि मोठ्याने बोला!",
-    "introPromptWords": "चित्र पाहा, शब्द ओळखा आणि मोठ्याने बोला!",
-    "sessionCompletePraise": "अभिनंदन! तुम्ही सर्व शब्द खूप छान बोललात!",
-    "feedback": {
-      "listening": "मी ऐकत आहे...",
-      "checking": "तपासत आहे...",
-      "greatJob": "खूप छान!",
-      "couldNotHear": "स्पष्ट आवाज आला नाही. पुन्हा प्रयत्न करा!",
-      "helperResting": "स्पीच हेल्पर थांबला आहे. पुन्हा टॅप करा!",
-      "almostTryAgain": "जवळपास बरोबर! पुन्हा प्रयत्न करा. 💛"
-    },
-    "micButton": {
-      "tapAndSay": "टॅप करा आणि बोला",
-      "listening": "ऐकत आहे...",
-      "checking": "तपासत आहे...",
-      "greatJob": "खूप छान!",
-      "tryAgain": "पुन्हा प्रयत्न करा"
-    }
-  },
-  "languagePairMatch": {
-    "title": "भाषा जोडी जुळवा",
-    "subtitle": "भाषेची सफर",
-    "instructions": "{{source}} मधील शब्दांची {{target}} मधील योग्य अनुवादाशी जोडी जुळवा!",
-    "instructionsText": "योग्य जोडी जुळवा!",
-    "tryAgain": "पुन्हा प्रयत्न करा!",
-    "sameLanguageTitle": "एकच भाषा निवडली आहे",
-    "sameLanguageDesc": "तुमची घरची भाषा आणि शिकायची भाषा एकच आहे. कृपया हा खेळ खेळण्यासाठी दुसरी भाषा निवडा.",
-    "switchLanguage": "दुसरी भाषा निवडा",
-    "howToPlayTitle": "खेळायचे कसे",
-    "howToPlayDesc": "१. डाव्या बाजूला आपल्या भाषेतील कार्ड दाबा.\n२. उजव्या बाजूला त्याचा योग्य अनुवाद दाबा.\n३. सर्व जोड्या जुळवून पुढील फेरीत जा!",
-    "seeReport": "जोडी अहवाल पाहा",
-    "sessionCompleteTitle": "भाषेची सफर पूर्ण झाली!",
-    "sessionCompleteDesc": "तुम्ही {{total}} पैकी {{correct}} जोड्या योग्य जुळवल्या!",
-    "sessionCompletePraise": "खूप छान! तुम्ही सर्व भाषा जोड्या जुळवल्या!",
-    "roundBreakdown": "फेरीनिहाय तपशील"
+    "microphoneHint": "माइक दाबा आणि मोठ्याने बोला"
   }
 }

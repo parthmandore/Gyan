@@ -1,8 +1,5 @@
 /**
  * Purpose: Central App Language & Age Store using Zustand & AsyncStorage persistence.
- *          Supports Universal Dual-Language Architecture:
- *          - Mother Tongue (App Language): Governs UI, tutorials, buttons, feedback, and spoken instructional cues.
- *          - Learning Language: Governs learning content, target vocabulary, STT evaluation, and target pronunciation.
  * Module: State Management
  * Folder: frontend/src/state
  */
@@ -10,12 +7,9 @@
 import { create } from 'zustand';
 
 export type AppLanguage = 'en' | 'hi' | 'mr';
-export type LearningLanguage = 'en' | 'hi' | 'mr';
 export type AppAge = 5 | 6;
 
-const MOTHER_TONGUE_STORAGE_KEY = '@gyan_mother_tongue';
-const LEARNING_LANGUAGE_STORAGE_KEY = '@gyan_learning_language';
-const LEGACY_LANGUAGE_STORAGE_KEY = '@gyan_app_language';
+const LANGUAGE_STORAGE_KEY = '@gyan_app_language';
 const AGE_STORAGE_KEY = '@gyan_app_age';
 
 const getI18n = () => {
@@ -26,154 +20,135 @@ const getI18n = () => {
   }
 };
 
-const getStorageItem = async (key: string): Promise<string | null> => {
+/**
+ * Persistence check function for initial app language retrieval.
+ */
+export const getInitialLanguage = async (): Promise<AppLanguage | null> => {
   try {
+    let stored: string | null = null;
     if (typeof window !== 'undefined' && window.localStorage) {
-      return window.localStorage.getItem(key);
-    }
-    const AsyncStorage = require('@react-native-async-storage/async-storage').default;
-    return await AsyncStorage.getItem(key);
-  } catch (err) {
-    console.warn(`[appLanguageStore] Error reading storage key ${key}:`, err);
-    return null;
-  }
-};
-
-const setStorageItem = async (key: string, value: string): Promise<void> => {
-  try {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      window.localStorage.setItem(key, value);
-      return;
-    }
-    const AsyncStorage = require('@react-native-async-storage/async-storage').default;
-    await AsyncStorage.setItem(key, value);
-  } catch (err) {
-    console.warn(`[appLanguageStore] Error writing storage key ${key}:`, err);
-  }
-};
-
-/**
- * Retrieves initial mother tongue / app language with legacy fallback.
- */
-export const getInitialMotherTongue = async (): Promise<AppLanguage | null> => {
-  let stored = await getStorageItem(MOTHER_TONGUE_STORAGE_KEY);
-  if (!stored) {
-    stored = await getStorageItem(LEGACY_LANGUAGE_STORAGE_KEY);
-  }
-  if (stored && (stored === 'en' || stored === 'hi' || stored === 'mr')) {
-    return stored as AppLanguage;
-  }
-  return null;
-};
-
-/**
- * Retrieves initial learning language with legacy fallback.
- */
-export const getInitialLearningLanguage = async (): Promise<LearningLanguage | null> => {
-  const stored = await getStorageItem(LEARNING_LANGUAGE_STORAGE_KEY);
-  if (stored && (stored === 'en' || stored === 'hi' || stored === 'mr')) {
-    return stored as LearningLanguage;
-  }
-  return null;
-};
-
-/**
- * Backward-compatible helper for initial language retrieval.
- */
-export const getInitialLanguage = getInitialMotherTongue;
-
-/**
- * Retrieves initial age.
- */
-export const getInitialAge = async (): Promise<AppAge | null> => {
-  const stored = await getStorageItem(AGE_STORAGE_KEY);
-  if (stored && (stored === '5' || stored === '6')) {
-    return parseInt(stored, 10) as AppAge;
-  }
-  return null;
-};
-
-export const setPersistedMotherTongue = async (lang: AppLanguage): Promise<void> => {
-  await setStorageItem(MOTHER_TONGUE_STORAGE_KEY, lang);
-  await setStorageItem(LEGACY_LANGUAGE_STORAGE_KEY, lang); // Sync legacy
-};
-
-export const setPersistedLearningLanguage = async (lang: LearningLanguage): Promise<void> => {
-  await setStorageItem(LEARNING_LANGUAGE_STORAGE_KEY, lang);
-};
-
-export const setPersistedLanguage = setPersistedMotherTongue;
-
-export const setPersistedAge = async (age: AppAge): Promise<void> => {
-  await setStorageItem(AGE_STORAGE_KEY, age.toString());
-};
-
-export interface AppLanguageState {
-  // Dual-Language Model
-  motherTongue: AppLanguage;
-  learningLanguage: LearningLanguage;
-  selectedAge: AppAge;
-  isInitialized: boolean;
-
-  // Backward-compatibility alias fields
-  selectedLanguage: AppLanguage;
-  appLanguage: AppLanguage;
-
-  // Actions
-  initLanguage: () => Promise<AppLanguage | null>;
-  initAge: () => Promise<AppAge | null>;
-  setMotherTongue: (lang: AppLanguage) => Promise<void>;
-  setLearningLanguage: (lang: LearningLanguage) => Promise<void>;
-  setSelectedLanguage: (lang: AppLanguage) => Promise<void>;
-  setSelectedAge: (age: AppAge) => Promise<void>;
-  setCompleteProfile: (
-    motherTongue: AppLanguage,
-    learningLang: LearningLanguage,
-    age: AppAge
-  ) => Promise<void>;
-}
-
-export const useAppLanguageStore = create<AppLanguageState>((set, get) => ({
-  motherTongue: 'en',
-  learningLanguage: 'en',
-  selectedAge: 5,
-  isInitialized: false,
-
-  // Backward compatibility alias getters
-  selectedLanguage: 'en',
-  appLanguage: 'en',
-
-  initLanguage: async () => {
-    const mother = await getInitialMotherTongue();
-    const learning = await getInitialLearningLanguage();
-    const age = await getInitialAge();
-
-    const finalMother: AppLanguage = mother || 'en';
-    const defaultLearning: LearningLanguage = finalMother === 'en' ? 'hi' : 'en';
-    const finalLearning: LearningLanguage = learning || defaultLearning;
-    const finalAge: AppAge = age ?? 5;
-
-    console.log(
-      `[LANGUAGE DEBUG] initLanguage: motherTongue = ${finalMother}, learningLanguage = ${finalLearning}, age = ${finalAge}`
-    );
-
-    set({
-      motherTongue: finalMother,
-      learningLanguage: finalLearning,
-      selectedLanguage: finalMother,
-      appLanguage: finalMother,
-      selectedAge: finalAge,
-      isInitialized: true,
-    });
-
-    if (finalMother) {
-      const i18nInstance = getI18n();
-      if (i18nInstance && typeof i18nInstance.changeLanguage === 'function') {
-        i18nInstance.changeLanguage(finalMother);
+      stored = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
+    } else {
+      try {
+        const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+        stored = await AsyncStorage.getItem(LANGUAGE_STORAGE_KEY);
+      } catch {
+        // Native AsyncStorage fallback
       }
     }
 
-    return mother;
+    if (stored && (stored === 'en' || stored === 'hi' || stored === 'mr')) {
+      return stored as AppLanguage;
+    }
+  } catch (err) {
+    console.warn('[appLanguageStore] Error reading initial language:', err);
+  }
+  return null;
+};
+
+/**
+ * Persists selected language to local storage.
+ */
+export const setPersistedLanguage = async (lang: AppLanguage): Promise<void> => {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
+    } else {
+      try {
+        const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+        await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
+      } catch {
+        // Storage fallback
+      }
+    }
+  } catch (err) {
+    console.warn('[appLanguageStore] Error saving persisted language:', err);
+  }
+};
+
+/**
+ * Persistence check function for initial app age retrieval.
+ */
+export const getInitialAge = async (): Promise<AppAge | null> => {
+  try {
+    let stored: string | null = null;
+    if (typeof window !== 'undefined' && window.localStorage) {
+      stored = window.localStorage.getItem(AGE_STORAGE_KEY);
+    } else {
+      try {
+        const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+        stored = await AsyncStorage.getItem(AGE_STORAGE_KEY);
+      } catch {
+        // Native AsyncStorage fallback
+      }
+    }
+
+    if (stored && (stored === '5' || stored === '6')) {
+      return parseInt(stored, 10) as AppAge;
+    }
+  } catch (err) {
+    console.warn('[appLanguageStore] Error reading initial age:', err);
+  }
+  return null;
+};
+
+/**
+ * Persists selected age to local storage.
+ */
+export const setPersistedAge = async (age: AppAge): Promise<void> => {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem(AGE_STORAGE_KEY, age.toString());
+    } else {
+      try {
+        const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+        await AsyncStorage.setItem(AGE_STORAGE_KEY, age.toString());
+      } catch {
+        // Storage fallback
+      }
+    }
+  } catch (err) {
+    console.warn('[appLanguageStore] Error saving persisted age:', err);
+  }
+};
+
+export interface AppLanguageState {
+  selectedLanguage: AppLanguage | null;
+  selectedAge: AppAge | null;
+  isInitialized: boolean;
+  initLanguage: () => Promise<AppLanguage | null>;
+  initAge: () => Promise<AppAge | null>;
+  setSelectedLanguage: (lang: AppLanguage) => Promise<void>;
+  setSelectedAge: (age: AppAge) => Promise<void>;
+}
+
+export const useAppLanguageStore = create<AppLanguageState>((set, get) => ({
+  selectedLanguage: null,
+  selectedAge: null,
+  isInitialized: false,
+
+  initLanguage: async () => {
+    const lang = await getInitialLanguage();
+    const age = await getInitialAge();
+
+    set({
+      selectedLanguage: lang,
+      selectedAge: age ?? 5, // Default to age 5 if unset
+      isInitialized: true,
+    });
+
+    if (lang) {
+      const i18nInstance = getI18n();
+      if (i18nInstance && typeof i18nInstance.changeLanguage === 'function') {
+        i18nInstance.changeLanguage(lang);
+      }
+      try {
+        const { LanguageManager } = require('../language/LanguageManager');
+        const mapped = lang === 'hi' ? 'hindi' : lang === 'mr' ? 'marathi' : 'english';
+        LanguageManager.setLanguage(mapped);
+      } catch {}
+    }
+    return lang;
   },
 
   initAge: async () => {
@@ -184,64 +159,24 @@ export const useAppLanguageStore = create<AppLanguageState>((set, get) => ({
     return age;
   },
 
-  setMotherTongue: async (lang: AppLanguage) => {
-    console.log(`[LANGUAGE DEBUG] setMotherTongue: ${lang}`);
-    set({
-      motherTongue: lang,
-      selectedLanguage: lang,
-      appLanguage: lang,
-    });
-    await setPersistedMotherTongue(lang);
+  setSelectedLanguage: async (lang: AppLanguage) => {
+    set({ selectedLanguage: lang });
+    await setPersistedLanguage(lang);
 
     const i18nInstance = getI18n();
     if (i18nInstance && typeof i18nInstance.changeLanguage === 'function') {
       i18nInstance.changeLanguage(lang);
     }
-  },
 
-  setLearningLanguage: async (lang: LearningLanguage) => {
-    console.log(`[LANGUAGE DEBUG] setLearningLanguage: ${lang}`);
-    set({ learningLanguage: lang });
-    await setPersistedLearningLanguage(lang);
-  },
-
-  // Backward-compatible alias: setting selectedLanguage sets motherTongue
-  setSelectedLanguage: async (lang: AppLanguage) => {
-    await get().setMotherTongue(lang);
+    try {
+      const { LanguageManager } = require('../language/LanguageManager');
+      const mapped = lang === 'hi' ? 'hindi' : lang === 'mr' ? 'marathi' : 'english';
+      LanguageManager.setLanguage(mapped);
+    } catch {}
   },
 
   setSelectedAge: async (age: AppAge) => {
-    console.log(`[LANGUAGE DEBUG] setSelectedAge: ${age}`);
     set({ selectedAge: age });
     await setPersistedAge(age);
   },
-
-  setCompleteProfile: async (
-    motherTongue: AppLanguage,
-    learningLang: LearningLanguage,
-    age: AppAge
-  ) => {
-    console.log(
-      `[LANGUAGE DEBUG] setCompleteProfile: motherTongue = ${motherTongue}, learningLanguage = ${learningLang}, age = ${age}`
-    );
-    set({
-      motherTongue,
-      learningLanguage: learningLang,
-      selectedLanguage: motherTongue,
-      appLanguage: motherTongue,
-      selectedAge: age,
-    });
-
-    await Promise.all([
-      setPersistedMotherTongue(motherTongue),
-      setPersistedLearningLanguage(learningLang),
-      setPersistedAge(age),
-    ]);
-
-    const i18nInstance = getI18n();
-    if (i18nInstance && typeof i18nInstance.changeLanguage === 'function') {
-      i18nInstance.changeLanguage(motherTongue);
-    }
-  },
 }));
-

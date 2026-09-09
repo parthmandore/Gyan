@@ -16,7 +16,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { StorybookGardenBackground } from './components/StorybookGardenBackground';
@@ -28,23 +28,17 @@ import { Typography } from '../../../theme/typography';
 import { useAppLanguageStore } from '../../../state/appLanguageStore';
 import { useSpeechWordChallengeStore } from './store/speechWordChallengeStore';
 import { checkSTTHealth } from '../../../services/sttService';
-import { speakPhrase, stopSpeech } from '../../../services/speechService';
+import { speakPhrase } from '../../../services/speechService';
 import { RootStackParamList } from '../../../types';
-import { GameCategory, SpeechWordChallengeStackParamList } from './types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Games'>;
 
 export const IntroScreen: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const navigation = useNavigation<NavigationProp>();
-  const route = useRoute<RouteProp<SpeechWordChallengeStackParamList, 'SpeechWordChallengeIntro'>>();
   const { width: screenWidth } = useWindowDimensions();
-  const motherTongue = useAppLanguageStore((s) => s.motherTongue) || 'en';
-  const learningLanguage = useAppLanguageStore((s) => s.learningLanguage) || 'en';
+  const selectedLanguage = useAppLanguageStore((s) => s.selectedLanguage) || 'en';
   const selectedAge = useAppLanguageStore((s) => s.selectedAge) || 5;
-  const category = route.params?.category as GameCategory | undefined;
-  const isLetterGame = category === 'letters' || (selectedAge === 5 && !category);
-  const isCategory = !!category && category !== 'letters';
   const resetSession = useSpeechWordChallengeStore((s) => s.resetSession);
   const setSessionStartTime = useSpeechWordChallengeStore((s) => s.setSessionStartTime);
 
@@ -55,29 +49,32 @@ export const IntroScreen: React.FC = React.memo(() => {
     checkSTTHealth().then((health) => {
       setBackendReady(health.status === 'ok' && health.model_loaded);
     });
-
-    const unsubscribe = navigation.addListener('beforeRemove', () => {
-      stopSpeech();
-    });
-
-    return () => {
-      unsubscribe();
-      stopSpeech();
-    };
-  }, [navigation]);
+  }, []);
 
   const handleStartGame = () => {
-    stopSpeech();
     resetSession();
     setSessionStartTime(Date.now());
-    navigation.navigate('Games', {
-      screen: 'SpeechWordChallengeGame' as any,
-      params: category ? { category } : (isLetterGame ? { category: 'letters' } : undefined),
-    });
+    if (selectedAge === 5) {
+      speakPhrase(
+        selectedLanguage === 'hi'
+          ? 'अक्षर देखकर बोलिए!'
+          : selectedLanguage === 'mr'
+          ? 'अक्षर पाहून बोला!'
+          : 'Look at the letter and say it aloud!'
+      );
+    } else {
+      speakPhrase(
+        selectedLanguage === 'hi'
+          ? 'चित्र देखकर शब्द बोलिए!'
+          : selectedLanguage === 'mr'
+          ? 'चित्र पाहून शब्द बोला!'
+          : 'Look at the picture and say the word!'
+      );
+    }
+    navigation.navigate('Games', { screen: 'SpeechWordChallengeGame' as any });
   };
 
   const handleBackToCatalog = () => {
-    stopSpeech();
     navigation.navigate('GameCatalog');
   };
 
@@ -103,26 +100,12 @@ export const IntroScreen: React.FC = React.memo(() => {
 
           <View style={styles.headerTextCol}>
             <Text style={styles.headerTitleText}>
-              {isLetterGame
-                ? t('games.speechLetters.title', 'Say the Letters')
-                : category === 'animals'
-                ? t('games.speechAnimals.title', 'Animal Words')
-                : category === 'fruits'
-                ? t('games.speechFruits.title', 'Fruits & Veggies')
-                : category === 'nature'
-                ? t('games.speechEveryday.title', 'Everyday Things')
-                : t('games.speechLetters.title', 'Say the Letters')}
+              {t('games.speechWordChallenge.title', 'Speech Word Challenge')}
             </Text>
             <Text style={styles.headerSubtitleText}>
-              {isLetterGame
-                ? t('games.speechLetters.description', 'Look at the letter and say it aloud!')
-                : category === 'animals'
-                ? t('games.speechAnimals.description', 'Say the animal name aloud!')
-                : category === 'fruits'
-                ? t('games.speechFruits.description', 'Say the fruit or vegetable aloud!')
-                : category === 'nature'
-                ? t('games.speechEveryday.description', 'Say the object name aloud!')
-                : t('speechWordChallenge.whatIsThis', 'What is this? Say the word.')}
+              {selectedAge === 5
+                ? t('speechWordChallenge.sayTheLetter')
+                : t('speechWordChallenge.whatIsThis')}
             </Text>
           </View>
         </View>
@@ -144,40 +127,18 @@ export const IntroScreen: React.FC = React.memo(() => {
             {/* Badge */}
             <View style={styles.modeBadge}>
               <Text style={styles.modeBadgeText}>
-                {isLetterGame
-                  ? '⭐ Age 5 Letter Speech'
-                  : category === 'animals'
-                  ? '🚀 🐾 Animals'
-                  : category === 'fruits'
-                  ? '🚀 🍎 Fruits & Vegetables'
-                  : category === 'nature'
-                  ? '🚀 🌿 Everyday Things'
-                  : '🚀 Age 6 Word Speech'}
+                {selectedAge === 5 ? '⭐ Age 5 Letter Speech' : '🚀 Age 6 Word Speech'}
               </Text>
             </View>
 
             {/* Title & Tagline */}
             <Text style={styles.heroTitle}>
-              {isLetterGame
-                ? 'Say the Letters! 🔤'
-                : category === 'animals'
-                ? '🐾 Animal Words!'
-                : category === 'fruits'
-                ? '🍎 Fruits & Veggies!'
-                : category === 'nature'
-                ? '🌳 Things Around Us!'
-                : 'Speak the Words! 🎙️'}
+              {selectedAge === 5 ? 'Say the Letters! 🔤' : 'Speak the Words! 🎙️'}
             </Text>
 
             <Text style={styles.heroSubtitle}>
-              {isLetterGame
+              {selectedAge === 5
                 ? 'Practice letter pronunciation with friendly speech feedback!'
-                : category === 'animals'
-                ? 'Look at the animal picture and say its name!'
-                : category === 'fruits'
-                ? 'Look at the fruit or vegetable picture and say its name!'
-                : category === 'nature'
-                ? 'Look at the everyday object picture and say its name!'
                 : 'Identify everyday objects and build your vocabulary!'}
             </Text>
 
@@ -192,28 +153,10 @@ export const IntroScreen: React.FC = React.memo(() => {
                   : styles.statusChecking,
               ]}
             >
-              <Text
-                style={[
-                  styles.statusDot,
-                  backendReady === true
-                    ? styles.statusDotReady
-                    : backendReady === false
-                    ? styles.statusDotError
-                    : styles.statusDotChecking,
-                ]}
-              >
+              <Text style={styles.statusDot}>
                 {backendReady === true ? '●' : backendReady === false ? '●' : '○'}
               </Text>
-              <Text
-                style={[
-                  styles.statusText,
-                  backendReady === true
-                    ? styles.statusTextReady
-                    : backendReady === false
-                    ? styles.statusTextError
-                    : styles.statusTextChecking,
-                ]}
-              >
+              <Text style={styles.statusText}>
                 {backendReady === true
                   ? 'Speech Engine Ready'
                   : backendReady === false
@@ -225,21 +168,21 @@ export const IntroScreen: React.FC = React.memo(() => {
             {/* Tutorial Button */}
             <BigTouchTarget
               onPress={() => setShowTutorialModal(true)}
-              accessibilityLabel={t('speechWordChallenge.howToPlayTitle', 'How to Play')}
+              accessibilityLabel="How to Play"
               accessibilityRole="button"
               style={styles.tutorialButton}
             >
-              <Text style={styles.tutorialButtonText}>❓ {t('speechWordChallenge.howToPlayTitle', 'How to Play')}</Text>
+              <Text style={styles.tutorialButtonText}>❓ How to Play</Text>
             </BigTouchTarget>
 
             {/* Big Start Game Button */}
             <BigTouchTarget
               onPress={handleStartGame}
-              accessibilityLabel={t('speechWordChallenge.startChallenge', 'START CHALLENGE ▶')}
+              accessibilityLabel="Start Challenge"
               accessibilityRole="button"
               style={styles.startButton}
             >
-              <Text style={styles.startButtonText}>{t('speechWordChallenge.startChallenge', 'START CHALLENGE ▶')}</Text>
+              <Text style={styles.startButtonText}>START CHALLENGE ▶</Text>
             </BigTouchTarget>
           </View>
         </ScrollView>
@@ -247,19 +190,13 @@ export const IntroScreen: React.FC = React.memo(() => {
         {/* How to Play Modal */}
         <FriendlyModal
           visible={showTutorialModal}
-          title={t('speechWordChallenge.howToPlayTitle', 'How to Play')}
+          title="How to Play"
           description={
-            isLetterGame
-              ? t(
-                  'speechWordChallenge.howToPlayLetters',
-                  '1. Look at the large letter on the screen.\n2. Tap the microphone button.\n3. Say the letter clearly!\n4. Complete all 10 rounds to earn 3 stars! ⭐'
-                )
-              : t(
-                  'speechWordChallenge.howToPlayWords',
-                  '1. Look at the picture on the screen.\n2. Think of the word (the answer is hidden!).\n3. Tap the microphone and say the word aloud!\n4. Complete all 10 rounds to earn 3 stars! ⭐'
-                )
+            selectedAge === 5
+              ? '1. Look at the large letter on the screen.\n2. Tap the microphone button.\n3. Say the letter clearly!\n4. Complete all 10 rounds to earn 3 stars! ⭐'
+              : '1. Look at the picture on the screen.\n2. Think of the word (the answer is hidden!).\n3. Tap the microphone and say the word aloud!\n4. Complete all 10 rounds to earn 3 stars! ⭐'
           }
-          dismissText={t('speechWordChallenge.gotIt', 'Got it! ▶')}
+          dismissText="Got it! ▶"
           onDismiss={() => setShowTutorialModal(false)}
         />
       </SafeAreaView>
@@ -434,28 +371,12 @@ const styles = StyleSheet.create({
   },
   statusDot: {
     fontSize: 10,
-  },
-  statusDotReady: {
     color: '#15803D',
-  },
-  statusDotError: {
-    color: '#DC2626',
-  },
-  statusDotChecking: {
-    color: '#D97706',
   },
   statusText: {
     fontFamily: Typography.fonts.medium,
     fontSize: 11,
-  },
-  statusTextReady: {
     color: '#166534',
-  },
-  statusTextError: {
-    color: '#991B1B',
-  },
-  statusTextChecking: {
-    color: '#92400E',
   },
   tutorialButton: {
     backgroundColor: '#F8FAFC',

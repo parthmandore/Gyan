@@ -28,9 +28,6 @@ import Animated, {
 
 import { useAlphabetMatchingStore } from './store/alphabetMatchingStore';
 import { useSpeechPlaybackStore } from './store/speechPlaybackStore';
-import { useProgressStore } from '../../../state/useProgressStore';
-import { xpService } from '../../../services/xpService';
-import { useAppLanguageStore } from '../../../state/appLanguageStore';
 import { AlphabetMatchingStackParamList } from './types';
 import { getDataset } from './datasets';
 import { BigTouchTarget } from '../../../components/BigTouchTarget';
@@ -81,8 +78,6 @@ export const GameScreen: React.FC = React.memo(() => {
   const isAudioLoading = useSpeechPlaybackStore((s) => s.isLoading);
   const setIsAudioLoading = useSpeechPlaybackStore((s) => s.setLoading);
   const mode = useAlphabetMatchingStore((s) => s.mode);
-  const motherTongue = useAppLanguageStore((s) => s.motherTongue) || 'en';
-  const learningLanguage = useAppLanguageStore((s) => s.learningLanguage) || 'en';
 
   const [currentDifficulty] = useState<number>(DEFAULT_DIFFICULTY_TIER);
   const [rounds, setRounds] = useState<RoundContent[]>([]);
@@ -114,8 +109,6 @@ export const GameScreen: React.FC = React.memo(() => {
   const speakerPulse = useSharedValue(1);
 
   const sessionStartTimeRef = useRef<number>(Date.now());
-  const sessionIdRef = useRef<string>(`alpha_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`);
-  const roundXpEarnedRef = useRef<number>(0);
   const activeRoundRef = useRef<RoundContent | null>(null);
 
   const speakerAnimatedStyle = useAnimatedStyle(() => ({
@@ -134,9 +127,9 @@ export const GameScreen: React.FC = React.memo(() => {
     if (!letter) return;
     setIsAudioLoading(true);
     try {
-      const result = await speakLetter(letter, cachedUrl, learningLanguage);
+      const result = await speakLetter(letter, cachedUrl);
       if (!result.success) {
-        const retryResult = await speakLetter(letter, cachedUrl, learningLanguage);
+        const retryResult = await speakLetter(letter, cachedUrl);
         if (!retryResult.success) {
           console.error(
             `[GameScreen] Audio playback failed for letter "${letter}" after retry. Giving up silently.`,
@@ -149,7 +142,7 @@ export const GameScreen: React.FC = React.memo(() => {
     } finally {
       setIsAudioLoading(false);
     }
-  }, [setIsAudioLoading, learningLanguage]);
+  }, [setIsAudioLoading]);
 
   const loadRound = useCallback((roundData: RoundContent, index: number) => {
     activeRoundRef.current = roundData;
@@ -192,23 +185,8 @@ export const GameScreen: React.FC = React.memo(() => {
 
     const durationSeconds = Math.max(1, Math.round((Date.now() - sessionStart) / 1000));
     const accuracy = finalAttempted > 0 ? (finalCorrect / finalAttempted) * 100 : 0;
-
-    const learningLanguage = useAppLanguageStore.getState().learningLanguage || 'en';
-    const motherTongue = useAppLanguageStore.getState().motherTongue || 'en';
-
-    const sessionResult = await xpService.recordSessionCompletionXP({
-      sessionId: sessionIdRef.current,
-      gameId: 'alphabet_matching',
-      category: mode,
-      learningLanguage,
-      motherTongue,
-      age: 5,
-      totalQuestions: sessionLength || 10,
-      correctAnswers: finalCorrect,
-      accuracy,
-      durationSeconds,
-      roundXpEarned: roundXpEarnedRef.current,
-    });
+    const starsEarned = Math.min(3, Math.max(1, Math.ceil((finalCorrect / (sessionLength || 10)) * 3)));
+    const xpEarned = starsEarned * 50 + finalCorrect * 10;
 
     try {
       await submitGameProgress({
@@ -223,14 +201,14 @@ export const GameScreen: React.FC = React.memo(() => {
     }
 
     navigation.navigate('AlphabetMatchingSessionComplete', {
-      starsEarned: sessionResult.starsEarned,
-      xpEarned: sessionResult.totalSessionXp,
+      starsEarned,
+      xpEarned,
       itemsCorrect: finalCorrect,
       sessionLength,
       accuracy,
       durationSeconds,
     });
-  }, [currentDifficulty, navigation, sessionLength, mode]);
+  }, [currentDifficulty, navigation, sessionLength]);
 
   const advanceToNextRound = useCallback(() => {
     setLifecycleState('ADVANCING_NEXT_ROUND');
@@ -371,21 +349,6 @@ export const GameScreen: React.FC = React.memo(() => {
       setItemsAttempted((prev) => prev + 1);
       setItemsCorrect((prev) => prev + 1);
 
-      const attemptNum = attemptsInCurrentRound === 0 ? 1 : 2;
-      xpService.recordAnswerXP({
-        sessionId: sessionIdRef.current,
-        roundIndex,
-        attemptNum,
-        isCorrect: true,
-        gameId: 'alphabet_matching',
-        metadata: {
-          mode,
-          letter: targetChar,
-        },
-      }).then((res) => {
-        roundXpEarnedRef.current += res.xpEarned;
-      }).catch(() => {});
-
       setTileStates((prev) => ({ ...prev, [tappedLetter]: 'correct' }));
       setShowFlyingStar(true);
       setShowCelebration(true);
@@ -431,17 +394,15 @@ export const GameScreen: React.FC = React.memo(() => {
         });
 
         setTileStates(updatedTileStates);
-        const teachPhrase = mode === 'numbers'
-          ? t('alphabetMatching.teachingNumber', { letter: targetChar, lng: motherTongue, defaultValue: `This is number ${targetChar}` })
-          : t('alphabetMatching.teachingLetter', { letter: targetChar, lng: motherTongue, defaultValue: `This is the letter ${targetChar}` });
-        speakPhrase(teachPhrase, { language: motherTongue });
+        const activeDataset = getDataset(mode);
+        speakPhrase(activeDataset.getTeachingText(targetChar));
 
         setTimeout(() => {
           advanceToNextRound();
         }, SECOND_WRONG_AUTO_ADVANCE_DELAY_MS);
       }
     }
-  }, [roundLocked, currentRound, targetChar, roundIndex, attemptsInCurrentRound, currentOptions, mode, advanceToNextRound, motherTongue, t]);
+  }, [roundLocked, currentRound, targetChar, roundIndex, attemptsInCurrentRound, currentOptions, mode, advanceToNextRound]);
 
   const handleFlyingStarComplete = useCallback(() => {
     setShowFlyingStar(false);

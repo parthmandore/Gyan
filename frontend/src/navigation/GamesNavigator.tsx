@@ -30,18 +30,11 @@ import {
   GameScreen as SpeechWordChallengeGameScreen,
   SessionCompleteScreen as SpeechWordChallengeSessionCompleteScreen,
 } from '../screens/games/SpeechWordChallenge';
-import {
-  IntroScreen as LanguagePairMatchIntroScreen,
-  GameScreen as LanguagePairMatchGameScreen,
-  SessionCompleteScreen as LanguagePairMatchSessionCompleteScreen,
-} from '../screens/games/LanguagePairMatch';
-import { LanguagePairMatchStackParamList } from '../screens/games/LanguagePairMatch/types';
 
 export type GamesStackParamList = AlphabetMatchingStackParamList &
   CapitalSmallMatchStackParamList &
   VowelMatraMatchStackParamList &
-  SpeechWordChallengeStackParamList &
-  LanguagePairMatchStackParamList;
+  SpeechWordChallengeStackParamList;
 
 const Stack = createNativeStackNavigator<GamesStackParamList>();
 
@@ -102,20 +95,6 @@ export const GamesNavigator: React.FC = () => {
       <Stack.Screen
         name="SpeechWordChallengeSessionComplete"
         component={SpeechWordChallengeSessionCompleteScreen}
-      />
-
-      {/* === Language Pair Match (Age 6) === */}
-      <Stack.Screen
-        name="LanguagePairMatchIntro"
-        component={LanguagePairMatchIntroScreen}
-      />
-      <Stack.Screen
-        name="LanguagePairMatchGame"
-        component={LanguagePairMatchGameScreen}
-      />
-      <Stack.Screen
-        name="LanguagePairMatchSessionComplete"
-        component={LanguagePairMatchSessionCompleteScreen}
       />
     </Stack.Navigator>
   );

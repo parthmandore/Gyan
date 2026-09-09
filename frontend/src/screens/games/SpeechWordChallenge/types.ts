@@ -15,10 +15,8 @@ export interface SpeechChallengeItem {
   spokenPrompt: string;       // Spoken guidance prompt for child (e.g. "Say the letter A" / "What is this? Say the word.")
   phoneticHint: string;       // Spoken hint / guidance
   acceptedVariants: string[]; // Variations that count as correct
-  category: 'fruits' | 'animals' | 'objects' | 'nature' | 'letters';
+  category: 'fruits' | 'animals' | 'objects' | 'nature';
   mode?: 'letters' | 'words';
-  language?: 'en' | 'hi' | 'mr';
-  ageLevel?: number;
 }
 
 export type RecordingState =
@@ -74,11 +72,9 @@ export interface SpeechWordChallengeState {
   resetSession: () => void;
 }
 
-export type GameCategory = 'animals' | 'fruits' | 'nature' | 'letters';
-
 export type SpeechWordChallengeStackParamList = {
-  SpeechWordChallengeIntro: { category?: GameCategory } | undefined;
-  SpeechWordChallengeGame: { category?: GameCategory } | undefined;
+  SpeechWordChallengeIntro: undefined;
+  SpeechWordChallengeGame: undefined;
   SpeechWordChallengeSessionComplete: {
     starsEarned: number;
     xpEarned: number;
@@ -86,6 +82,5 @@ export type SpeechWordChallengeStackParamList = {
     sessionLength: number;
     accuracy: number;
     durationSeconds: number;
-    category?: GameCategory;
   } | undefined;
 };

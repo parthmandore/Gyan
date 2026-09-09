@@ -50,7 +50,6 @@ export type VowelMatraMatchStackParamList = {
   VowelMatraMatchIntro: undefined;
   VowelMatraMatchGame: undefined;
   VowelMatraMatchSessionComplete: {
-    sessionId?: string;
     starsEarned: number;
     xpEarned: number;
     itemsCorrect: number;

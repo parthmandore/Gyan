@@ -6,19 +6,7 @@
     "back": "Back",
     "next": "Next",
     "retry": "Retry",
-    "close": "Close",
-    "tryCount": "(Try {{count}})",
-    "gotIt": "Got it!",
-    "homeLanguage": "Home",
-    "learningLanguage": "Learning",
-    "play": "PLAY ▶",
-    "accuracy": "Accuracy",
-    "correct": "Matched",
-    "xpEarned": "XP Earned",
-    "playAgain": "Play Again",
-    "catalog": "Games Hub",
-    "practice": "Needs Practice",
-    "noAttemptsYet": "No matches recorded yet."
+    "close": "Close"
   },
   "navigation": {
     "home": "Home",
@@ -27,17 +15,13 @@
   "languageGate": {
     "title": "Choose Learning Language",
     "subtitle": "Select the language you want to learn today!",
-    "motherTongueTitle": "Which language do you speak at home?",
-    "motherTongueSubtitle": "The app will talk to you in this language!",
-    "learningLanguageTitle": "Which language do you want to learn?",
-    "learningLanguageSubtitle": "Choose the language to practice speaking!",
     "english": "English",
-    "englishSub": "Learn English letters & vocabulary",
+    "englishSub": "Learn English letters & numbers",
     "hindi": "हिन्दी",
-    "hindiSub": "सीखें हिन्दी वर्णमाला और शब्द",
+    "hindiSub": "सीखें हिन्दी वर्णमाला और संख्याएं",
     "marathi": "मराठी",
-    "marathiSub": "शिका मराठी मुळाक्षरे आणि शब्द",
-    "accessibilityHint": "Sets application language to {{language}}"
+    "marathiSub": "शिका मराठी मुळाक्षरे आणि संख्या",
+    "accessibilityHint": "Sets application learning language to {{language}} and opens available games"
   },
   "ageGate": {
     "title": "Choose Your Age",
@@ -73,30 +57,9 @@
       "description": "Match independent vowels to their consonant matra forms!"
     },
     "speechWordChallenge": {
-      "title": "Say the Letters",
+      "title": "Speech Word Challenge",
       "subtitle": "Speak into the microphone!",
-      "description": "Look at the letter and say it aloud to practice pronunciation!"
-    },
-    "speechLetters": {
-      "title": "Say the Letters",
-      "subtitle": "Speak into the microphone!",
-      "description": "Look at the letter and say it aloud to practice pronunciation!"
-    },
-    "speechAnimals": {
-      "title": "Animal Words",
-      "description": "What animal is this? See the picture and say its name!"
-    },
-    "speechFruits": {
-      "title": "Fruits & Vegetables",
-      "description": "What fruit or veggie is this? See the picture and say its name!"
-    },
-    "speechEveryday": {
-      "title": "Everyday Things & Nature",
-      "description": "What is this? See everyday objects and say their names!"
-    },
-    "languagePairMatch": {
-      "title": "Language Pair Match",
-      "description": "See the word in your language and match it with its translation!"
+      "description": "Speak letters or words aloud into the microphone to build pronunciation!"
     }
   },
   "alphabetMatching": {
@@ -117,9 +80,7 @@
     "step2": "Tap the matching card from the options below.",
     "step3": "Complete rounds to earn stars and build your streak!",
     "howToPlayBtn": "❓ How to Play",
-    "gotItBtn": "Got It! ▶",
-    "teachingLetter": "This is the letter {{letter}}",
-    "teachingNumber": "This is number {{letter}}"
+    "gotItBtn": "Got It! ▶"
   },
   "capitalSmallMatch": {
     "gameTitle": "Capital & Small Letter Match",
@@ -142,9 +103,7 @@
     "wrongMatchLeftLabel": "Capital",
     "wrongMatchRightLabel": "Small",
     "wrongMatchGotIt": "Got it! ▶",
-    "wrongMatchSpeak": "This is {{left}} and {{right}}",
-    "spokenCapital": "Capital {{letter}}",
-    "spokenSmall": "Small {{letter}}"
+    "wrongMatchSpeak": "This is {{left}} and {{right}}"
   },
   "vowelMatraMatch": {
     "gameTitle": "Vowel & Matra Match",
@@ -218,7 +177,6 @@
     "leaveGameDesc": "Are you sure you want to exit? Your current progress will be finalized.",
     "keepPlaying": "Keep Playing",
     "exitGame": "Quit Game",
-    "quitGame": "Quit Game",
     "listenForLetter": "Listen for the letter!",
     "listenForNumber": "Listen for the number!",
     "loadingAudio": "Loading...",
@@ -233,12 +191,6 @@
     "finishedGame": "You finished today's game!"
   },
   "speechWordChallenge": {
-    "promptAnimals": "What animal is this? Say its name!",
-    "promptFruits": "What is this? Say its name!",
-    "promptNature": "What is this? Say its name!",
-    "promptLetters": "Look at the letter and say it aloud!",
-    "mysteryWhatIsThis": "❓ What is this?",
-    "mysterySayLetter": "❓ Say the letter",
     "sayTheWord": "Say the word.",
     "sayTheLetter": "Say the letter!",
     "whatIsThis": "What is this? Say the word!",
@@ -271,47 +223,6 @@
     "debugExpected": "Expected: {{word}}",
     "debugHeard": "Heard: {{heard}}",
     "progressLabel": "Progress {{current}} of {{total}} rounds",
-    "microphoneHint": "Tap the microphone and speak aloud",
-    "howToPlayTitle": "How to Play",
-    "howToPlayLetters": "1. Look at the large letter on the screen.\n2. Tap the microphone button.\n3. Say the letter clearly!\n4. Complete all 10 rounds to earn 3 stars! ⭐",
-    "howToPlayWords": "1. Look at the picture on the screen.\n2. Think of the word (the answer is hidden!).\n3. Tap the microphone and say the word aloud!\n4. Complete all 10 rounds to earn 3 stars! ⭐",
-    "startChallenge": "START CHALLENGE ▶",
-    "gotIt": "Got it! ▶",
-    "listenInstruction": "Listen to the instruction prompt",
-    "introPromptLetters": "Look at the letter and say it aloud!",
-    "introPromptWords": "Look at the picture, think of the word, and say it aloud!",
-    "sessionCompletePraise": "Awesome speaking! You earned stars for speaking clearly!",
-    "feedback": {
-      "listening": "I'm listening...",
-      "checking": "Checking...",
-      "greatJob": "Great job!",
-      "couldNotHear": "I couldn't hear clearly. Try again!",
-      "helperResting": "Speech helper is taking a break. Tap to retry!",
-      "almostTryAgain": "Almost! Try again. 💛"
-    },
-    "micButton": {
-      "tapAndSay": "Tap & Say",
-      "listening": "Listening...",
-      "checking": "Checking...",
-      "greatJob": "Great job!",
-      "tryAgain": "Try Again"
-    }
-  },
-  "languagePairMatch": {
-    "title": "Language Pair Match",
-    "subtitle": "Language Adventure",
-    "instructions": "Match words in {{source}} with their translations in {{target}}!",
-    "instructionsText": "Match the pairs!",
-    "tryAgain": "Try another match!",
-    "sameLanguageTitle": "Same Language Selected",
-    "sameLanguageDesc": "Your home and learning languages are the same. Please choose another language to play this game.",
-    "switchLanguage": "Choose Another Language",
-    "howToPlayTitle": "How to Play",
-    "howToPlayDesc": "1. Tap a card on the left in your language.\n2. Tap the matching translation on the right.\n3. Match all pairs to advance to the next round!",
-    "seeReport": "See Match Report",
-    "sessionCompleteTitle": "Language Adventure Complete!",
-    "sessionCompleteDesc": "You matched {{correct}} of {{total}} pairs!",
-    "sessionCompletePraise": "Awesome job! You matched the language pairs!",
-    "roundBreakdown": "Round Breakdown"
+    "microphoneHint": "Tap the microphone and speak aloud"
   }
 }

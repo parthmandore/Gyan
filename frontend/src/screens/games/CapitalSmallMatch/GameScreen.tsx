@@ -83,7 +83,6 @@ export const GameScreen: React.FC = React.memo(() => {
 
   // Ref to prevent double-firing round complete effect per round index
   const handledRoundIndexRef = useRef<number>(-1);
-  const sessionIdRef = useRef<string>(`csm_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`);
 
   // Bidirectional selection state: tracks selected lowercase letter if tapped first
   const [selectedLowercase, setSelectedLowercase] = useState<string | null>(null);
@@ -170,7 +169,6 @@ export const GameScreen: React.FC = React.memo(() => {
     const xpEarned = score > 0 ? score : (itemsCorrect * 10);
 
     navigation.navigate('CapitalSmallMatchSessionComplete', {
-      sessionId: sessionIdRef.current,
       starsEarned,
       xpEarned,
       itemsCorrect,
@@ -226,7 +224,6 @@ export const GameScreen: React.FC = React.memo(() => {
         const xpEarned = score > 0 ? score : (itemsCorrect * 10);
 
         navigation.navigate('CapitalSmallMatchSessionComplete', {
-          sessionId: sessionIdRef.current,
           starsEarned,
           xpEarned,
           itemsCorrect,

@@ -19,12 +19,11 @@ const REVEAL_TEACHING_PATTERNS: Record<string, string> = {
   marathi: 'हे {lowercase} आहे',
 };
 
-function getInstructionLanguage(): 'english' | 'hindi' | 'marathi' {
+function getActiveLanguage(): 'english' | 'hindi' | 'marathi' {
   try {
-    const { useAppLanguageStore } = require('../../../../state/appLanguageStore');
-    const motherTongue = useAppLanguageStore.getState().motherTongue;
-    if (motherTongue === 'hi') return 'hindi';
-    if (motherTongue === 'mr') return 'marathi';
+    const { LanguageManager } = require('../../../../language/LanguageManager');
+    const lang = LanguageManager.getLanguage();
+    if (lang === 'hindi' || lang === 'marathi') return lang;
   } catch {}
   return 'english';
 }
@@ -40,18 +39,10 @@ export const playTileLetterAudio = async (
   cancelPrevious: boolean = true
 ): Promise<void> => {
   try {
-    const { useAppLanguageStore } = require('../../../../state/appLanguageStore');
-    const motherTongue = useAppLanguageStore.getState().motherTongue || 'en';
     const isCap = isCapital !== undefined ? isCapital : letter === letter.toUpperCase();
+    const spokenText = isCap ? `Capital ${letter}` : `Small ${letter}`;
 
-    let spokenText = isCap ? `Capital ${letter}` : `Small ${letter}`;
-    if (motherTongue === 'hi') {
-      spokenText = isCap ? `बड़ा अक्षर ${letter}` : `छोटा अक्षर ${letter}`;
-    } else if (motherTongue === 'mr') {
-      spokenText = isCap ? `मोठे अक्षर ${letter}` : `लहान अक्षर ${letter}`;
-    }
-
-    await speakPhrase(spokenText, { cancelPrevious, language: motherTongue });
+    await speakPhrase(spokenText, { cancelPrevious });
   } catch (err) {
     console.warn('[matchAudioService] Tile letter audio failed:', err);
   }
@@ -73,13 +64,11 @@ export const playWrongMatchRevealAudio = async (
   cancelPrevious: boolean = true
 ): Promise<void> => {
   try {
-    const { useAppLanguageStore } = require('../../../../state/appLanguageStore');
-    const motherTongue = useAppLanguageStore.getState().motherTongue || 'en';
-    const lang = getInstructionLanguage();
+    const lang = getActiveLanguage();
     const pattern = REVEAL_TEACHING_PATTERNS[lang] || REVEAL_TEACHING_PATTERNS.english;
     const phrase = pattern.replace('{lowercase}', lowercase);
 
-    await speakPhrase(phrase, { cancelPrevious, language: motherTongue });
+    await speakPhrase(phrase, { cancelPrevious });
   } catch (err) {
     console.warn('[matchAudioService] playWrongMatchRevealAudio exception:', err);
   }

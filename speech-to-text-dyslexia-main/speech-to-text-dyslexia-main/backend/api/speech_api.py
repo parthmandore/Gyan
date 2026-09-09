@@ -1,8 +1,7 @@
-﻿import os
+import os
 import tempfile
 import numpy as np
 import soundfile as sf
-import torch
 from typing import Optional
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 import whisper
@@ -12,45 +11,25 @@ from backend.utils.audio_analysis import analyze_audio
 
 router = APIRouter()
 
-# Bound PyTorch CPU threads for maximum multi-core CPU throughput
-CPU_THREADS = min(8, os.cpu_count() or 4)
-torch.set_num_threads(CPU_THREADS)
-
 # Configurable model size (default to 'medium' for rich multilingual phonetic accuracy)
 MODEL_NAME = os.environ.get("WHISPER_MODEL", "medium")
+# Maximum allowed audio upload size: 10 MB
 MAX_AUDIO_SIZE_BYTES = 10 * 1024 * 1024
 
+# Supported language codes for the educational app
 SUPPORTED_LANGUAGES = {"en", "hi", "mr"}
 
+# Vocabulary-anchored prompts to steer Whisper towards educational vocabulary & Devanagari script
 LANGUAGE_INITIAL_PROMPTS = {
     "en": "apple, ball, bowl, cat, dog, fish, house, star, tree, book, car, duck, hat, sun, water, words.",
     "hi": "सेब, गेंद, बिल्ली, कुत्ता, मछली, सूरज, पेड़, गाड़ी, किताब, फूल, कमल, घर, आम, तारा, केला, शब्द।",
     "mr": "सफरचंद, चेंडू, मांजर, कुत्रा, मासा, सूर्य, झाड, गाडी, पुस्तक, फूल, कमळ, घर, आंबा, तारा, केळे, शब्द."
 }
 
-print(f"[Speech API] Loading Whisper model '{MODEL_NAME}' on CPU ({CPU_THREADS} threads)...")
-model = None
-
-def _warmup_model(m):
-    if m is not None:
-        try:
-            print("[Speech API] Pre-warming Whisper model for instant first-attempt response...")
-            dummy = np.zeros(16000, dtype=np.float32)
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as f:
-                w_path = f.name
-            sf.write(w_path, dummy, 16000)
-            with torch.inference_mode():
-                m.transcribe(w_path, fp16=False, language="en", beam_size=1, best_of=1, temperature=0.0, without_timestamps=True)
-            if os.path.exists(w_path):
-                os.remove(w_path)
-            print("[Speech API] Whisper model warm-up complete and ready.")
-        except Exception as we:
-            print(f"[Speech API] Warm-up notice: {we}")
-
+print(f"[Speech API] Loading Whisper model: '{MODEL_NAME}'...")
 try:
     model = whisper.load_model(MODEL_NAME)
     print(f"[Speech API] Whisper model '{MODEL_NAME}' loaded successfully.")
-    _warmup_model(model)
 except Exception as e:
     print(f"[Speech API] Warning: Failed to load Whisper model at startup: {e}")
     model = None
@@ -60,25 +39,17 @@ def _get_model():
     global model
     if model is None:
         model = whisper.load_model(MODEL_NAME)
-        _warmup_model(model)
     return model
 
 
 def _preprocess_audio(raw_path: str) -> str:
     """
-    Ultra-fast in-memory RMS volume normalization and comfort silence padding.
+    Applies RMS volume normalization and 200ms comfort silence padding
+    to ensure Whisper's encoder attention window captures isolated short words clearly.
     """
     try:
-        try:
-            audio, sr = sf.read(raw_path)
-            if audio.ndim > 1:
-                audio = audio.mean(axis=1)
-            if sr != 16000:
-                import librosa
-                audio = librosa.resample(audio, orig_sr=sr, target_sr=16000)
-        except Exception:
-            audio = whisper.load_audio(raw_path)
-
+        # Load audio at 16kHz mono using Whisper's built-in loader (uses ffmpeg)
+        audio = whisper.load_audio(raw_path)
         if len(audio) == 0:
             return raw_path
 
@@ -91,10 +62,10 @@ def _preprocess_audio(raw_path: str) -> str:
             if max_val > 0.95:
                 audio = audio * (0.95 / max_val)
 
-        # 2. Comfort silence padding (150ms at 16kHz = 2400 samples)
-        pad_len = 2400
+        # 2. Comfort silence padding (200ms at 16kHz = 3200 samples)
+        pad_len = 3200
         silence = np.zeros(pad_len, dtype=np.float32)
-        audio = np.concatenate([silence, audio.astype(np.float32), silence])
+        audio = np.concatenate([silence, audio, silence])
 
         # Write to temp WAV
         temp_f = tempfile.NamedTemporaryFile(delete=False, suffix=".wav")
@@ -110,6 +81,7 @@ def _preprocess_audio(raw_path: str) -> str:
 def _clean_transcription(text: str) -> str:
     """
     Removes autoregressive repetition loops if Whisper repeats identical words.
+    Example: 'बिल्ली, बिल्ली, बिल्ली' -> 'बिल्ली'
     """
     if not text:
         return ""
@@ -133,7 +105,9 @@ async def transcribe_audio(
     language: Optional[str] = Form(None)
 ):
     """
-    Fast transcription endpoint for game integration.
+    Pure transcription endpoint for game integration.
+    Accepts an audio file and optional language code ('en', 'hi', 'mr').
+    Returns recognized text and detected/used language.
     """
     temp_raw_path = None
     temp_prep_path = None
@@ -153,9 +127,11 @@ async def transcribe_audio(
             temp.write(content)
             temp_raw_path = temp.name
 
+        # Audio preprocessing
         temp_prep_path = _preprocess_audio(temp_raw_path)
         m = _get_model()
 
+        # Language isolation & script steering with optimal decoding parameters
         transcribe_args = {
             "task": "transcribe",
             "fp16": False,
@@ -175,9 +151,7 @@ async def transcribe_audio(
             if lang_code in LANGUAGE_INITIAL_PROMPTS:
                 transcribe_args["initial_prompt"] = LANGUAGE_INITIAL_PROMPTS[lang_code]
 
-        with torch.inference_mode():
-            result = m.transcribe(temp_prep_path, **transcribe_args)
-
+        result = m.transcribe(temp_prep_path, **transcribe_args)
         raw_text = result.get("text", "").strip()
         recognized = _clean_transcription(raw_text)
 
@@ -212,6 +186,8 @@ async def assess_audio(
 ):
     """
     Complete reading assessment endpoint.
+    Transcribes audio, runs text comparison vs expected_text, and computes audio metrics (WPM, duration, pauses).
+    Supports English ('en'), Hindi ('hi'), and Marathi ('mr').
     """
     temp_raw_path = None
     temp_prep_path = None
@@ -253,14 +229,18 @@ async def assess_audio(
             if lang_code in LANGUAGE_INITIAL_PROMPTS:
                 transcribe_args["initial_prompt"] = LANGUAGE_INITIAL_PROMPTS[lang_code]
 
-        with torch.inference_mode():
-            result = m.transcribe(temp_prep_path, **transcribe_args)
+        # Step 1: Speech-to-Text
+        result = m.transcribe(temp_prep_path, **transcribe_args)
         raw_text = result.get("text", "").strip()
         recognized = _clean_transcription(raw_text)
 
-        # Assessment
-        assessment = assess_reading(expected_text, recognized)
+        # Step 2: Word assessment with multilingual Unicode awareness
+        assessment = assess_reading(
+            expected_text,
+            recognized
+        )
 
+        # Step 3: Audio analysis (duration, WPM, pauses)
         try:
             audio_analysis = analyze_audio(temp_raw_path, recognized)
         except Exception as audio_err:
@@ -271,6 +251,7 @@ async def assess_audio(
                 "audio_analysis_error": str(audio_err)
             }
 
+        # Step 4: Combine results
         assessment.update(audio_analysis)
         assessment["language"] = lang_code
         assessment["is_empty_speech"] = len(recognized) == 0

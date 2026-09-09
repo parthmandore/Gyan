@@ -6,19 +6,7 @@
     "back": "वापस",
     "next": "आगे",
     "retry": "पुनः प्रयास करें",
-    "close": "बंद करें",
-    "tryCount": "(प्रयास {{count}})",
-    "gotIt": "समझ गया!",
-    "homeLanguage": "घर की भाषा",
-    "learningLanguage": "सीखने की भाषा",
-    "play": "खेलें ▶",
-    "accuracy": "सटीकता",
-    "correct": "सही जोड़े",
-    "xpEarned": "अर्जित XP",
-    "playAgain": "फिर से खेलें",
-    "catalog": "गेम्स हब",
-    "practice": "अभ्यास चाहिए",
-    "noAttemptsYet": "अभी तक कोई प्रयास रिकॉर्ड नहीं हुआ।"
+    "close": "बंद करें"
   },
   "navigation": {
     "home": "मुख्य पृष्ठ",
@@ -27,17 +15,13 @@
   "languageGate": {
     "title": "सीखने की भाषा चुनें",
     "subtitle": "वह भाषा चुनें जिसे आप आज सीखना चाहते हैं!",
-    "motherTongueTitle": "आप घर पर कौन सी भाषा बोलते हैं?",
-    "motherTongueSubtitle": "ऐप आपसे इसी भाषा में बात करेगा!",
-    "learningLanguageTitle": "आप कौन सी भाषा सीखना चाहते हैं?",
-    "learningLanguageSubtitle": "वह भाषा चुनें जिसे आप बोलना और सीखना चाहते हैं!",
     "english": "English",
-    "englishSub": "अंग्रेजी वर्णमाला और शब्द सीखें",
+    "englishSub": "Learn English letters & numbers",
     "hindi": "हिन्दी",
-    "hindiSub": "सीखें हिन्दी वर्णमाला और शब्द",
+    "hindiSub": "सीखें हिन्दी वर्णमाला और संख्याएं",
     "marathi": "मराठी",
-    "marathiSub": "मराठी मुळाक्षरे आणि शब्द शिका",
-    "accessibilityHint": "ऐप की भाषा {{language}} पर सेट करता है"
+    "marathiSub": "शिका मराठी मुळाक्षरे आणि संख्या",
+    "accessibilityHint": "ऐप की सीखने की भाषा {{language}} पर सेट करता है और उपलब्ध खेल खोलता है"
   },
   "ageGate": {
     "title": "अपनी उम्र चुनें",
@@ -73,30 +57,9 @@
       "description": "स्वरों को उनके व्यंजन+मात्रा रूपों से मिलाएं!"
     },
     "speechWordChallenge": {
-      "title": "अक्षर बोलो",
+      "title": "शब्द उच्चारण चुनौती",
       "subtitle": "माइक में बोलें!",
-      "description": "अक्षर देखो और ज़ोर से बोलो!"
-    },
-    "speechLetters": {
-      "title": "अक्षर बोलो",
-      "subtitle": "माइक में बोलें!",
-      "description": "अक्षर देखो और ज़ोर से बोलो!"
-    },
-    "speechAnimals": {
-      "title": "जानवरों के नाम",
-      "description": "यह कौन सा जानवर है? इसका नाम बोलो!"
-    },
-    "speechFruits": {
-      "title": "फल और सब्ज़ियाँ",
-      "description": "यह कौन सा फल या सब्ज़ी है? इसका नाम बोलो!"
-    },
-    "speechEveryday": {
-      "title": "हमारे आस-पास",
-      "description": "यह क्या है? इसका नाम बोलो!"
-    },
-    "languagePairMatch": {
-      "title": "भाषा जोड़ी मिलाओ",
-      "description": "अपनी भाषा में शब्द देखें और उसके अनुवाद से सही जोड़ी मिलाएँ!"
+      "description": "माइक में साफ-साफ अक्षर या शब्द बोलें और उच्चारण सुधारें!"
     }
   },
   "alphabetMatching": {
@@ -117,9 +80,7 @@
     "step2": "नीचे दिए गए विकल्पों में से सही कार्ड पर टैप करें।",
     "step3": "सभी राउंड पूरे करके सितारे और अंक अर्जित करें!",
     "howToPlayBtn": "❓ कैसे खेलें",
-    "gotItBtn": "समझ गया! ▶",
-    "teachingLetter": "यह अक्षर {{letter}} है",
-    "teachingNumber": "यह संख्या {{letter}} है"
+    "gotItBtn": "समझ गया! ▶"
   },
   "capitalSmallMatch": {
     "gameTitle": "बड़े और छोटे अक्षर मिलान",
@@ -142,9 +103,7 @@
     "wrongMatchLeftLabel": "बड़ा",
     "wrongMatchRightLabel": "छोटा",
     "wrongMatchGotIt": "समझ गया! ▶",
-    "wrongMatchSpeak": "यह है {{left}} और {{right}}",
-    "spokenCapital": "बड़ा अक्षर {{letter}}",
-    "spokenSmall": "छोटा अक्षर {{letter}}"
+    "wrongMatchSpeak": "यह है {{left}} और {{right}}"
   },
   "vowelMatraMatch": {
     "gameTitle": "स्वर और मात्रा मिलान",
@@ -218,7 +177,6 @@
     "leaveGameDesc": "क्या आप खेल छोड़ना चाहते हैं? आपका वर्तमान परिणाम सुरक्षित किया जाएगा।",
     "keepPlaying": "खेलते रहें",
     "exitGame": "खेल छोड़ें",
-    "quitGame": "खेल छोड़ें",
     "listenForLetter": "अक्षर सुनें!",
     "listenForNumber": "संख्या सुनें!",
     "loadingAudio": "लोड हो रहा है...",
@@ -233,12 +191,6 @@
     "finishedGame": "आपने आज का खेल पूरा कर लिया!"
   },
   "speechWordChallenge": {
-    "promptAnimals": "यह कौन सा जानवर है? इसका नाम बोलो!",
-    "promptFruits": "यह क्या है? इसका नाम बोलो!",
-    "promptNature": "यह क्या है? इसका नाम बोलो!",
-    "promptLetters": "अक्षर को पहचानो और बोलो।",
-    "mysteryWhatIsThis": "❓ नाम बोलो",
-    "mysterySayLetter": "❓ अक्षर बोलो",
     "sayTheWord": "शब्द बोलो।",
     "sayTheLetter": "अक्षर बोलो!",
     "whatIsThis": "यह क्या है? शब्द बोलो!",
@@ -271,47 +223,6 @@
     "debugExpected": "अपेक्षित: {{word}}",
     "debugHeard": "सुना: {{heard}}",
     "progressLabel": "{{total}} में से {{current}} राउंड",
-    "microphoneHint": "माइक दबाएं और जोर से बोलें",
-    "howToPlayTitle": "कैसे खेलें",
-    "howToPlayLetters": "1. स्क्रीन पर बड़ा अक्षर देखो।\n2. माइक्रोफ़ोन बटन दबाओ।\n3. अक्षर को साफ़ आवाज़ में बोलो!\n4. 3 सितारे पाने के लिए सभी 10 राउंड पूरे करो! ⭐",
-    "howToPlayWords": "1. स्क्रीन पर चित्र देखो।\n2. शब्द के बारे में सोचो (उत्तर छुपा है!)।\n3. माइक्रोफ़ोन दबाओ और नाम ज़ोर से बोलो!\n4. 3 सितारे पाने के लिए सभी 10 राउंड पूरे करो! ⭐",
-    "startChallenge": "खेल शुरू करें ▶",
-    "gotIt": "समझ गया! ▶",
-    "listenInstruction": "निर्देश ध्यान से सुनें",
-    "introPromptLetters": "अक्षर देखो और ज़ोर से बोलो!",
-    "introPromptWords": "चित्र देखो, शब्द सोचो और ज़ोर से बोलो!",
-    "sessionCompletePraise": "बहुत बढ़िया! आपने सभी शब्द बहुत अच्छे से बोले!",
-    "feedback": {
-      "listening": "मैं सुन रहा हूँ...",
-      "checking": "जाँच हो रही है...",
-      "greatJob": "शाबाश!",
-      "couldNotHear": "साफ़ आवाज़ नहीं आई। फिर से कोशिश करो!",
-      "helperResting": "स्पीच हेल्पर आराम कर रहा है। फिर से टैप करें!",
-      "almostTryAgain": "लगभग सही! फिर से कोशिश करो। 💛"
-    },
-    "micButton": {
-      "tapAndSay": "टैप करें और बोलें",
-      "listening": "सुन रहा हूँ...",
-      "checking": "जाँच जारी...",
-      "greatJob": "शाबाश!",
-      "tryAgain": "फिर से प्रयास करें"
-    }
-  },
-  "languagePairMatch": {
-    "title": "भाषा जोड़ी मिलाओ",
-    "subtitle": "भाषा की सैर",
-    "instructions": "{{source}} के शब्दों को {{target}} के सही अनुवाद से मिलाओ!",
-    "instructionsText": "सही जोड़ी मिलाओ!",
-    "tryAgain": "फिर से कोशिश करो!",
-    "sameLanguageTitle": "एक ही भाषा चुनी गई",
-    "sameLanguageDesc": "आपकी घर की भाषा और सीखने की भाषा एक जैसी हैं। कृपया खेलने के लिए दूसरी भाषा चुनें।",
-    "switchLanguage": "दूसरी भाषा चुनें",
-    "howToPlayTitle": "खेलने का तरीका",
-    "howToPlayDesc": "१. बाईं तरफ अपनी भाषा का कार्ड छुएं।\n२. दाईं तरफ उसका सही अनुवाद छुएं।\n३. सभी जोड़ियाँ मिलाकर अगले राउंड पर जाएँ!",
-    "seeReport": "जोड़ी रिपोर्ट देखें",
-    "sessionCompleteTitle": "भाषा की सैर पूरी हुई!",
-    "sessionCompleteDesc": "आपने {{total}} में से {{correct}} जोड़ियाँ सही मिलाईं!",
-    "sessionCompletePraise": "बहुत बढ़िया! आपने सभी भाषा जोड़ियाँ मिला लीं!",
-    "roundBreakdown": "राउंड वार ब्योरा"
+    "microphoneHint": "माइक दबाएं और जोर से बोलें"
   }
 }

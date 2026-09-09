@@ -1,46 +1,90 @@
 /**
- * Purpose: Harmonized Language Manager adapter bridging to central useAppLanguageStore.
- *          Ensures zero competing stores while maintaining full backward-compatibility.
+ * Purpose: Global Language Manager service handling persistence (AsyncStorage) and state.
  * Module: Language Architecture
  * Folder: frontend/src/language
  */
 
-import { LearningLanguage } from './types';
+import i18n from '../localization/i18n';
+import { LearningLanguage, SUPPORTED_LANGUAGES } from './types';
 
-const MAP_CODE_TO_NAME: Record<string, LearningLanguage> = {
-  en: 'english',
-  hi: 'hindi',
-  mr: 'marathi',
-};
-
-const MAP_NAME_TO_CODE: Record<LearningLanguage, 'en' | 'hi' | 'mr'> = {
-  english: 'en',
-  hindi: 'hi',
-  marathi: 'mr',
-};
+const STORAGE_KEY = '@gyan_learning_language';
+const DEFAULT_LANGUAGE: LearningLanguage = 'english';
 
 class LanguageManagerService {
+  private currentLanguage: LearningLanguage = DEFAULT_LANGUAGE;
+  private isLoaded: boolean = false;
+
+  /**
+   * Loads persisted learning language from storage on app launch.
+   */
   async init(): Promise<LearningLanguage> {
-    return this.getLanguage();
+    if (this.isLoaded) return this.currentLanguage;
+
+    try {
+      let stored: string | null = null;
+      if (typeof window !== 'undefined' && window.localStorage) {
+        stored = window.localStorage.getItem(STORAGE_KEY);
+      } else {
+        try {
+          const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+          stored = await AsyncStorage.getItem(STORAGE_KEY);
+        } catch {
+          // Fallback if native module unavailable
+        }
+      }
+
+      if (stored && (stored === 'english' || stored === 'hindi' || stored === 'marathi')) {
+        this.currentLanguage = stored as LearningLanguage;
+      } else {
+        this.currentLanguage = DEFAULT_LANGUAGE;
+      }
+    } catch (err) {
+      console.warn('[LanguageManager] Error loading language from storage, fallback to default:', err);
+      this.currentLanguage = DEFAULT_LANGUAGE;
+    }
+
+    this.isLoaded = true;
+    this.syncI18n();
+    return this.currentLanguage;
   }
 
+  /**
+   * Gets current active learning language synchronously.
+   */
   getLanguage(): LearningLanguage {
+    return this.currentLanguage;
+  }
+
+  /**
+   * Sets and persists the global learning language.
+   */
+  async setLanguage(lang: LearningLanguage): Promise<void> {
+    this.currentLanguage = lang;
+    this.syncI18n();
+
     try {
-      const { useAppLanguageStore } = require('../state/appLanguageStore');
-      const code = useAppLanguageStore.getState().learningLanguage;
-      return MAP_CODE_TO_NAME[code] || 'english';
-    } catch {
-      return 'english';
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.setItem(STORAGE_KEY, lang);
+      } else {
+        try {
+          const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+          await AsyncStorage.setItem(STORAGE_KEY, lang);
+        } catch {
+          // Storage fallback
+        }
+      }
+    } catch (err) {
+      console.warn('[LanguageManager] Error saving language to storage:', err);
     }
   }
 
-  async setLanguage(lang: LearningLanguage): Promise<void> {
-    try {
-      const { useAppLanguageStore } = require('../state/appLanguageStore');
-      const code = MAP_NAME_TO_CODE[lang] || 'en';
-      await useAppLanguageStore.getState().setLearningLanguage(code);
-    } catch (err) {
-      console.warn('[LanguageManager] Error updating learningLanguage:', err);
+  /**
+   * Syncs i18next language locale to match selected learning language.
+   */
+  private syncI18n(): void {
+    const meta = SUPPORTED_LANGUAGES[this.currentLanguage];
+    if (meta && i18n && typeof i18n.changeLanguage === 'function') {
+      i18n.changeLanguage(meta.code);
     }
   }
 }
