@@ -19,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 import { SpeechRoundAttempt } from '../types';
 import { Typography } from '../../../../theme/typography';
 import { BigTouchTarget } from '../../../../components/BigTouchTarget';
+import { useAppLanguageStore } from '../../../../state/appLanguageStore';
 
 interface SpeechReportModalProps {
   visible: boolean;
@@ -30,12 +31,26 @@ interface SpeechReportModalProps {
 export const SpeechReportModal: React.FC<SpeechReportModalProps> = React.memo(
   ({ visible, onClose, attempts, totalRounds = 10 }) => {
     const { t } = useTranslation();
+    const motherTongue = useAppLanguageStore((s) => s.motherTongue) || 'en';
     const { width: screenWidth } = useWindowDimensions();
 
-    const correctCount = attempts.filter((a) => a.isCorrect).length;
-    const totalAttempted = attempts.length;
-    const needsPracticeCount = totalAttempted - correctCount;
-    const accuracy = totalAttempted > 0 ? Math.round((correctCount / totalAttempted) * 100) : 0;
+    // Group attempts by roundNumber to get the consolidated outcome per question/round
+    const roundMap = new Map<number, SpeechRoundAttempt>();
+    attempts.forEach((att) => {
+      const existing = roundMap.get(att.roundNumber);
+      if (!existing) {
+        roundMap.set(att.roundNumber, att);
+      } else {
+        // If a retry existed, keep the final attempt
+        roundMap.set(att.roundNumber, att);
+      }
+    });
+
+    const uniqueRounds = Array.from(roundMap.values()).sort((a, b) => a.roundNumber - b.roundNumber);
+    const correctCount = uniqueRounds.filter((a) => a.isCorrect).length;
+    const totalQuestions = Math.max(totalRounds, uniqueRounds.length, 1);
+    const needsPracticeCount = Math.max(0, totalQuestions - correctCount);
+    const accuracy = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
 
     const modalWidth = Math.min(screenWidth - 32, 440);
 
@@ -87,8 +102,8 @@ export const SpeechReportModal: React.FC<SpeechReportModalProps> = React.memo(
             <Text style={styles.sectionHeader}>{t('speechWordChallenge.roundBreakdown')}</Text>
 
             <ScrollView style={styles.itemsList} showsVerticalScrollIndicator={false}>
-              {attempts.length > 0 ? (
-                attempts.map((att, idx) => (
+              {uniqueRounds.length > 0 ? (
+                uniqueRounds.map((att, idx) => (
                   <View
                     key={`${att.roundNumber}-${idx}`}
                     style={[
@@ -103,7 +118,10 @@ export const SpeechReportModal: React.FC<SpeechReportModalProps> = React.memo(
                     <View style={styles.itemTextContainer}>
                       <View style={styles.itemExpectedRow}>
                         <Text style={styles.fieldLabel}>{t('speechWordChallenge.expected')}: </Text>
-                        <Text style={styles.fieldValueExpected}>{att.expectedAnswer}</Text>
+                        <Text style={styles.fieldValueExpected}>{att.displayLabel || att.expectedAnswer}</Text>
+                        {att.attemptCount > 1 && (
+                          <Text style={styles.attemptTagText}> {t('common.tryCount', { count: att.attemptCount, lng: motherTongue })}</Text>
+                        )}
                       </View>
                       <View style={styles.itemHeardRow}>
                         <Text style={styles.fieldLabel}>{t('speechWordChallenge.heard')}: </Text>
@@ -300,6 +318,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#0F172A',
   },
+  attemptTagText: {
+    fontFamily: Typography.fonts.medium,
+    fontSize: 11,
+    color: '#6366F1',
+  },
   fieldValueHeard: {
     fontFamily: Typography.fonts.medium,
     fontSize: 12,
@@ -333,7 +356,7 @@ const styles = StyleSheet.create({
   emptyStateText: {
     fontFamily: Typography.fonts.medium,
     fontSize: 13,
-    color: '#94A3B8',
+    color: '#475569',
   },
   doneButton: {
     backgroundColor: '#3B82F6',

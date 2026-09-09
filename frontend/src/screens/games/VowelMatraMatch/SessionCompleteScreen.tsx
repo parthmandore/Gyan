@@ -38,6 +38,9 @@ import { submitGameProgress } from '../../../services/progressService';
 import { fetchRewardsSummary, RewardsSummaryData } from '../../../services/rewardsService';
 import { triggerHapticSuccess } from '../../../services/hapticsService';
 import { speakPraise } from '../../../services/praiseService';
+import { useProgressStore } from '../../../state/useProgressStore';
+import { xpService } from '../../../services/xpService';
+import { useAppLanguageStore } from '../../../state/appLanguageStore';
 
 type NavProp = NativeStackNavigationProp<VowelMatraMatchStackParamList>;
 type RouteProps = RouteProp<VowelMatraMatchStackParamList, 'VowelMatraMatchSessionComplete'>;
@@ -58,7 +61,7 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
     sessionResults: [],
   };
 
-  const { xpEarned, itemsCorrect, sessionLength, durationSeconds, sessionResults } = routeParams;
+  const { sessionId, xpEarned, itemsCorrect, sessionLength, durationSeconds, sessionResults } = routeParams;
   const finalXpEarned = xpEarned && xpEarned > 0 ? xpEarned : itemsCorrect * 10;
 
   const resetSession = useVowelMatraMatchStore((s) => s.resetSession);
@@ -87,6 +90,21 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
 
     const loadDataAndSubmit = async () => {
       try {
+        const motherTongue = useAppLanguageStore.getState().motherTongue || 'en';
+        const learningLanguage = useAppLanguageStore.getState().learningLanguage || 'hi';
+        await xpService.recordSessionCompletionXP({
+          sessionId: sessionId || `vmm_sess_${Date.now()}`,
+          gameId: 'vowel_matra_match',
+          category: 'letters',
+          learningLanguage,
+          motherTongue,
+          age: 5,
+          totalQuestions: sessionLength || itemsCorrect || 11,
+          correctAnswers: itemsCorrect,
+          accuracy: routeParams.accuracy || 100,
+          durationSeconds,
+        });
+
         await submitGameProgress({
           game_type: 'vowel_matra_match',
           difficulty: 1,

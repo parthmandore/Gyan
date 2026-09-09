@@ -20,8 +20,18 @@ const getDefaultSTTUrl = (): string => {
   return 'http://localhost:8000';
 };
 
+const getDefaultMainUrl = (): string => {
+  if (process.env.EXPO_PUBLIC_API_URL) {
+    return process.env.EXPO_PUBLIC_API_URL.replace(/\/+$/, '');
+  }
+  if (Platform.OS === 'android') {
+    return 'http://10.0.2.2:8000';
+  }
+  return 'http://localhost:8000';
+};
+
 export const API_CONFIG = {
   STT_BASE_URL: getDefaultSTTUrl(),
-  MAIN_API_URL: (process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000').replace(/\/+$/, ''),
-  TIMEOUT_MS: 25000,
+  MAIN_API_URL: getDefaultMainUrl(),
+  TIMEOUT_MS: 60000,
 } as const;

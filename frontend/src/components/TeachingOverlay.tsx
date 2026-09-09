@@ -21,7 +21,7 @@ import * as Speech from 'expo-speech';
 import { BigTouchTarget } from './BigTouchTarget';
 import { Typography } from '../theme/typography';
 import { useAlphabetMatchingStore } from '../screens/games/AlphabetMatching/store/alphabetMatchingStore';
-import { getDataset } from '../screens/games/AlphabetMatching/datasets';
+import { useAppLanguageStore } from '../state/appLanguageStore';
 
 export const TEACHING_OVERLAY_TIMEOUT_MS = 4500;
 
@@ -43,15 +43,16 @@ export const TeachingOverlay: React.FC<TeachingOverlayProps> = React.memo(
     buttonText,
     style,
   }) => {
-    const { t, i18n } = useTranslation();
-    const currentLang = (i18n.language?.substring(0, 2) || 'en') as 'en' | 'hi' | 'mr';
+    const { t } = useTranslation();
+    const motherTongue = useAppLanguageStore((s) => s.motherTongue) || 'en';
     const [reduceMotion, setReduceMotion] = useState(false);
 
     const mode = useAlphabetMatchingStore((s) => s.mode);
-    const activeDataset = getDataset(mode);
 
     const displaySymbol = targetLetter || '';
-    const teachingText = activeDataset.getTeachingText(displaySymbol);
+    const teachingText = mode === 'numbers'
+      ? t('alphabetMatching.teachingNumber', { letter: displaySymbol, lng: motherTongue, defaultValue: `This is number ${displaySymbol}` })
+      : t('alphabetMatching.teachingLetter', { letter: displaySymbol, lng: motherTongue, defaultValue: `This is the letter ${displaySymbol}` });
     const audioPhraseText = `${teachingText}.`;
 
     const hasDismissedRef = useRef(false);
@@ -124,7 +125,7 @@ export const TeachingOverlay: React.FC<TeachingOverlayProps> = React.memo(
       // Speak active dataset teaching phrase: "This is the letter T" or "This is number 7"
       try {
         const { speakPhrase } = require('../services/speechService');
-        speakPhrase(audioPhraseText);
+        speakPhrase(audioPhraseText, { language: motherTongue });
       } catch (e) {
         console.warn('[TeachingOverlay] Speech playback failed:', e);
       }
@@ -143,7 +144,7 @@ export const TeachingOverlay: React.FC<TeachingOverlayProps> = React.memo(
       visible,
       targetLetter,
       audioPhraseText,
-      currentLang,
+      motherTongue,
       reduceMotion,
       safeDismiss,
       cardScale,

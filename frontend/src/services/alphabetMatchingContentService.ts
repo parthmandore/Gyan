@@ -59,7 +59,7 @@ export const generateDynamicMockContent = (
   difficulty: number,
   mode: GameMode = 'capital'
 ): GameContentData => {
-  const selectedLang = useAppLanguageStore.getState().selectedLanguage || 'en';
+  const selectedLang = useAppLanguageStore.getState().learningLanguage || 'en';
   const alphabetConfig = getAlphabetConfig(selectedLang);
 
   const targetCount = getGridSizeForDifficulty(difficulty);
@@ -114,7 +114,7 @@ export const fetchAlphabetMatchingContent = async (
   difficulty: number = 1,
   mode: GameMode = 'capital'
 ): Promise<GameContentResponse> => {
-  const selectedLang = useAppLanguageStore.getState().selectedLanguage || 'en';
+  const selectedLang = useAppLanguageStore.getState().learningLanguage || 'en';
   try {
     const response = await apiClient.get<GameContentResponse>(
       `/api/games/alphabet_matching/content?difficulty=${difficulty}&mode=${mode}&lang=${selectedLang}`

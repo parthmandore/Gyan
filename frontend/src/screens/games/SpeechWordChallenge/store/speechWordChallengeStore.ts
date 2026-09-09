@@ -51,7 +51,7 @@ export const useSpeechWordChallengeStore = create<SpeechWordChallengeState>((set
 
       if (isCorrect) {
         newRoundResults[state.roundIndex] = 'correct';
-      } else if (newAttemptCount >= 2) {
+      } else {
         newRoundResults[state.roundIndex] = 'wrong';
       }
 
@@ -60,10 +60,10 @@ export const useSpeechWordChallengeStore = create<SpeechWordChallengeState>((set
         lastMatchResult: isCorrect ? 'correct' : 'wrong',
         attemptCount: newAttemptCount,
         score: isCorrect ? state.score + 1 : state.score,
-        itemsAttempted: state.itemsAttempted + 1,
+        itemsAttempted: state.roundIndex + 1,
         itemsCorrect: isCorrect ? state.itemsCorrect + 1 : state.itemsCorrect,
         roundResults: newRoundResults,
-        roundLocked: isCorrect || newAttemptCount >= 2,
+        roundLocked: true,
       };
     }),
 

@@ -14,6 +14,7 @@ if os.path.exists(winget_ffmpeg) and winget_ffmpeg not in os.environ.get("PATH",
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.api.speech_api import router as speech_router
+from backend.api.progress_api import router as progress_router
 
 app = FastAPI(
     title="Speech AI Module",
@@ -53,6 +54,12 @@ app.include_router(
     speech_router,
     prefix="/speech",
     tags=["Speech"]
+)
+
+app.include_router(
+    progress_router,
+    prefix="/api/progress",
+    tags=["Progress"]
 )
 
 

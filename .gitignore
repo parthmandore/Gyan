@@ -40,6 +40,13 @@ Thumbs.db
 .vscode/
 .idea/
 
+# SQLite & Local Databases
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+**/backend/data/*.db
+
 # Native & TypeScript
 *.tsbuildinfo
 .kotlin/

@@ -7,6 +7,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, AccessibilityInfo } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { useAppLanguageStore } from '../../../../state/appLanguageStore';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -146,31 +148,39 @@ export const StorybookMicrophoneButton: React.FC<StorybookMicrophoneButtonProps>
       transform: [{ rotate: `${spinnerRotation.value}deg` }],
     }));
 
+    const { t } = useTranslation();
+    const motherTongue = useAppLanguageStore((s) => s.motherTongue) || 'en';
+
     // Dynamic state theme colors
     let mainColor = '#F43F5E';
     let bevelColor = '#BE123C';
-    let label = 'Tap & Say';
+    let labelColor = '#FFFFFF';
+    let label = t('speechWordChallenge.micButton.tapAndSay', { lng: motherTongue });
     let icon = '🎙️';
 
     if (state === 'recording') {
       mainColor = '#EF4444';
       bevelColor = '#B91C1C';
-      label = 'Listening...';
+      labelColor = '#FFFFFF';
+      label = t('speechWordChallenge.micButton.listening', { lng: motherTongue });
       icon = '⏹️';
     } else if (state === 'processing') {
       mainColor = '#F59E0B';
       bevelColor = '#B45309';
-      label = 'Checking...';
+      labelColor = '#78350F';
+      label = t('speechWordChallenge.micButton.checking', { lng: motherTongue });
       icon = '⏳';
     } else if (state === 'success') {
       mainColor = '#22C55E';
       bevelColor = '#15803D';
-      label = 'Great job!';
+      labelColor = '#064E3B';
+      label = t('speechWordChallenge.micButton.greatJob', { lng: motherTongue });
       icon = '✓';
     } else if (state === 'retry') {
       mainColor = '#FB923C';
       bevelColor = '#C2410C';
-      label = 'Try Again';
+      labelColor = '#7C2D12';
+      label = t('speechWordChallenge.micButton.tryAgain', { lng: motherTongue });
       icon = '🎙️';
     }
 
@@ -223,7 +233,7 @@ export const StorybookMicrophoneButton: React.FC<StorybookMicrophoneButtonProps>
             <Text style={styles.iconText}>{icon}</Text>
 
             {/* State Label Subtext */}
-            <Text style={styles.labelText}>{label}</Text>
+            <Text style={[styles.labelText, { color: labelColor }]}>{label}</Text>
           </Pressable>
         </Animated.View>
       </View>

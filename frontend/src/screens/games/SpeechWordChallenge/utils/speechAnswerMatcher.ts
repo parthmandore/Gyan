@@ -32,6 +32,20 @@ const CONFUSABLE_PROTECTION_MAP: Record<string, string[]> = {
   van: ['fan', 'pan', 'man', 'can'],
   red: ['bed', 'read', 'rid', 'rod'],
   pen: ['pan', 'pin', 'pun', 'pet', 'ten'],
+  goat: ['boat', 'coat', 'float', 'throat', 'gold'],
+  hen: ['pen', 'ten', 'men', 'den', 'when', 'head'],
+  cow: ['how', 'now', 'bow', 'plow', 'row'],
+  bear: ['pear', 'tear', 'wear', 'hair', 'care'],
+  carrot: ['parrot', 'garrot'],
+  parrot: ['carrot'],
+  peas: ['piece', 'peace', 'please'],
+  onion: ['union'],
+  bag: ['bed', 'bad', 'bud', 'dad', 'back', 'beg', 'bug', 'bat'],
+  shoe: ['show', 'she', 'shoot', 'shop'],
+  chair: ['cheer', 'hair', 'air', 'share'],
+  car: ['cat', 'can', 'cap', 'card'],
+  house: ['horse', 'mouse'],
+  horse: ['house'],
 };
 
 /**

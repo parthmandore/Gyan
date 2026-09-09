@@ -1,17 +1,12 @@
 /**
- * Purpose: Service layer for fetching reward/XP summary from Backend API.
+ * Purpose: Service layer for fetching reward/XP summary dynamically from Backend API or local store.
  * Module: Services
  * Folder: frontend/src/services
- *
- * Endpoint: GET /api/rewards/summary
- * Returns current XP total, level, and XP remaining to next level.
- * Backend is the source of truth for all reward/XP calculations —
- * the frontend does NOT duplicate this logic.
- *
- * // TEMPORARY MOCK — Returns realistic mock data when Backend is offline.
  */
 
 import { apiClient } from './apiClient';
+import { useProgressStore } from '../state/useProgressStore';
+import { calculateLevelProgress } from '../config/xpConfig';
 
 export interface RewardsSummaryData {
   xp_total: number;
@@ -25,28 +20,39 @@ export interface RewardsSummaryResponse {
   data: RewardsSummaryData;
 }
 
-// TEMPORARY MOCK — REPLACE WHEN BACKEND IS AVAILABLE
-const MOCK_REWARDS_SUMMARY: RewardsSummaryResponse = {
-  success: true,
-  data: {
-    xp_total: 340,
-    level: 4,
-    xp_earned_in_level: 40,
-    xp_to_next_level: 60,
-  },
-};
-
 export const fetchRewardsSummary = async (): Promise<RewardsSummaryResponse> => {
+  const store = useProgressStore.getState();
+
   try {
-    const response = await apiClient.get<RewardsSummaryResponse>(
-      '/api/rewards/summary',
-    );
-    return response.data;
-  } catch (error) {
-    // TEMPORARY MOCK — REPLACE WHEN BACKEND IS AVAILABLE
-    console.warn(
-      '[rewardsService] Backend API offline. Returning temporary mock rewards summary.',
-    );
-    return MOCK_REWARDS_SUMMARY;
+    const response = await apiClient.get<{
+      user_id: string;
+      total_xp: number;
+      current_level: number;
+    }>(`/api/progress/summary/${store.activeChildId}`);
+
+    if (response.data && typeof response.data.total_xp === 'number') {
+      const info = calculateLevelProgress(response.data.total_xp);
+      return {
+        success: true,
+        data: {
+          xp_total: info.totalXp,
+          level: info.currentLevel,
+          xp_earned_in_level: info.xpInCurrentLevel,
+          xp_to_next_level: info.xpToNextLevel,
+        },
+      };
+    }
+  } catch {
+    // Graceful offline fallback using local state
   }
+
+  return {
+    success: true,
+    data: {
+      xp_total: store.totalXp,
+      level: store.currentLevel,
+      xp_earned_in_level: store.xpInCurrentLevel,
+      xp_to_next_level: store.xpToNextLevel,
+    },
+  };
 };

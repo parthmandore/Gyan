@@ -26,6 +26,7 @@ import { Colors } from '../theme/colors';
 import { Typography } from '../theme/typography';
 import { GAME_REGISTRY, GameRegistryEntry } from '../config/gameRegistry';
 import { useAppLanguageStore } from '../state/appLanguageStore';
+import { useProgressStore } from '../state/useProgressStore';
 import { RootStackParamList } from '../types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'GameCatalog'>;
@@ -40,27 +41,28 @@ export const GameCatalogScreen: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const navigation = useNavigation<NavigationProp>();
   const { width: screenWidth } = useWindowDimensions();
-  const selectedLanguage = useAppLanguageStore((s) => s.selectedLanguage) || 'en';
+  const motherTongue = useAppLanguageStore((s) => s.motherTongue) || 'en';
+  const learningLanguage = useAppLanguageStore((s) => s.learningLanguage) || 'en';
   const selectedAge = useAppLanguageStore((s) => s.selectedAge) || 5;
+
+  const totalXp = useProgressStore((s) => s.totalXp);
+  const currentLevel = useProgressStore((s) => s.currentLevel);
+
+  React.useEffect(() => {
+    useProgressStore.getState().initProgress();
+  }, []);
 
   const availableGames = GAME_REGISTRY.filter(
     (game) =>
-      game.supportedLanguages.includes(selectedLanguage) &&
+      game.supportedLanguages.includes(learningLanguage) &&
       game.ageGroups.includes(selectedAge)
   );
 
   const handleOpenGame = (game: GameRegistryEntry) => {
-    if (game.id === 'alphabet_matching') {
-      navigation.navigate('Games', { screen: 'AlphabetMatchingModeSelection' });
-    } else if (game.id === 'capital_small_match') {
-      navigation.navigate('Games', { screen: 'CapitalSmallMatchIntro' });
-    } else if (game.id === 'vowel_matra_match') {
-      navigation.navigate('Games', { screen: 'VowelMatraMatchIntro' });
-    } else if (game.id === 'speech_word_challenge') {
-      navigation.navigate('Games', { screen: 'SpeechWordChallengeIntro' as any });
-    } else {
-      console.log(`[GameCatalog] Selected game: ${game.id}`);
-    }
+    navigation.navigate('Games', {
+      screen: game.navigatorRoute as any,
+      params: game.routeParams || undefined,
+    });
   };
 
   const handleOpenLanguageGate = () => {
@@ -69,7 +71,8 @@ export const GameCatalogScreen: React.FC = React.memo(() => {
 
   const containerWidth = Math.min(screenWidth - 32, 440);
   const gridCardWidth = (containerWidth - 14) / 2;
-  const currentLangLabel = LANGUAGE_LABELS[selectedLanguage] || 'English';
+  const currentLearningLabel = LANGUAGE_LABELS[learningLanguage] || 'English';
+  const currentMotherTongueLabel = LANGUAGE_LABELS[motherTongue] || 'English';
 
   return (
     <View style={styles.webOuterContainer}>
@@ -94,7 +97,7 @@ export const GameCatalogScreen: React.FC = React.memo(() => {
             <View style={styles.headerTextCol}>
               <Text style={styles.headerTitleText}>{t('games.catalogTitle')}</Text>
               <Text style={styles.headerSubtitleText}>
-                {t('games.catalogSubtitle')} • {t('ageGate.ageBadge', { age: selectedAge })}
+                {t('ageGate.ageBadge', { age: selectedAge })} • ⭐ Lvl {currentLevel} ({totalXp} XP)
               </Text>
             </View>
           </View>
@@ -102,11 +105,11 @@ export const GameCatalogScreen: React.FC = React.memo(() => {
           <View style={styles.headerRightCol}>
             <BigTouchTarget
               onPress={handleOpenLanguageGate}
-              accessibilityLabel={`${t('games.changeLanguage')}, ${currentLangLabel}`}
+              accessibilityLabel={`${t('languageGate.learningLanguageTitle')}, ${currentLearningLabel}`}
               accessibilityRole="button"
               style={styles.languageSwitchButton}
             >
-              <Text style={styles.languageSwitchText}>🌐 {currentLangLabel}</Text>
+              <Text style={styles.languageSwitchText}>🎯 {currentLearningLabel}</Text>
             </BigTouchTarget>
             <BigTouchTarget
               onPress={handleOpenLanguageGate}

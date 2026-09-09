@@ -12,6 +12,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import './src/localization/i18n';
 import { LanguageProvider } from './src/language';
 import { RootNavigator } from './src/navigation/RootNavigator';
+import { useAppLanguageStore } from './src/state/appLanguageStore';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -20,6 +21,11 @@ export default function App() {
     Lexend_600SemiBold,
     Lexend_700Bold,
   });
+
+  React.useEffect(() => {
+    useAppLanguageStore.getState().initLanguage();
+    useAppLanguageStore.getState().initAge();
+  }, []);
 
   if (!fontsLoaded) {
     return (

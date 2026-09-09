@@ -3,3 +3,8 @@ __pycache__/
 *.pyc
 .env
 .ipynb_checkpoints/
+*.db
+*.sqlite
+*.sqlite3
+backend/data/*.db
+data/*.db

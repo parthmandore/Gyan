@@ -109,6 +109,27 @@ export const getVoiceForLanguage = async (targetLang: 'english' | 'hindi' | 'mar
 };
 
 /**
+ * Speaks a single vocabulary word in the target learning language (EN, HI, MR).
+ * Ensures English is pronounced with English TTS, Hindi with Hindi TTS,
+ * and Marathi with Marathi (or Hindi fallback) TTS.
+ */
+export const speakWord = async (
+  word: string,
+  language?: string
+): Promise<PlaybackResult> => {
+  let lang = language;
+  if (!lang) {
+    try {
+      const { useAppLanguageStore } = require('../state/appLanguageStore');
+      lang = useAppLanguageStore.getState().learningLanguage || 'en';
+    } catch {
+      lang = 'en';
+    }
+  }
+  return speakPhrase(word, { cancelPrevious: true, language: lang });
+};
+
+/**
  * Stops any currently playing or in-flight speech audio immediately.
  */
 export const stopSpeech = (): void => {
@@ -124,23 +145,30 @@ export const stopSpeech = (): void => {
 };
 
 /**
- * Speaks a single letter/symbol aloud using dataset spoken text, native voice, or phonetic fallback.
+ * Speaks a single letter/symbol aloud in the target learning language.
  */
 export const speakLetter = async (
   letter: string,
   cachedAudioUrl?: string | null,
+  targetLang?: string
 ): Promise<PlaybackResult> => {
   stopSpeech();
   const sessionForThisCall = _speechSessionId;
 
   try {
     let lang: 'english' | 'hindi' | 'marathi' = 'english';
-    try {
-      const { LanguageManager } = require('../language/LanguageManager');
-      lang = LanguageManager.getLanguage();
-    } catch {
-      lang = 'english';
-    }
+    const langCode = targetLang || (() => {
+      try {
+        const { useAppLanguageStore } = require('../state/appLanguageStore');
+        return useAppLanguageStore.getState().learningLanguage || 'en';
+      } catch {
+        return 'en';
+      }
+    })();
+
+    if (langCode === 'hi' || langCode === 'hindi') lang = 'hindi';
+    else if (langCode === 'mr' || langCode === 'marathi') lang = 'marathi';
+    else lang = 'english';
 
     const voiceInfo = await getVoiceForLanguage(lang);
 
@@ -183,10 +211,15 @@ export const speakLetter = async (
         pitch: 1.1,
         rate: 0.55,
         onDone: () => {
+          if (_speechSessionId !== sessionForThisCall) return; // cancelled — ignore
           console.log(`[speechService] Audio playback DONE for "${spokenText}"`);
           resolve({ success: true, source: 'local_tts_fallback' });
         },
         onError: (error) => {
+          if (_speechSessionId !== sessionForThisCall) {
+            resolve({ success: false, source: 'local_tts_fallback', error: 'Cancelled' });
+            return;
+          }
           console.warn(`[speechService] Audio playback ERROR for "${spokenText}":`, error);
           resolve({ success: false, source: 'local_tts_fallback', error: String(error) });
         },
@@ -209,7 +242,7 @@ export const speakLetter = async (
  */
 export const speakPhrase = async (
   phrase: string,
-  options?: { cancelPrevious?: boolean }
+  options?: { cancelPrevious?: boolean; language?: string }
 ): Promise<PlaybackResult> => {
   const shouldCancel = options?.cancelPrevious ?? true;
   if (shouldCancel) {
@@ -219,11 +252,21 @@ export const speakPhrase = async (
 
   try {
     let lang: 'english' | 'hindi' | 'marathi' = 'english';
-    try {
-      const { LanguageManager } = require('../language/LanguageManager');
-      lang = LanguageManager.getLanguage();
-    } catch {
-      lang = 'english';
+    if (options?.language) {
+      const l = options.language.toLowerCase();
+      if (l === 'hi' || l === 'hindi') lang = 'hindi';
+      else if (l === 'mr' || l === 'marathi') lang = 'marathi';
+      else lang = 'english';
+    } else {
+      try {
+        const { useAppLanguageStore } = require('../state/appLanguageStore');
+        const motherTongue = useAppLanguageStore.getState().motherTongue || 'en';
+        if (motherTongue === 'hi') lang = 'hindi';
+        else if (motherTongue === 'mr') lang = 'marathi';
+        else lang = 'english';
+      } catch {
+        lang = 'english';
+      }
     }
 
     const voiceInfo = await getVoiceForLanguage(lang);
@@ -251,10 +294,16 @@ export const speakPhrase = async (
         pitch: 1.15,
         rate: 0.65,
         onDone: () => {
+          if (_speechSessionId !== sessionForThisCall) return; // cancelled — ignore
           console.log(`[speechService] Phrase playback DONE: "${phrase}"`);
           resolve({ success: true, source: 'local_tts_fallback' });
         },
         onError: (error) => {
+          // If session ID changed, this error is from a deliberately cancelled utterance — not a real error
+          if (_speechSessionId !== sessionForThisCall) {
+            resolve({ success: false, source: 'local_tts_fallback', error: 'Cancelled' });
+            return;
+          }
           console.warn(`[speechService] Phrase playback ERROR for "${phrase}":`, error);
           resolve({ success: false, source: 'local_tts_fallback', error: String(error) });
         },

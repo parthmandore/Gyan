@@ -38,10 +38,12 @@
     "typescript": "~6.0.3"
   },
   "scripts": {
-    "start": "expo start",
+    "start": "expo start --web",
+    "dev": "expo start --web",
+    "web": "expo start --web",
+    "mobile": "expo start",
     "android": "expo run:android",
-    "ios": "expo run:ios",
-    "web": "expo start --web"
+    "ios": "expo run:ios"
   },
   "private": true
 }
