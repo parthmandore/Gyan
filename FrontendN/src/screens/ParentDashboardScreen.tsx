@@ -155,9 +155,12 @@ const ParentDashboardScreen: React.FC = () => {
     recentActivity,
   } = parentDashboardData;
 
+ const handleBack = () => {
+  navigation.replace('RoleSelection');
+};
+
   return (
     <View style={styles.container}>
-
       {/* HEADER */}
 
       <View
@@ -169,14 +172,16 @@ const ParentDashboardScreen: React.FC = () => {
         ]}
       >
         <Pressable
-          style={({ pressed }) => [
-            styles.backButton,
-            pressed && styles.pressed,
-          ]}
-          onPress={() => navigation.goBack()}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-        >
+       style={({ pressed }) => [
+    styles.backButton,
+    pressed && styles.pressed,
+  ]}
+  onPress={() => {
+    handleBack();
+  }}
+  accessibilityRole="button"
+  accessibilityLabel="Go back to role selection"
+>
           <Ionicons
             name="arrow-back"
             size={23}
@@ -212,7 +217,6 @@ const ParentDashboardScreen: React.FC = () => {
           },
         ]}
       >
-
         {/* WELCOME CARD */}
 
         <View style={styles.welcomeCard}>
@@ -297,7 +301,6 @@ const ParentDashboardScreen: React.FC = () => {
         {/* STAT CARDS */}
 
         <View style={styles.statsRow}>
-
           <View
             style={[
               styles.statCard,
@@ -393,7 +396,6 @@ const ParentDashboardScreen: React.FC = () => {
               Learning
             </Text>
           </View>
-
         </View>
 
         {/* WEEKLY PROGRESS */}
@@ -455,9 +457,7 @@ const ParentDashboardScreen: React.FC = () => {
         <View style={styles.activityCard}>
           {activities.map((activity, index) => (
             <React.Fragment key={activity.title}>
-
               <View style={styles.activityRow}>
-
                 <View
                   style={[
                     styles.activityIcon,
@@ -492,13 +492,11 @@ const ParentDashboardScreen: React.FC = () => {
                     {activity.label}
                   </Text>
                 </View>
-
               </View>
 
               {index < activities.length - 1 && (
                 <View style={styles.divider} />
               )}
-
             </React.Fragment>
           ))}
         </View>
@@ -522,7 +520,6 @@ const ParentDashboardScreen: React.FC = () => {
               style={styles.skillRow}
             >
               <View style={styles.skillLabelRow}>
-
                 <View
                   style={[
                     styles.skillDot,
@@ -539,7 +536,6 @@ const ParentDashboardScreen: React.FC = () => {
                 <Text style={styles.skillPercentage}>
                   {skill.percentage}%
                 </Text>
-
               </View>
 
               <View style={styles.skillTrack}>
@@ -571,10 +567,10 @@ const ParentDashboardScreen: React.FC = () => {
 
         <View style={styles.recentCard}>
           {recentActivity.map((activity, index) => (
-            <React.Fragment key={`${activity.title}-${index}`}>
-
+            <React.Fragment
+              key={`${activity.title}-${index}`}
+            >
               <View style={styles.recentRow}>
-
                 <View style={styles.completedIcon}>
                   <Ionicons
                     name="checkmark"
@@ -596,13 +592,11 @@ const ParentDashboardScreen: React.FC = () => {
                 <Text style={styles.recentXP}>
                   {activity.xp}
                 </Text>
-
               </View>
 
               {index < recentActivity.length - 1 && (
                 <View style={styles.divider} />
               )}
-
             </React.Fragment>
           ))}
         </View>
@@ -610,7 +604,6 @@ const ParentDashboardScreen: React.FC = () => {
         {/* ENCOURAGEMENT */}
 
         <View style={styles.encouragementCard}>
-
           <View style={styles.encouragementIcon}>
             <Text style={styles.encouragementEmoji}>
               💚
@@ -627,11 +620,9 @@ const ParentDashboardScreen: React.FC = () => {
               even more enjoyable.
             </Text>
           </View>
-
         </View>
 
         <View style={styles.bottomSpace} />
-
       </ScrollView>
     </View>
   );
