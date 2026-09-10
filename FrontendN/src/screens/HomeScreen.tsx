@@ -12,7 +12,6 @@ import type { RootStackParamList } from '../types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-// Exact Gyan student dashboard artwork
 const HOME_ART = require('../../assets/gyan-home-exact.png');
 
 export const HomeScreen: React.FC = () => {
@@ -20,41 +19,30 @@ export const HomeScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-
-      {/* ============================================================
-          EXACT GYAN HOME ARTWORK
-          ============================================================ */}
-
+      {/* Background artwork */}
       <Image
         source={HOME_ART}
         style={styles.homeArtwork}
         resizeMode="stretch"
       />
 
-      {/* ============================================================
-          INTERACTION LAYER
-          ============================================================ */}
+      {/* Softens the artwork so the dashboard content stands out */}
+      <View
+        style={styles.backgroundOverlay}
+        pointerEvents="none"
+      />
 
+      {/* Interactive layer */}
       <View
         style={styles.interactionLayer}
         pointerEvents="box-none"
       >
-
-        {/* ==========================================================
-            PROFILE / SETTINGS
-            ========================================================== */}
-
         <Pressable
           style={styles.profileButton}
           onPress={() => navigation.navigate('RoleSelection')}
           accessibilityRole="button"
           accessibilityLabel="Open profile"
         />
-
-        {/* ==========================================================
-            SPEAK & LISTEN
-            PURPLE CARD
-            ========================================================== */}
 
         <Pressable
           style={styles.speakButton}
@@ -63,21 +51,12 @@ export const HomeScreen: React.FC = () => {
           accessibilityLabel="Open Speak and Listen"
         />
 
-        {/* ==========================================================
-            PLAY & MATCH
-            GREEN CARD
-            ========================================================== */}
-
         <Pressable
           style={styles.playButton}
           onPress={() => navigation.navigate('GameCatalog')}
           accessibilityRole="button"
           accessibilityLabel="Open Play and Match"
         />
-
-        {/* ==========================================================
-            CONTINUE LEARNING
-            ========================================================== */}
 
         <Pressable
           style={styles.continueButton}
@@ -86,20 +65,12 @@ export const HomeScreen: React.FC = () => {
           accessibilityLabel="Continue Learning"
         />
 
-        {/* ==========================================================
-            DAILY GOAL
-            ========================================================== */}
-
         <Pressable
           style={styles.goalButton}
           onPress={() => navigation.navigate('GameCatalog')}
           accessibilityRole="button"
           accessibilityLabel="Daily Goal"
         />
-
-        {/* ==========================================================
-            YOUR REWARDS
-            ========================================================== */}
 
         <Pressable
           style={styles.rewardsButton}
@@ -108,10 +79,6 @@ export const HomeScreen: React.FC = () => {
           accessibilityLabel="Your Rewards"
         />
 
-        {/* ==========================================================
-            BASICS
-            ========================================================== */}
-
         <Pressable
           style={styles.basicsButton}
           onPress={() => navigation.navigate('GameCatalog')}
@@ -119,36 +86,22 @@ export const HomeScreen: React.FC = () => {
           accessibilityLabel="Basics"
         />
 
-        {/* ==========================================================
-            WORDS
-            ========================================================== */}
-
         <Pressable
           style={styles.wordsButton}
           onPress={() => navigation.navigate('GameCatalog')}
           accessibilityRole="button"
           accessibilityLabel="Words"
         />
-
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-
-  /* ================================================================
-     SCREEN
-     ================================================================ */
-
   container: {
     flex: 1,
     backgroundColor: '#DDEBFF',
   },
-
-  /* ================================================================
-     ARTWORK
-     ================================================================ */
 
   homeArtwork: {
     position: 'absolute',
@@ -161,9 +114,15 @@ const styles = StyleSheet.create({
     zIndex: 0,
   },
 
-  /* ================================================================
-     INTERACTION LAYER
-     ================================================================ */
+  backgroundOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.32)',
+    zIndex: 1,
+  },
 
   interactionLayer: {
     position: 'absolute',
@@ -174,10 +133,6 @@ const styles = StyleSheet.create({
     zIndex: 10,
     elevation: 10,
   },
-
-  /* ================================================================
-     PROFILE / SETTINGS
-     ================================================================ */
 
   profileButton: {
     position: 'absolute',
@@ -190,11 +145,6 @@ const styles = StyleSheet.create({
     elevation: 20,
   },
 
-  /* ================================================================
-     SPEAK & LISTEN
-     PURPLE CARD
-     ================================================================ */
-
   speakButton: {
     position: 'absolute',
     left: '4%',
@@ -206,11 +156,6 @@ const styles = StyleSheet.create({
     elevation: 30,
   },
 
-  /* ================================================================
-     PLAY & MATCH
-     GREEN CARD
-     ================================================================ */
-
   playButton: {
     position: 'absolute',
     right: '4%',
@@ -221,10 +166,6 @@ const styles = StyleSheet.create({
     zIndex: 30,
     elevation: 30,
   },
-
-  /* ================================================================
-     THREE SMALL CARDS
-     ================================================================ */
 
   continueButton: {
     position: 'absolute',
@@ -259,10 +200,6 @@ const styles = StyleSheet.create({
     elevation: 30,
   },
 
-  /* ================================================================
-     LEARNING PATH
-     ================================================================ */
-
   basicsButton: {
     position: 'absolute',
     left: '12%',
@@ -284,7 +221,6 @@ const styles = StyleSheet.create({
     zIndex: 30,
     elevation: 30,
   },
-
 });
 
 export default HomeScreen;
