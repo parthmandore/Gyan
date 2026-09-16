@@ -42,9 +42,10 @@ export interface HealthResponse {
  * Checks if the Speech AI backend is reachable and the Whisper model is loaded.
  */
 export const checkSTTHealth = async (): Promise<HealthResponse> => {
+  console.log(`[sttService] Checking health at: ${API_CONFIG.STT_BASE_URL}/health`);
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4000);
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
 
     const response = await fetch(`${API_CONFIG.STT_BASE_URL}/health`, {
       method: 'GET',
@@ -55,6 +56,7 @@ export const checkSTTHealth = async (): Promise<HealthResponse> => {
 
     if (response.ok) {
       const data = await response.json();
+      console.log('[sttService] Health check OK:', data);
       return {
         status: data.status === 'ok' ? 'ok' : 'error',
         model_loaded: Boolean(data.model_loaded),
@@ -63,12 +65,14 @@ export const checkSTTHealth = async (): Promise<HealthResponse> => {
         version: data.version,
       };
     }
+    console.warn(`[sttService] Health check failed with HTTP ${response.status}`);
     return {
       status: 'error',
       model_loaded: false,
       error: `Health check returned HTTP ${response.status}`,
     };
   } catch (err: any) {
+    console.warn(`[sttService] Health check exception:`, err);
     return {
       status: 'offline',
       model_loaded: false,
@@ -80,13 +84,18 @@ export const checkSTTHealth = async (): Promise<HealthResponse> => {
 /**
  * Sends a recorded audio file/blob to the Speech AI backend for Whisper transcription.
  * Supports English ('en'), Hindi ('hi'), and Marathi ('mr').
+ * Includes automatic retry for transient network failures.
  */
 export const transcribeAudio = async (
   audioData: Blob | string,
   language: 'en' | 'hi' | 'mr' = 'en',
-  timeoutMs: number = API_CONFIG.TIMEOUT_MS
+  timeoutMs: number = API_CONFIG.TIMEOUT_MS,
+  retryCount: number = 0
 ): Promise<TranscribeResponse> => {
   const startTime = Date.now();
+  const maxRetries = 2;
+
+  console.log(`[sttService] Transcribing audio (attempt ${retryCount + 1}/${maxRetries + 1}) at ${API_CONFIG.STT_BASE_URL}/speech/transcribe, language=${language}`);
 
   try {
     const controller = new AbortController();
@@ -138,6 +147,13 @@ export const transcribeAudio = async (
 
       console.warn(`[sttService] HTTP ${response.status} Error:`, errText);
 
+      // Retry on 5xx errors (server issues)
+      if (response.status >= 500 && retryCount < maxRetries) {
+        console.log(`[sttService] Retrying due to server error (HTTP ${response.status})...`);
+        await new Promise(r => setTimeout(r, 500)); // Brief delay before retry
+        return transcribeAudio(audioData, language, timeoutMs, retryCount + 1);
+      }
+
       return {
         success: false,
         recognized_text: '',
@@ -153,6 +169,8 @@ export const transcribeAudio = async (
     const data = await response.json();
     const recognized = (data.recognized_text || '').trim();
     const is_empty = Boolean(data.is_empty) || recognized.length === 0;
+
+    console.log(`[sttService] Transcription SUCCESS (${latency_ms}ms): "${recognized}"`);
 
     return {
       success: true,
@@ -177,7 +195,14 @@ export const transcribeAudio = async (
       ? 'CONNECTION_REFUSED'
       : 'NETWORK_ERROR';
 
-    console.warn(`[sttService] ${error_type}:`, err.message);
+    console.warn(`[sttService] ${error_type} (attempt ${retryCount + 1}/${maxRetries + 1}):`, err);
+
+    // Retry on connection failures
+    if ((isConnectionRefused || isTimeout) && retryCount < maxRetries) {
+      console.log(`[sttService] Retrying due to ${error_type}...`);
+      await new Promise(r => setTimeout(r, 800));
+      return transcribeAudio(audioData, language, timeoutMs, retryCount + 1);
+    }
 
     return {
       success: false,
@@ -187,7 +212,7 @@ export const transcribeAudio = async (
       latency_ms,
       error_type,
       error: isTimeout
-        ? 'Speech-to-Text request timed out'
+        ? `Speech-to-Text timed out after ${latency_ms}ms (backend at ${API_CONFIG.STT_BASE_URL} may be slow or unreachable)`
         : `Cannot connect to Speech AI server at ${API_CONFIG.STT_BASE_URL} (${err.message})`,
     };
   }

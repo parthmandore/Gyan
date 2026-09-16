@@ -27,6 +27,10 @@ type Props = NativeStackScreenProps<
 export const RoleSelectionScreen: React.FC<Props> = ({
   navigation,
 }) => {
+  const handleBack = () => {
+    navigation.replace('LanguageGate');
+  };
+
   const handleStudent = () => {
     navigation.navigate('Home');
   };
@@ -53,9 +57,9 @@ export const RoleSelectionScreen: React.FC<Props> = ({
               styles.backButton,
               pressed && styles.pressed,
             ]}
-            onPress={() => navigation.goBack()}
+            onPress={handleBack}
             accessibilityRole="button"
-            accessibilityLabel="Go back"
+            accessibilityLabel="Go back to language selection"
           >
             <Ionicons
               name="arrow-back"
