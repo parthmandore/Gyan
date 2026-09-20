@@ -31,9 +31,6 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { useCapitalSmallMatchStore } from './store/capitalSmallMatchStore';
-import { useProgressStore } from '../../../state/useProgressStore';
-import { xpService } from '../../../services/xpService';
-import { useAppLanguageStore } from '../../../state/appLanguageStore';
 import { CapitalSmallMatchStackParamList } from './types';
 import { BigTouchTarget } from '../../../components/BigTouchTarget';
 import { CartoonBackground } from '../../../components/CartoonBackground';
@@ -66,7 +63,7 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
     sessionResults: [],
   };
 
-  const { sessionId, starsEarned, xpEarned, itemsCorrect, sessionLength, accuracy, durationSeconds, sessionResults } = routeParams;
+  const { starsEarned, xpEarned, itemsCorrect, sessionLength, accuracy, durationSeconds, sessionResults } = routeParams;
   const finalXpEarned = (xpEarned && xpEarned > 0) ? xpEarned : (itemsCorrect * 10);
 
   const resetSession = useCapitalSmallMatchStore((s) => s.resetSession);
@@ -101,20 +98,6 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
 
     const loadDataAndSubmit = async () => {
       try {
-        const motherTongue = useAppLanguageStore.getState().motherTongue || 'en';
-        await xpService.recordSessionCompletionXP({
-          sessionId: sessionId || `csm_sess_${Date.now()}`,
-          gameId: 'capital_small_match',
-          category: 'letters',
-          learningLanguage: 'en',
-          motherTongue,
-          age: 5,
-          totalQuestions: itemsAttempted || itemsCorrect || 12,
-          correctAnswers: itemsCorrect,
-          accuracy,
-          durationSeconds,
-        });
-
         await submitGameProgress({
           game_type: 'capital_small_match',
           difficulty: 1,
@@ -234,20 +217,20 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
           <Animated.View style={[styles.buttonsContainer, { width: containerWidth }, buttonsAnimStyle]}>
             <BigTouchTarget
               onPress={handlePlayAgain}
-              accessibilityLabel={t('sessionComplete.playAgain', '▶ Play Again')}
+              accessibilityLabel="Play Again"
               accessibilityRole="button"
               style={styles.playAgainButton}
             >
-              <Text style={styles.playAgainButtonText}>{t('sessionComplete.playAgain', '▶ Play Again')}</Text>
+              <Text style={styles.playAgainButtonText}>▶ Play Again</Text>
             </BigTouchTarget>
 
             <BigTouchTarget
               onPress={handleChooseGame}
-              accessibilityLabel={t('sessionComplete.chooseGame', '🌐 Choose Game')}
+              accessibilityLabel="Choose Game"
               accessibilityRole="button"
               style={styles.chooseGameButton}
             >
-              <Text style={styles.chooseGameButtonText}>{t('sessionComplete.chooseGame', '🌐 Choose Game')}</Text>
+              <Text style={styles.chooseGameButtonText}>🌐 Choose Game</Text>
             </BigTouchTarget>
           </Animated.View>
         </ScrollView>

@@ -34,11 +34,6 @@ i18n
       escapeValue: false,
     },
     compatibilityJSON: 'v4',
-    saveMissing: true,
-    missingKeyHandler: (lngs, ns, key) => {
-      const languages = Array.isArray(lngs) ? lngs.join(', ') : lngs;
-      console.warn(`[i18n MISSING TRANSLATION] Key "${key}" missing for language(s): "${languages}" (ns: "${ns}")`);
-    },
   });
 
 export default i18n;

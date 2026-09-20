@@ -51,77 +51,61 @@ console.log('====================================================\n');
 // -------------------------------------------------------------
 console.log('--- 1. Age & Language Catalog Filtering ---');
 
-const EXPECTED_AGE6_IDS = [
-  'speech_animals',
-  'speech_fruits_vegetables',
-  'speech_everyday_nature',
-];
-
 const age5EnGames = GAME_REGISTRY.filter(
   (g) => g.supportedLanguages.includes('en') && g.ageGroups.includes(5)
 );
 assert(
-  age5EnGames.length === 2 &&
-    age5EnGames.some((g) => g.id === 'alphabet_matching') &&
+  age5EnGames.some((g) => g.id === 'alphabet_matching') &&
     age5EnGames.some((g) => g.id === 'capital_small_match') &&
-    !age5EnGames.some((g) => g.id === 'speech_word_challenge'),
-  'Age 5 English games include AlphabetMatching, CapitalSmallMatch (no speech games)'
+    age5EnGames.some((g) => g.id === 'speech_word_challenge') &&
+    !age5EnGames.some((g) => g.id === 'vowel_matra_match'),
+  'Age 5 English games include AlphabetMatching, CapitalSmallMatch, SpeechWordChallenge'
 );
 
 const age5HiGames = GAME_REGISTRY.filter(
   (g) => g.supportedLanguages.includes('hi') && g.ageGroups.includes(5)
 );
 assert(
-  age5HiGames.length === 2 &&
-    age5HiGames.some((g) => g.id === 'alphabet_matching') &&
+  age5HiGames.some((g) => g.id === 'alphabet_matching') &&
     age5HiGames.some((g) => g.id === 'vowel_matra_match') &&
-    !age5HiGames.some((g) => g.id === 'speech_word_challenge'),
-  'Age 5 Hindi games include AlphabetMatching, VowelMatraMatch (no speech games)'
+    age5HiGames.some((g) => g.id === 'speech_word_challenge') &&
+    !age5HiGames.some((g) => g.id === 'capital_small_match'),
+  'Age 5 Hindi games include AlphabetMatching, VowelMatraMatch, SpeechWordChallenge'
 );
 
 const age5MrGames = GAME_REGISTRY.filter(
   (g) => g.supportedLanguages.includes('mr') && g.ageGroups.includes(5)
 );
 assert(
-  age5MrGames.length === 2 &&
-    age5MrGames.some((g) => g.id === 'alphabet_matching') &&
+  age5MrGames.some((g) => g.id === 'alphabet_matching') &&
     age5MrGames.some((g) => g.id === 'vowel_matra_match') &&
-    !age5MrGames.some((g) => g.id === 'speech_word_challenge'),
-  'Age 5 Marathi games include AlphabetMatching, VowelMatraMatch (no speech games)'
+    age5MrGames.some((g) => g.id === 'speech_word_challenge'),
+  'Age 5 Marathi games include AlphabetMatching, VowelMatraMatch, SpeechWordChallenge'
 );
 
 const age6EnGames = GAME_REGISTRY.filter(
   (g) => g.supportedLanguages.includes('en') && g.ageGroups.includes(6)
 );
 assert(
-  age6EnGames.length === 3 &&
-    EXPECTED_AGE6_IDS.every((id) => age6EnGames.some((g) => g.id === id)) &&
-    !age6EnGames.some((g) => g.id === 'speech_word_challenge'),
-  'Age 6 English catalog contains exactly 3 vocabulary category games'
+  age6EnGames.length === 1 && age6EnGames[0].id === 'speech_word_challenge',
+  'Age 6 English catalog contains ONLY SpeechWordChallenge'
 );
 
 const age6HiGames = GAME_REGISTRY.filter(
   (g) => g.supportedLanguages.includes('hi') && g.ageGroups.includes(6)
 );
 assert(
-  age6HiGames.length === 3 &&
-    EXPECTED_AGE6_IDS.every((id) => age6HiGames.some((g) => g.id === id)) &&
-    !age6HiGames.some((g) => g.id === 'speech_word_challenge'),
-  'Age 6 Hindi catalog contains exactly 3 vocabulary category games'
+  age6HiGames.length === 1 && age6HiGames[0].id === 'speech_word_challenge',
+  'Age 6 Hindi catalog contains ONLY SpeechWordChallenge'
 );
 
 const age6MrGames = GAME_REGISTRY.filter(
   (g) => g.supportedLanguages.includes('mr') && g.ageGroups.includes(6)
 );
 assert(
-  age6MrGames.length === 3 &&
-    EXPECTED_AGE6_IDS.every((id) => age6MrGames.some((g) => g.id === id)) &&
-    !age6MrGames.some((g) => g.id === 'speech_word_challenge'),
-  'Age 6 Marathi catalog contains exactly 3 vocabulary category games'
+  age6MrGames.length === 1 && age6MrGames[0].id === 'speech_word_challenge',
+  'Age 6 Marathi catalog contains ONLY SpeechWordChallenge'
 );
-
-const legacyGameAnywhere = GAME_REGISTRY.some((g) => g.id === 'speech_word_challenge');
-assert(!legacyGameAnywhere, 'Legacy random word game (speech_word_challenge) does NOT exist in GAME_REGISTRY');
 
 // -------------------------------------------------------------
 // 3, 4, 5. Datasets by Age & Language
@@ -294,15 +278,12 @@ assert(
     enLoc.ageGate?.title &&
       enLoc.ageGate?.age5Title &&
       enLoc.ageGate?.age6Title &&
-      enLoc.games?.speechAnimals?.title &&
-      enLoc.games?.speechFruits?.title &&
-      enLoc.games?.speechEveryday?.title &&
       enLoc.speechWordChallenge?.sayTheLetter &&
       enLoc.speechWordChallenge?.whatIsThis &&
       enLoc.speechWordChallenge?.speechReportTitle &&
       enLoc.speechWordChallenge?.seeMyReport
   ),
-  'English localization has all required ageGate, speechReport, and category game keys'
+  'English localization has all required ageGate and speechReport keys'
 );
 
 assert(
@@ -310,15 +291,12 @@ assert(
     hiLoc.ageGate?.title &&
       hiLoc.ageGate?.age5Title &&
       hiLoc.ageGate?.age6Title &&
-      hiLoc.games?.speechAnimals?.title &&
-      hiLoc.games?.speechFruits?.title &&
-      hiLoc.games?.speechEveryday?.title &&
       hiLoc.speechWordChallenge?.sayTheLetter &&
       hiLoc.speechWordChallenge?.whatIsThis &&
       hiLoc.speechWordChallenge?.speechReportTitle &&
       hiLoc.speechWordChallenge?.seeMyReport
   ),
-  'Hindi localization has all required ageGate, speechReport, and category game keys'
+  'Hindi localization has all required ageGate and speechReport keys'
 );
 
 assert(
@@ -326,15 +304,12 @@ assert(
     mrLoc.ageGate?.title &&
       mrLoc.ageGate?.age5Title &&
       mrLoc.ageGate?.age6Title &&
-      mrLoc.games?.speechAnimals?.title &&
-      mrLoc.games?.speechFruits?.title &&
-      mrLoc.games?.speechEveryday?.title &&
       mrLoc.speechWordChallenge?.sayTheLetter &&
       mrLoc.speechWordChallenge?.whatIsThis &&
       mrLoc.speechWordChallenge?.speechReportTitle &&
       mrLoc.speechWordChallenge?.seeMyReport
   ),
-  'Marathi localization has all required ageGate, speechReport, and category game keys'
+  'Marathi localization has all required ageGate and speechReport keys'
 );
 
 console.log('\n====================================================');

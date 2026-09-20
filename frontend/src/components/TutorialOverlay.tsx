@@ -23,7 +23,6 @@ import Animated, {
   withSequence,
 } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
-import { useAppLanguageStore } from '../state/appLanguageStore';
 
 import { BigTouchTarget } from './BigTouchTarget';
 import { MascotCharacter } from './MascotCharacter';
@@ -52,7 +51,6 @@ export interface TutorialOverlayProps {
 export const TutorialOverlay: React.FC<TutorialOverlayProps> = React.memo(
   ({ gameId, visible, steps, onComplete, onSkip }) => {
     const { t } = useTranslation();
-    const motherTongue = useAppLanguageStore((s) => s.motherTongue) || 'en';
     const { width: screenWidth } = useWindowDimensions();
 
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -76,11 +74,11 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = React.memo(
 
       const step = steps[currentStepIndex];
       if (step) {
-        const title = step.titleKey ? t(step.titleKey, { defaultValue: step.defaultTitle, lng: motherTongue }) : step.defaultTitle;
-        const body = step.bodyKey ? t(step.bodyKey, { defaultValue: step.defaultBody, lng: motherTongue }) : step.defaultBody;
+        const title = step.titleKey ? t(step.titleKey, step.defaultTitle) : step.defaultTitle;
+        const body = step.bodyKey ? t(step.bodyKey, step.defaultBody) : step.defaultBody;
         const speechText = step.narrationText || `${title}. ${body}`;
 
-        speakPhrase(speechText, { language: motherTongue }).catch((err) => {
+        speakPhrase(speechText).catch((err) => {
           console.warn('[TutorialOverlay] Audio narration failed:', err);
         });
       }

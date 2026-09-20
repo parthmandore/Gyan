@@ -32,6 +32,7 @@ const CAPITAL_SMALL_MATCH_TUTORIAL_STEPS: TutorialStep[] = [
     defaultTitle: 'Step 1: Pick a Capital Letter',
     defaultBody: 'Tap any uppercase capital letter in the left column to select it!',
     icon: '🔤',
+    narrationText: 'Step 1: Pick a Capital Letter. Tap any uppercase capital letter in the left column to select it!',
   },
   {
     titleKey: 'capitalSmallMatch.tutorialStep2Title',
@@ -39,6 +40,7 @@ const CAPITAL_SMALL_MATCH_TUTORIAL_STEPS: TutorialStep[] = [
     defaultTitle: 'Step 2: Find its Small Letter Pair',
     defaultBody: 'Now tap its matching lowercase small letter in the right column!',
     icon: '🧩',
+    narrationText: 'Step 2: Find its Small Letter Pair. Now tap its matching lowercase small letter in the right column!',
   },
   {
     titleKey: 'capitalSmallMatch.tutorialStep3Title',
@@ -46,6 +48,7 @@ const CAPITAL_SMALL_MATCH_TUTORIAL_STEPS: TutorialStep[] = [
     defaultTitle: 'Step 3: Complete the Round!',
     defaultBody: 'Match all 4 pairs to finish the round and earn 3 stars! 🌟',
     icon: '⭐',
+    narrationText: 'Step 3: Complete the Round! Match all 4 pairs to finish the round and earn 3 stars!',
   },
 ];
 

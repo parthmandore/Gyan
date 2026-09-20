@@ -25,9 +25,8 @@ import { BigTouchTarget } from '../../../components/BigTouchTarget';
 import { MascotCharacter } from '../../../components/MascotCharacter';
 import { Typography } from '../../../theme/typography';
 import { useAppLanguageStore } from '../../../state/appLanguageStore';
-import { useProgressStore } from '../../../state/useProgressStore';
 import { useSpeechWordChallengeStore } from './store/speechWordChallengeStore';
-import { speakPhrase, stopSpeech } from '../../../services/speechService';
+import { speakPhrase } from '../../../services/speechService';
 import { SpeechWordChallengeStackParamList } from './types';
 import { RootStackParamList } from '../../../types';
 
@@ -42,11 +41,8 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<SessionCompleteRouteProp>();
   const { width: screenWidth } = useWindowDimensions();
-  const motherTongue = useAppLanguageStore((s) => s.motherTongue) || 'en';
-  const learningLanguage = useAppLanguageStore((s) => s.learningLanguage) || 'en';
+  const selectedLanguage = useAppLanguageStore((s) => s.selectedLanguage) || 'en';
   const selectedAge = useAppLanguageStore((s) => s.selectedAge) || 5;
-  const totalXp = useProgressStore((s) => s.totalXp);
-  const currentLevel = useProgressStore((s) => s.currentLevel);
   const resetSession = useSpeechWordChallengeStore((s) => s.resetSession);
   const setSessionStartTime = useSpeechWordChallengeStore((s) => s.setSessionStartTime);
   const sessionAttempts = useSpeechWordChallengeStore((s) => s.sessionAttempts);
@@ -59,65 +55,32 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
     itemsCorrect = 10,
     sessionLength = 10,
     accuracy = 100,
-    category,
   } = route.params || {};
 
   const needsPracticeCount = Math.max(0, sessionLength - itemsCorrect);
 
   useEffect(() => {
-    const praise = t('speechWordChallenge.sessionCompletePraise', { lng: motherTongue });
-    speakPhrase(praise, { language: motherTongue });
-
-    const unsubscribe = navigation.addListener('beforeRemove', () => {
-      stopSpeech();
-    });
-
-    return () => {
-      unsubscribe();
-      stopSpeech();
-    };
-  }, [motherTongue, navigation]);
+    const praise =
+      selectedLanguage === 'hi'
+        ? 'बहुत बढ़िया! आपने सभी शब्द बहुत अच्छे से बोले!'
+        : selectedLanguage === 'mr'
+        ? 'अभिनंदन! तुम्ही सर्व शब्द खूप छान बोललात!'
+        : 'Awesome speaking! You earned stars for speaking clearly!';
+    speakPhrase(praise);
+  }, [selectedLanguage]);
 
   const handlePlayAgain = () => {
-    stopSpeech();
     resetSession();
     setSessionStartTime(Date.now());
-    navigation.navigate('Games', {
-      screen: 'SpeechWordChallengeGame' as any,
-      params: category ? { category } : undefined,
-    });
+    navigation.navigate('Games', { screen: 'SpeechWordChallengeGame' as any });
   };
 
   const handleBackToCatalog = () => {
-    stopSpeech();
     resetSession();
     navigation.navigate('GameCatalog');
   };
 
   const containerWidth = Math.min(screenWidth - 32, 420);
-
-  // Big 3-Star Header Cluster
-  const renderBigStarsRow = () => {
-    return (
-      <View style={styles.starsClusterRow}>
-        <View style={[styles.starWrapper, styles.sideStarLeft]}>
-          <Text style={[styles.bigStarText, starsEarned >= 1 ? styles.starFilled : styles.starEmpty]}>
-            {starsEarned >= 1 ? '⭐' : '★'}
-          </Text>
-        </View>
-        <View style={[styles.starWrapper, styles.centerStar]}>
-          <Text style={[styles.centerBigStarText, starsEarned >= 2 ? styles.starFilled : styles.starEmpty]}>
-            {starsEarned >= 2 ? '⭐' : '★'}
-          </Text>
-        </View>
-        <View style={[styles.starWrapper, styles.sideStarRight]}>
-          <Text style={[styles.bigStarText, starsEarned >= 3 ? styles.starFilled : styles.starEmpty]}>
-            {starsEarned >= 3 ? '⭐' : '★'}
-          </Text>
-        </View>
-      </View>
-    );
-  };
 
   return (
     <View style={styles.webOuterContainer}>
@@ -139,9 +102,6 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
             <View style={styles.mascotWrapper}>
               <MascotCharacter state="celebrating" style={styles.mascot} />
             </View>
-
-            {/* Prominent 3-Star Cluster */}
-            {renderBigStarsRow()}
 
             <Text style={styles.titleText}>
               {t('speechWordChallenge.sessionCompleteTitle')}
@@ -188,13 +148,6 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
                   ✗ {t('speechWordChallenge.needsPractice')}: <Text style={{ color: '#B45309' }}>{needsPracticeCount}</Text>
                 </Text>
               </View>
-            </View>
-
-            {/* Level & Lifetime XP Progress Banner */}
-            <View style={styles.levelProgressBanner}>
-              <Text style={styles.levelProgressText}>
-                🏆 Level {currentLevel} • Total XP: {totalXp}
-              </Text>
             </View>
 
             {/* "See My Speech Report" Action Button */}
@@ -306,41 +259,6 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
   },
-  starsClusterRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    marginVertical: 10,
-  },
-  starWrapper: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sideStarLeft: {
-    transform: [{ rotate: '-12deg' }, { scale: 0.9 }],
-  },
-  centerStar: {
-    transform: [{ scale: 1.18 }, { translateY: -4 }],
-  },
-  sideStarRight: {
-    transform: [{ rotate: '12deg' }, { scale: 0.9 }],
-  },
-  bigStarText: {
-    fontSize: 38,
-  },
-  centerBigStarText: {
-    fontSize: 48,
-  },
-  starFilled: {
-    textShadowColor: 'rgba(251, 191, 36, 0.8)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 10,
-  },
-  starEmpty: {
-    opacity: 0.25,
-    color: '#94A3B8',
-  },
   titleText: {
     fontFamily: Typography.fonts.bold,
     fontSize: 24,
@@ -413,22 +331,6 @@ const styles = StyleSheet.create({
     width: 1,
     height: 18,
     backgroundColor: '#CBD5E1',
-  },
-  levelProgressBanner: {
-    backgroundColor: '#FEF3C7',
-    borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: '#FDE68A',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    width: '100%',
-    alignItems: 'center',
-    marginBottom: 14,
-  },
-  levelProgressText: {
-    fontFamily: Typography.fonts.bold,
-    fontSize: 13,
-    color: '#92400E',
   },
   seeReportButton: {
     width: '100%',

@@ -6,8 +6,6 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTranslation } from 'react-i18next';
-import { useAppLanguageStore } from '../../../../state/appLanguageStore';
 
 interface SpeechFeedbackBadgeProps {
   recognizedText: string | null;
@@ -16,9 +14,6 @@ interface SpeechFeedbackBadgeProps {
 
 export const SpeechFeedbackBadge: React.FC<SpeechFeedbackBadgeProps> = React.memo(
   ({ recognizedText, status }) => {
-    const { t } = useTranslation();
-    const motherTongue = useAppLanguageStore((s) => s.motherTongue) || 'en';
-
     if (!status && !recognizedText) return null;
 
     let badgeBg = '#F3F4F6';
@@ -30,38 +25,36 @@ export const SpeechFeedbackBadge: React.FC<SpeechFeedbackBadgeProps> = React.mem
       badgeBg = '#FEE2E2';
       borderColor = '#FCA5A5';
       textColor = '#991B1B';
-      message = `🎙️ ${t('speechWordChallenge.feedback.listening', { lng: motherTongue })}`;
+      message = "🎙️ I'm listening...";
     } else if (status === 'transcribing') {
       badgeBg = '#FEF3C7';
       borderColor = '#FCD34D';
       textColor = '#92400E';
-      message = `⏳ ${t('speechWordChallenge.feedback.checking', { lng: motherTongue })}`;
+      message = '⏳ Checking...';
     } else if (status === 'correct') {
       badgeBg = '#DCFCE7';
       borderColor = '#86EFAC';
       textColor = '#166534';
-      const greatJob = t('speechWordChallenge.feedback.greatJob', { lng: motherTongue });
       message = recognizedText
-        ? `✨ ${greatJob} ("${recognizedText}")`
-        : `✨ ${greatJob}`;
+        ? `✨ Great job! ("${recognizedText}")`
+        : '✨ Great job!';
     } else if (status === 'empty') {
       badgeBg = '#FEF3C7';
       borderColor = '#FDE68A';
       textColor = '#92400E';
-      message = `👂 ${t('speechWordChallenge.feedback.couldNotHear', { lng: motherTongue })}`;
+      message = "👂 I couldn't hear clearly. Try again!";
     } else if (status === 'technical') {
       badgeBg = '#E0F2FE';
       borderColor = '#BAE6FD';
       textColor = '#0369A1';
-      message = `🔌 ${t('speechWordChallenge.feedback.helperResting', { lng: motherTongue })}`;
+      message = '🔌 Speech helper is resting. Tap to retry!';
     } else if (status === 'wrong') {
       badgeBg = '#FEE2E2';
       borderColor = '#FCA5A5';
       textColor = '#991B1B';
-      const almostTryAgain = t('speechWordChallenge.feedback.almostTryAgain', { lng: motherTongue });
       message = recognizedText
-        ? `(${recognizedText}) • ${almostTryAgain}`
-        : almostTryAgain;
+        ? `Almost! ("${recognizedText}") Try again.`
+        : 'Almost! Try again.';
     }
 
     return (

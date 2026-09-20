@@ -15,7 +15,6 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
-import { useAppLanguageStore } from '../../../../state/appLanguageStore';
 import { BigTouchTarget } from '../../../../components/BigTouchTarget';
 import { Colors } from '../../../../theme/colors';
 import { Typography } from '../../../../theme/typography';
@@ -33,19 +32,18 @@ export interface WrongMatchModalProps {
 export const WrongMatchModal: React.FC<WrongMatchModalProps> = React.memo(
   ({ visible, capital, lowercase, onDismiss, i18nNamespace }) => {
     const { t } = useTranslation();
-    const motherTongue = useAppLanguageStore((s) => s.motherTongue) || 'en';
     const scale = useSharedValue(0.85);
     const opacity = useSharedValue(0);
     const [reduceMotion, setReduceMotion] = useState(false);
 
     // Determine i18n keys based on the calling game's namespace
     const ns = i18nNamespace || 'capitalSmallMatch';
-    const badgeText = t(`${ns}.wrongMatchBadge`, { lng: motherTongue, defaultValue: 'Let\'s Learn Together!' });
-    const leftLabel = t(`${ns}.wrongMatchLeftLabel`, { lng: motherTongue, defaultValue: 'Capital' });
-    const rightLabel = t(`${ns}.wrongMatchRightLabel`, { lng: motherTongue, defaultValue: 'Small' });
-    const teachText = t(`${ns}.wrongMatchTeach`, { lng: motherTongue, left: capital, right: lowercase, defaultValue: `${capital} and ${lowercase} match together!` });
-    const gotItText = t(`${ns}.wrongMatchGotIt`, { lng: motherTongue, defaultValue: 'Got it! ▶' });
-    const speakText = t(`${ns}.wrongMatchSpeak`, { lng: motherTongue, left: capital, right: lowercase, defaultValue: `This is ${capital} and ${lowercase}` });
+    const badgeText = t(`${ns}.wrongMatchBadge`, 'Let\'s Learn Together!');
+    const leftLabel = t(`${ns}.wrongMatchLeftLabel`, 'Capital');
+    const rightLabel = t(`${ns}.wrongMatchRightLabel`, 'Small');
+    const teachText = t(`${ns}.wrongMatchTeach`, { left: capital, right: lowercase, defaultValue: `${capital} and ${lowercase} match together!` });
+    const gotItText = t(`${ns}.wrongMatchGotIt`, 'Got it! ▶');
+    const speakText = t(`${ns}.wrongMatchSpeak`, { left: capital, right: lowercase, defaultValue: `This is ${capital} and ${lowercase}` });
 
     useEffect(() => {
       let isMounted = true;
@@ -59,8 +57,8 @@ export const WrongMatchModal: React.FC<WrongMatchModalProps> = React.memo(
 
     useEffect(() => {
       if (visible) {
-        // Spoken teaching cue — using localized phrase in motherTongue
-        speakPhrase(speakText, { language: motherTongue });
+        // Spoken teaching cue — using localized phrase
+        speakPhrase(speakText);
 
         if (reduceMotion) {
           scale.value = 1;
@@ -73,7 +71,7 @@ export const WrongMatchModal: React.FC<WrongMatchModalProps> = React.memo(
         opacity.value = 0;
         scale.value = 0.85;
       }
-    }, [visible, capital, lowercase, reduceMotion, opacity, scale, speakText, motherTongue]);
+    }, [visible, capital, lowercase, reduceMotion, opacity, scale, speakText]);
 
     const cardAnimatedStyle = useAnimatedStyle(() => ({
       opacity: opacity.value,
