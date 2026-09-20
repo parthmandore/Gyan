@@ -87,5 +87,6 @@ export type SpeechWordChallengeStackParamList = {
     accuracy: number;
     durationSeconds: number;
     category?: GameCategory;
+    isTimeExpired?: boolean;
   } | undefined;
 };

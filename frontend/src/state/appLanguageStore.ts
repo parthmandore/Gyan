@@ -11,7 +11,7 @@ import { create } from 'zustand';
 
 export type AppLanguage = 'en' | 'hi' | 'mr';
 export type LearningLanguage = 'en' | 'hi' | 'mr';
-export type AppAge = 5 | 6;
+export type AppAge = 5 | 6 | 7;
 
 const MOTHER_TONGUE_STORAGE_KEY = '@gyan_mother_tongue';
 const LEARNING_LANGUAGE_STORAGE_KEY = '@gyan_learning_language';
@@ -87,7 +87,7 @@ export const getInitialLanguage = getInitialMotherTongue;
  */
 export const getInitialAge = async (): Promise<AppAge | null> => {
   const stored = await getStorageItem(AGE_STORAGE_KEY);
-  if (stored && (stored === '5' || stored === '6')) {
+  if (stored && (stored === '5' || stored === '6' || stored === '7')) {
     return parseInt(stored, 10) as AppAge;
   }
   return null;

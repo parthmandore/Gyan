@@ -20,6 +20,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { StorybookGardenBackground } from './components/StorybookGardenBackground';
+import { CloudClearanceSpacer } from '../../../components/CartoonBackground';
 import { BigTouchTarget } from '../../../components/BigTouchTarget';
 import { MascotCharacter } from '../../../components/MascotCharacter';
 import { FriendlyModal } from '../../../components/FriendlyModal';
@@ -89,6 +90,7 @@ export const IntroScreen: React.FC = React.memo(() => {
 
       <SafeAreaView style={styles.safeArea}>
         <StatusBar barStyle="dark-content" backgroundColor="#7DD3FC" />
+        <CloudClearanceSpacer />
 
         {/* Top Header Card */}
         <View style={[styles.headerCard, { width: containerWidth }]}>
@@ -152,6 +154,8 @@ export const IntroScreen: React.FC = React.memo(() => {
                   ? '🚀 🍎 Fruits & Vegetables'
                   : category === 'nature'
                   ? '🚀 🌿 Everyday Things'
+                  : selectedAge >= 7
+                  ? '🚀 Age 7 Word Speech'
                   : '🚀 Age 6 Word Speech'}
               </Text>
             </View>
@@ -291,9 +295,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.94)',
+    backgroundColor: 'rgba(255, 255, 255, 0.88)',
     borderWidth: 3,
-    borderColor: '#FFFFFF',
+    borderColor: 'rgba(255, 255, 255, 0.95)',
     borderBottomWidth: 5,
     borderBottomColor: '#CBD5E1',
     flexDirection: 'row',
@@ -343,10 +347,10 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
   },
   heroCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.96)',
+    backgroundColor: 'rgba(255, 255, 255, 0.78)',
     borderRadius: 28,
     borderWidth: 4,
-    borderColor: '#FED7AA',
+    borderColor: 'rgba(255, 255, 255, 0.95)',
     borderBottomWidth: 8,
     borderBottomColor: '#FDBA74',
     paddingVertical: 24,

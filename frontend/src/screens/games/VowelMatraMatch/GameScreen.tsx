@@ -38,7 +38,8 @@ import { BigTouchTarget } from '../../../components/BigTouchTarget';
 import { Colors } from '../../../theme/colors';
 import { Typography } from '../../../theme/typography';
 import { triggerHapticSuccess, triggerHapticWarning } from '../../../services/hapticsService';
-import { speakPhrase } from '../../../services/speechService';
+import { speakPhrase, stopSpeech } from '../../../services/speechService';
+import { xpService } from '../../../services/xpService';
 
 type NavProp = NativeStackNavigationProp<VowelMatraMatchStackParamList>;
 
@@ -96,7 +97,7 @@ export const GameScreen: React.FC = React.memo(() => {
 
   const [gameAreaDimensions, setGameAreaDimensions] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
 
-  // --- Initialize first round on mount ---
+  // --- Initialize first round & exit listener on mount ---
   useEffect(() => {
     if (roundPairs.length === 0) {
       handledRoundIndexRef.current = -1;
@@ -107,7 +108,16 @@ export const GameScreen: React.FC = React.memo(() => {
         setSessionStartTime(Date.now());
       }
     }
-  }, [roundPairs.length, activeDataset, setRound, sessionStartTime, setSessionStartTime]);
+
+    const unsubscribe = navigation.addListener('beforeRemove', () => {
+      stopSpeech();
+    });
+
+    return () => {
+      unsubscribe();
+      stopSpeech();
+    };
+  }, [roundPairs.length, activeDataset, setRound, sessionStartTime, setSessionStartTime, navigation]);
 
   // --- 50s Countdown Timer ---
   const handleTimeUp = useCallback(() => {
@@ -215,6 +225,16 @@ export const GameScreen: React.FC = React.memo(() => {
         setSessionResults((prev) => [...prev, 'correct']);
         selectVowel(null);
         setSelectedMatra(null);
+
+        // Record answer XP deterministically
+        xpService.recordAnswerXP({
+          sessionId: sessionIdRef.current,
+          roundIndex,
+          attemptNum: 1,
+          isCorrect: true,
+          gameId: 'vowel_matra_match',
+          metadata: { vowel: vowelChar, matra: matraChar },
+        }).catch(() => {});
 
         setTimeout(() => {
           setJustMatchedVowel(null);

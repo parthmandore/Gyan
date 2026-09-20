@@ -44,6 +44,8 @@ import {
   playWrongMatchRevealAudio,
   playRoundCompleteAudio,
 } from './services/matchAudioService';
+import { stopSpeech } from '../../../services/speechService';
+import { xpService } from '../../../services/xpService';
 
 type NavProp = NativeStackNavigationProp<CapitalSmallMatchStackParamList>;
 
@@ -135,14 +137,23 @@ export const GameScreen: React.FC = React.memo(() => {
     };
   }, []);
 
-  // --- Fetch game config on mount ---
+  // --- Fetch game config & setup exit listeners on mount ---
   useEffect(() => {
     fetchCapitalSmallMatchConfig().then((res) => {
       if (res.success && res.data?.items_per_session) {
         setSessionLength(res.data.items_per_session);
       }
     });
-  }, [setSessionLength]);
+
+    const unsubscribe = navigation.addListener('beforeRemove', () => {
+      stopSpeech();
+    });
+
+    return () => {
+      unsubscribe();
+      stopSpeech();
+    };
+  }, [setSessionLength, navigation]);
 
   // --- Initialize first round on mount ---
   useEffect(() => {
@@ -266,6 +277,16 @@ export const GameScreen: React.FC = React.memo(() => {
         setSessionResults((prev) => [...prev, 'correct']);
         selectCapital(null);
         setSelectedLowercase(null);
+
+        // Record answer XP deterministically
+        xpService.recordAnswerXP({
+          sessionId: sessionIdRef.current,
+          roundIndex,
+          attemptNum: 1,
+          isCorrect: true,
+          gameId: 'capital_small_match',
+          metadata: { capital: capChar, lowercase: lowChar },
+        }).catch(() => {});
 
         setTimeout(() => {
           setJustMatchedCapital(null);

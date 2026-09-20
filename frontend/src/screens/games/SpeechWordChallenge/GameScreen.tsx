@@ -29,7 +29,7 @@ import Animated, {
   withSequence,
 } from 'react-native-reanimated';
 
-import { CartoonBackground } from '../../../components/CartoonBackground';
+import { CartoonBackground, CloudClearanceSpacer } from '../../../components/CartoonBackground';
 import { StorybookMicrophoneButton, MicButtonVisualState } from './components/StorybookMicrophoneButton';
 import { SpeechFeedbackBadge } from './components/SpeechFeedbackBadge';
 import { SpeechReportModal } from './components/SpeechReportModal';
@@ -37,6 +37,8 @@ import { BigTouchTarget } from '../../../components/BigTouchTarget';
 import { ProgressStarTrail } from '../../../components/ProgressStarTrail';
 import { CelebrationOverlay } from '../../../components/CelebrationOverlay';
 import { FriendlyModal } from '../../../components/FriendlyModal';
+import { SessionCountdownTimer } from '../../../components/SessionCountdownTimer';
+import { EducationalCorrectionModal } from '../../../components/EducationalCorrectionModal';
 import { Colors } from '../../../theme/colors';
 import { Typography } from '../../../theme/typography';
 import { useAppLanguageStore } from '../../../state/appLanguageStore';
@@ -82,9 +84,12 @@ export const GameScreen: React.FC = React.memo(() => {
 
   // Local state
   const [roundsData, setRoundsData] = useState<SpeechChallengeItem[]>([]);
+  const [attemptCount, setAttemptCount] = useState(1);
   const [showCelebration, setShowCelebration] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showCorrectionModal, setShowCorrectionModal] = useState(false);
+  const [lastSpokenWrongText, setLastSpokenWrongText] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [recognizedText, setRecognizedText] = useState<string | null>(null);
   const [feedbackStatus, setFeedbackStatus] = useState<
@@ -198,6 +203,9 @@ export const GameScreen: React.FC = React.memo(() => {
       roundStateRef.current = 'idle';
       setRoundState('idle');
       silenceRetryCountRef.current = 0;
+      setAttemptCount(1);
+      setShowCorrectionModal(false);
+      setLastSpokenWrongText('');
       heroCardScale.value = withSpring(1);
       if (promptTimerRef.current) clearTimeout(promptTimerRef.current);
       promptTimerRef.current = setTimeout(() => {
@@ -211,7 +219,7 @@ export const GameScreen: React.FC = React.memo(() => {
   }, [roundIndex, currentItem, speakCurrentItem, showCelebration, heroCardScale]);
 
   // Navigate to session complete when all rounds finish
-  const handleSessionEnd = useCallback(async () => {
+  const handleSessionEnd = useCallback(async (isTimeExpired = false) => {
     isGameActiveRef.current = false;
     clearAllGameTimers();
     cancelRecording();
@@ -251,9 +259,22 @@ export const GameScreen: React.FC = React.memo(() => {
         accuracy,
         durationSeconds: durationSec,
         category,
+        isTimeExpired,
       },
     });
   }, [sessionStartTime, itemsCorrect, navigation, cancelRecording, category, isLetterMode, learningLanguage, motherTongue, selectedAge, clearAllGameTimers]);
+
+  const handleTimeExpired = useCallback(() => {
+    handleSessionEnd(true);
+  }, [handleSessionEnd]);
+
+  const handleRetryAfterCorrection = useCallback(() => {
+    setShowCorrectionModal(false);
+    roundStateRef.current = 'idle';
+    setRoundState('idle');
+    setRoundLocked(false);
+    setFeedbackStatus(null);
+  }, []);
 
   // Handle Quit from exit modal
   const handleConfirmQuit = () => {
@@ -445,11 +466,11 @@ export const GameScreen: React.FC = React.memo(() => {
       setShowCelebration(true);
       speakPraise(motherTongue);
 
-      // Record answer XP deterministically
+      // Record answer XP deterministically (15 on attempt 1, 10 on attempt 2)
       xpService.recordAnswerXP({
         sessionId: sessionIdRef.current,
         roundIndex,
-        attemptNum: 1,
+        attemptNum: attemptCount,
         isCorrect: true,
         gameId: category ? `speech_${category}` : (isLetterMode ? 'speech_letters' : 'speech_word_challenge'),
         metadata: {
@@ -472,25 +493,50 @@ export const GameScreen: React.FC = React.memo(() => {
         }
       }, 1600);
     } else {
-      // === INCORRECT ANSWER === (Single attempt only! Auto-advances to next round)
+      // === INCORRECT ANSWER ===
       setFeedbackStatus('wrong');
       heroCardScale.value = withSequence(
         withTiming(0.96, { duration: 100 }),
         withTiming(1.02, { duration: 100 }),
         withTiming(1.0, { duration: 100 })
       );
-      recordAnswer(spokenText, false);
-      speakPhrase(t('speechWordChallenge.almostTryAgain'), { language: motherTongue });
 
-      if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
-      advanceTimerRef.current = setTimeout(() => {
-        if (!isGameActiveRef.current) return;
-        if (roundIndex + 1 >= ROUND_COUNT) {
-          handleSessionEnd();
-        } else {
-          nextRound();
-        }
-      }, 1800);
+      if (attemptCount === 1) {
+        // Attempt 1: Educational correction popup + reveal correct answer + give 2nd attempt
+        setLastSpokenWrongText(spokenText);
+        setShowCorrectionModal(true);
+        setAttemptCount(2);
+
+        xpService.recordAnswerXP({
+          sessionId: sessionIdRef.current,
+          roundIndex,
+          attemptNum: 1,
+          isCorrect: false,
+          gameId: category ? `speech_${category}` : (isLetterMode ? 'speech_letters' : 'speech_word_challenge'),
+        }).catch(() => {});
+      } else {
+        // Attempt 2: Mark wrong (0 XP) and advance
+        recordAnswer(spokenText, false);
+        speakPhrase(t('speechWordChallenge.almostTryAgain'), { language: motherTongue });
+
+        xpService.recordAnswerXP({
+          sessionId: sessionIdRef.current,
+          roundIndex,
+          attemptNum: 2,
+          isCorrect: false,
+          gameId: category ? `speech_${category}` : (isLetterMode ? 'speech_letters' : 'speech_word_challenge'),
+        }).catch(() => {});
+
+        if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+        advanceTimerRef.current = setTimeout(() => {
+          if (!isGameActiveRef.current) return;
+          if (roundIndex + 1 >= ROUND_COUNT) {
+            handleSessionEnd();
+          } else {
+            nextRound();
+          }
+        }, 1800);
+      }
     }
   };
 
@@ -520,10 +566,19 @@ export const GameScreen: React.FC = React.memo(() => {
   const currentAccuracy =
     roundIndex > 0 ? Math.round((itemsCorrect / roundIndex) * 100) : 100;
 
+  const speechTheme =
+    category === 'animals'
+      ? 'jungle'
+      : category === 'fruits'
+      ? 'orchard'
+      : category === 'nature'
+      ? 'nature'
+      : 'meadow';
+
   return (
     <View style={styles.webOuterContainer}>
-      {/* Living Cartoon Meadow Background Scene */}
-      <CartoonBackground theme="meadow" />
+      {/* Living Cartoon Themed Background Scene */}
+      <CartoonBackground theme={speechTheme} />
 
       {/* Confetti celebration overlay on correct answer */}
       <CelebrationOverlay
@@ -533,6 +588,7 @@ export const GameScreen: React.FC = React.memo(() => {
 
       <SafeAreaView style={styles.safeArea}>
         <StatusBar barStyle="light-content" backgroundColor={Colors.header.topBarNavy} />
+        <CloudClearanceSpacer />
 
         {/* 1. Top Header Row (Matching AlphabetMatching & VowelMatraMatch) */}
         <View style={styles.topHeaderContainer}>
@@ -545,6 +601,19 @@ export const GameScreen: React.FC = React.memo(() => {
           >
             <Text style={styles.redExitButtonText}>✕</Text>
           </BigTouchTarget>
+
+          {/* Continuous Session Timer (90s) */}
+          <SessionCountdownTimer
+            initialSeconds={90}
+            isPaused={
+              roundLocked ||
+              showCelebration ||
+              showExitModal ||
+              showReportModal ||
+              showCorrectionModal
+            }
+            onExpire={handleTimeExpired}
+          />
 
           <View
             style={styles.starTrailPill}
@@ -721,6 +790,15 @@ export const GameScreen: React.FC = React.memo(() => {
           attempts={sessionAttempts}
           totalRounds={ROUND_COUNT}
         />
+
+        {/* 7. Educational Correction Modal */}
+        <EducationalCorrectionModal
+          visible={showCorrectionModal}
+          targetWord={currentItem?.displayLetter || currentItem?.displayWord || ''}
+          spokenWord={lastSpokenWrongText}
+          promptFallback={t('speechWordChallenge.almostTryAgain', 'Listen to the word and try saying it again!')}
+          onRetry={handleRetryAfterCorrection}
+        />
       </SafeAreaView>
     </View>
   );
@@ -744,24 +822,27 @@ const styles = StyleSheet.create({
 
   /* Top Header Container */
   topHeaderContainer: {
-    height: 60,
+    height: 56,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: Colors.header.topBarNavy,
+    backgroundColor: 'rgba(27, 43, 90, 0.92)',
+    borderRadius: 20,
+    marginHorizontal: 12,
     paddingHorizontal: 12,
-    width: '100%',
     zIndex: 20,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   redExitButton: {
-    width: 46,
-    height: 46,
-    minWidth: 46,
-    minHeight: 46,
+    width: 42,
+    height: 42,
+    minWidth: 42,
+    minHeight: 42,
     borderRadius: 16,
     backgroundColor: Colors.header.exitRed,
     borderColor: '#FFFFFF',
-    borderWidth: 3,
+    borderWidth: 2.5,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -819,11 +900,11 @@ const styles = StyleSheet.create({
   },
   audioCueCard: {
     width: '100%',
-    minHeight: 80,
+    minHeight: 76,
     borderRadius: 24,
-    backgroundColor: Colors.instructionCard.bg,
-    borderColor: Colors.instructionCard.border,
-    borderWidth: 3.5,
+    backgroundColor: 'rgba(221, 244, 255, 0.88)',
+    borderColor: 'rgba(255, 255, 255, 0.95)',
+    borderWidth: 3,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
@@ -865,10 +946,10 @@ const styles = StyleSheet.create({
     width: '92%',
     maxWidth: 340,
     minHeight: 200,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.88)',
     borderRadius: 28,
     borderWidth: 4,
-    borderColor: '#E0F2FE',
+    borderColor: 'rgba(255, 255, 255, 0.95)',
     borderBottomWidth: 7,
     borderBottomColor: '#BAE6FD',
     alignItems: 'center',

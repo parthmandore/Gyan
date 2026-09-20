@@ -113,6 +113,16 @@ const AGE_CARDS: readonly AgeCardOption[] = [
     titleColor: '#2E1065',
     subtitleColor: '#4C1D95',
   },
+  {
+    age: 7,
+    titleKey: 'ageGate.age7Title',
+    subtitleKey: 'ageGate.age7Desc',
+    icon: '🏆',
+    bgColor: '#10B981',
+    bevelColor: '#047857',
+    titleColor: '#022C22',
+    subtitleColor: '#064E3B',
+  },
 ] as const;
 
 export const LanguageGateScreen: React.FC = React.memo(() => {

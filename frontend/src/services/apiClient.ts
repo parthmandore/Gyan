@@ -12,14 +12,23 @@ const getBaseURL = (): string => {
   if (process.env.EXPO_PUBLIC_API_URL) {
     return process.env.EXPO_PUBLIC_API_URL;
   }
-  const host = Platform.OS === 'android' ? '10.0.2.2' : 'localhost';
+  const host = Platform.OS === 'android' ? '10.0.2.2' : '127.0.0.1';
   return `http://${host}:8000`;
 };
 
 export const apiClient = axios.create({
   baseURL: getBaseURL(),
-  timeout: 10000,
+  timeout: 5000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+// Suppress unhandled network rejections for offline/background sync
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Graceful offline fallback
+    return Promise.resolve({ data: null, error: error?.message || 'Network unavailable' });
+  }
+);
