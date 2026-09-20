@@ -77,6 +77,7 @@ export type CapitalSmallMatchStackParamList = {
   CapitalSmallMatchIntro: undefined;
   CapitalSmallMatchGame: undefined;
   CapitalSmallMatchSessionComplete: {
+    sessionId?: string;
     starsEarned: number;
     xpEarned: number;
     itemsCorrect: number;

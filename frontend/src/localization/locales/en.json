@@ -6,7 +6,24 @@
     "back": "Back",
     "next": "Next",
     "retry": "Retry",
-    "close": "Close"
+    "close": "Close",
+    "tryCount": "(Try {{count}})",
+    "gotIt": "Got it!",
+    "homeLanguage": "Home",
+    "learningLanguage": "Learning",
+    "play": "PLAY ▶",
+    "accuracy": "Accuracy",
+    "correct": "Matched",
+    "xpEarned": "XP Earned",
+    "playAgain": "Play Again",
+    "catalog": "Games Hub",
+    "practice": "Needs Practice",
+    "noAttemptsYet": "No matches recorded yet.",
+    "keepPlaying": "Keep Playing",
+    "exit": "Exit",
+    "leave": "Leave",
+    "leaveGame": "Leave Game?",
+    "leaveGameConfirm": "Are you sure you want to leave? Your progress in this session will be saved."
   },
   "navigation": {
     "home": "Home",
@@ -15,13 +32,17 @@
   "languageGate": {
     "title": "Choose Learning Language",
     "subtitle": "Select the language you want to learn today!",
+    "motherTongueTitle": "Which language do you speak at home?",
+    "motherTongueSubtitle": "The app will talk to you in this language!",
+    "learningLanguageTitle": "Which language do you want to learn?",
+    "learningLanguageSubtitle": "Choose the language to practice speaking!",
     "english": "English",
-    "englishSub": "Learn English letters & numbers",
+    "englishSub": "Learn English letters & vocabulary",
     "hindi": "हिन्दी",
-    "hindiSub": "सीखें हिन्दी वर्णमाला और संख्याएं",
+    "hindiSub": "सीखें हिन्दी वर्णमाला और शब्द",
     "marathi": "मराठी",
-    "marathiSub": "शिका मराठी मुळाक्षरे आणि संख्या",
-    "accessibilityHint": "Sets application learning language to {{language}} and opens available games"
+    "marathiSub": "शिका मराठी मुळाक्षरे आणि शब्द",
+    "accessibilityHint": "Sets application language to {{language}}"
   },
   "ageGate": {
     "title": "Choose Your Age",
@@ -30,6 +51,8 @@
     "age5Desc": "Learn letters, phonics, and matching",
     "age6Title": "Age 6 (Word Speech)",
     "age6Desc": "Speak words, identify objects & vocabulary",
+    "age7Title": "Age 7 (Mastery & Shapes)",
+    "age7Desc": "Complex shapes, shade naming, and clear pronunciation",
     "ageBadge": "Age {{age}}"
   },
   "games": {
@@ -57,9 +80,158 @@
       "description": "Match independent vowels to their consonant matra forms!"
     },
     "speechWordChallenge": {
-      "title": "Speech Word Challenge",
+      "title": "Say the Letters",
       "subtitle": "Speak into the microphone!",
-      "description": "Speak letters or words aloud into the microphone to build pronunciation!"
+      "description": "Look at the letter and say it aloud to practice pronunciation!"
+    },
+    "speechLetters": {
+      "title": "Say the Letters",
+      "subtitle": "Speak into the microphone!",
+      "description": "Look at the letter and say it aloud to practice pronunciation!"
+    },
+    "missingLetters": {
+      "title": "Missing Letters",
+      "description": "Look at the letters and find the missing one to complete the sequence!"
+    },
+    "missingNumbers": {
+      "title": "Missing Numbers",
+      "description": "Count along the number train and find the missing number to complete the line!"
+    },
+    "numberCounting": {
+      "title": "Number Counting",
+      "description": "Count real-world objects like apples, stars, and toys to find how many!"
+    },
+    "putInOrder": {
+      "title": "Put in Order",
+      "description": "Arrange numbers, letters, and pictures in the right order from start to finish!"
+    },
+    "speechAnimals": {
+      "title": "Animal Words",
+      "description": "What animal is this? See the picture and say its name!"
+    },
+    "speechFruits": {
+      "title": "Fruits & Vegetables",
+      "description": "What fruit or veggie is this? See the picture and say its name!"
+    },
+    "speechEveryday": {
+      "title": "Everyday Things & Nature",
+      "description": "What is this? See everyday objects and say their names!"
+    },
+    "languagePairMatch": {
+      "title": "Language Pair Match",
+      "description": "See the word in your language and match it with its translation!"
+    },
+    "colourChallenge": {
+      "title": "Colour Challenge",
+      "description": "Learn and identify vibrant colours, shades, and practice speech pronunciation!"
+    },
+    "shapeChallenge": {
+      "title": "Shape Challenge",
+      "description": "Discover geometric shapes from basic circles to complex polygons and speak their names!"
+    },
+    "guessTheShape": {
+      "title": "Guess the Shape",
+      "subtitle": "What shape is this?",
+      "description": "Look at the colorful shape and choose its correct name!"
+    },
+    "missingLetterWords": {
+      "title": "Missing Letter Words",
+      "subtitle": "Find the missing letter!",
+      "description": "Complete the word by finding the missing letter!"
+    },
+    "findTheCorrectWord": {
+      "title": "Find the Correct Word",
+      "subtitle": "Pick the correctly spelled word!",
+      "description": "Look at the picture and find the word with the correct spelling!"
+    },
+    "letterTracing": {
+      "title": "Letter Tracing",
+      "description": "Trace and write letters with your finger to master handwriting!"
+    },
+    "addition": {
+      "title": "Addition",
+      "description": "Count and add numbers together to find the sum!"
+    },
+    "subtraction": {
+      "title": "Subtraction",
+      "description": "Take away numbers and find the difference!"
+    },
+    "biggerAddition": {
+      "title": "Bigger Addition",
+      "description": "Add two-digit numbers with carrying and level up your math skills!"
+    },
+    "multiplication": {
+      "title": "Multiplication",
+      "description": "Master your times tables and multiply numbers like a champion!"
+    },
+    "division": {
+      "title": "Division",
+      "description": "Divide and share numbers equally into exact groups!"
+    },
+    "patternMatch": {
+      "title": "Pattern Match",
+      "description": "Discover repeating color, shape, and object sequences!"
+    },
+    "biggerSmaller": {
+      "title": "Bigger or Smaller",
+      "description": "Compare numbers and pick which one is bigger or smaller!"
+    },
+    "whatComesNext": {
+      "title": "What Comes Next",
+      "description": "Follow counting and visual progression to find the next item!"
+    },
+    "numberPattern": {
+      "title": "Number Pattern",
+      "description": "Solve skip-counting and number stepping sequences!"
+    },
+    "oddOneOut": {
+      "title": "Odd One Out",
+      "description": "Spot the item that does not belong in the group!"
+    },
+    "oddWordOut": {
+      "title": "Odd Word Out",
+      "subtitle": "Which word is different?",
+      "description": "Spot the word that does not belong with the other three words!"
+    },
+    "logicalSequence": {
+      "title": "Logical Sequence",
+      "description": "Put everyday steps and life cycles in the right order!"
+    },
+    "visualReasoning": {
+      "title": "Visual Reasoning",
+      "description": "Solve visual puzzles, matrices, and shape combinations!"
+    },
+    "nounOrVerb": {
+      "title": "Noun or Verb",
+      "description": "Discover naming words and action words in a fun challenge!"
+    },
+    "singularOrPlural": {
+      "title": "Singular or Plural",
+      "description": "Learn whether a word means one or more than one!"
+    },
+    "completeSentence": {
+      "title": "Complete the Sentence",
+      "description": "Pick the right missing word to finish the sentence!"
+    },
+    "articlesDeterminers": {
+      "title": "Articles & Determiners",
+      "description": "Master words like a, an, and the in playful sentences!"
+    },
+    "pronouns": {
+      "title": "Pronouns",
+      "description": "Replace names with words like he, she, and they!"
+    },
+    "prepositions": {
+      "title": "Prepositions",
+      "description": "Explore positions and places like in, on, and under!"
+    },
+    "basicTenses": {
+      "title": "Basic Tenses",
+      "description": "Learn how words change for past, present, and future time!"
+    },
+    "sentenceCorrection": {
+      "title": "Sentence Correction",
+      "description": "Spot the grammar mistakes and pick the correct sentence!"
     }
   },
   "alphabetMatching": {
@@ -80,7 +252,9 @@
     "step2": "Tap the matching card from the options below.",
     "step3": "Complete rounds to earn stars and build your streak!",
     "howToPlayBtn": "❓ How to Play",
-    "gotItBtn": "Got It! ▶"
+    "gotItBtn": "Got It! ▶",
+    "teachingLetter": "This is the letter {{letter}}",
+    "teachingNumber": "This is number {{letter}}"
   },
   "capitalSmallMatch": {
     "gameTitle": "Capital & Small Letter Match",
@@ -103,7 +277,9 @@
     "wrongMatchLeftLabel": "Capital",
     "wrongMatchRightLabel": "Small",
     "wrongMatchGotIt": "Got it! ▶",
-    "wrongMatchSpeak": "This is {{left}} and {{right}}"
+    "wrongMatchSpeak": "This is {{left}} and {{right}}",
+    "spokenCapital": "Capital {{letter}}",
+    "spokenSmall": "Small {{letter}}"
   },
   "vowelMatraMatch": {
     "gameTitle": "Vowel & Matra Match",
@@ -177,6 +353,7 @@
     "leaveGameDesc": "Are you sure you want to exit? Your current progress will be finalized.",
     "keepPlaying": "Keep Playing",
     "exitGame": "Quit Game",
+    "quitGame": "Quit Game",
     "listenForLetter": "Listen for the letter!",
     "listenForNumber": "Listen for the number!",
     "loadingAudio": "Loading...",
@@ -191,6 +368,12 @@
     "finishedGame": "You finished today's game!"
   },
   "speechWordChallenge": {
+    "promptAnimals": "What animal is this? Say its name!",
+    "promptFruits": "What is this? Say its name!",
+    "promptNature": "What is this? Say its name!",
+    "promptLetters": "Look at the letter and say it aloud!",
+    "mysteryWhatIsThis": "❓ What is this?",
+    "mysterySayLetter": "❓ Say the letter",
     "sayTheWord": "Say the word.",
     "sayTheLetter": "Say the letter!",
     "whatIsThis": "What is this? Say the word!",
@@ -223,6 +406,413 @@
     "debugExpected": "Expected: {{word}}",
     "debugHeard": "Heard: {{heard}}",
     "progressLabel": "Progress {{current}} of {{total}} rounds",
-    "microphoneHint": "Tap the microphone and speak aloud"
+    "microphoneHint": "Tap the microphone and speak aloud",
+    "howToPlayTitle": "How to Play",
+    "howToPlayLetters": "1. Look at the large letter on the screen.\n2. Tap the microphone button.\n3. Say the letter clearly!\n4. Complete all 10 rounds to earn 3 stars! ⭐",
+    "howToPlayWords": "1. Look at the picture on the screen.\n2. Think of the word (the answer is hidden!).\n3. Tap the microphone and say the word aloud!\n4. Complete all 10 rounds to earn 3 stars! ⭐",
+    "startChallenge": "START CHALLENGE ▶",
+    "gotIt": "Got it! ▶",
+    "listenInstruction": "Listen to the instruction prompt",
+    "introPromptLetters": "Look at the letter and say it aloud!",
+    "introPromptWords": "Look at the picture, think of the word, and say it aloud!",
+    "sessionCompletePraise": "Awesome speaking! You earned stars for speaking clearly!",
+    "feedback": {
+      "listening": "I'm listening...",
+      "checking": "Checking...",
+      "greatJob": "Great job!",
+      "couldNotHear": "I couldn't hear clearly. Try again!",
+      "helperResting": "Speech helper is taking a break. Tap to retry!",
+      "almostTryAgain": "Almost! Try again. 💛"
+    },
+    "micButton": {
+      "tapAndSay": "Tap & Say",
+      "listening": "Listening...",
+      "checking": "Checking...",
+      "greatJob": "Great job!",
+      "tryAgain": "Try Again"
+    }
+  },
+  "languagePairMatch": {
+    "title": "Language Pair Match",
+    "subtitle": "Language Adventure",
+    "instructions": "Match words in {{source}} with their translations in {{target}}!",
+    "instructionsText": "Match the pairs!",
+    "tryAgain": "Try another match!",
+    "sameLanguageTitle": "Same Language Selected",
+    "sameLanguageDesc": "Your home and learning languages are the same. Please choose another language to play this game.",
+    "switchLanguage": "Choose Another Language",
+    "howToPlayTitle": "How to Play",
+    "howToPlayDesc": "1. Tap a card on the left in your language.\n2. Tap the matching translation on the right.\n3. Match all pairs to advance to the next round!",
+    "seeReport": "See Match Report",
+    "sessionCompleteTitle": "Language Adventure Complete!",
+    "sessionCompleteDesc": "You matched {{correct}} of {{total}} pairs!",
+    "sessionCompletePraise": "Awesome job! You matched the language pairs!",
+    "roundBreakdown": "Round Breakdown"
+  },
+  "colourChallenge": {
+    "title": "Colour Challenge",
+    "subtitle": "Colour Discovery",
+    "age5Hero": "Find the Matching Colour! 🎨",
+    "age6Hero": "Say the Colour! 🎙️",
+    "age7Hero": "Colour Pronunciation! 🌟",
+    "age5Desc": "Look at the target colour and tap the matching card below!",
+    "age6Desc": "Look at the colour and say its name in {{language}} into the microphone!",
+    "age7Desc": "Identify the colour shade and pronounce its name clearly in {{language}}!",
+    "whatColour": "What colour is this?",
+    "lookAndSay": "Look at the colour and say its name aloud!",
+    "tapMatching": "Tap the matching colour!",
+    "tapOrSpeak": "Say the colour or tap the matching card!",
+    "speakNow": "Speak Now",
+    "tryAnother": "Try another colour! 💛",
+    "greatJob": "Great job! That's {{name}}! 🎉",
+    "sessionCompleteTitle": "Colour Challenge Complete!",
+    "sessionCompleteDesc": "You completed all 5 rounds with {{correct}} of 5 correct!",
+    "sessionCompletePraise": "Spectacular! You are a master of colours!",
+    "howToPlayTitle": "How to Play Colour Challenge",
+    "howToPlayAge5": "1. Look at the big colour shown in the centre.\n2. Look at the 4 colour options below.\n3. Tap the card that matches the target colour.\n4. Complete all 5 rounds to win 3 stars! ⭐",
+    "howToPlayAge6": "1. Look at the colour shown on the screen.\n2. Tap the microphone button.\n3. Say the colour name clearly in {{language}}!\n4. Complete all 5 rounds to win 3 stars! ⭐",
+    "howToPlayAge7": "1. Look at the advanced shade or colour.\n2. Speak the exact colour name into the mic.\n3. Listen to native pronunciation and improve.\n4. Complete all 5 rounds to win 3 stars! ⭐"
+  },
+  "shapeChallenge": {
+    "title": "Shape Challenge",
+    "subtitle": "Geometry Explorer",
+    "age5Hero": "Find the Matching Shape! 📐",
+    "age6Hero": "Identify the Shape! 🎙️",
+    "age7Hero": "Complex Shape Master! 🏆",
+    "age5Desc": "Look at the target shape and tap the matching card below!",
+    "age6Desc": "Look at the shape, identify it, and say its name in {{language}}!",
+    "age7Desc": "Examine the geometric shape and pronounce its exact name in {{language}}!",
+    "whatShape": "What shape is this?",
+    "lookAndSay": "Look at the shape and say its name aloud!",
+    "tapMatching": "Tap the matching shape!",
+    "tapOrSpeak": "Say the shape or tap the matching card!",
+    "speakNow": "Speak Now",
+    "tryAnother": "Try another shape! 💛",
+    "greatJob": "Great job! That's a {{name}}! 🎉",
+    "sessionCompleteTitle": "Shape Challenge Complete!",
+    "sessionCompleteDesc": "You completed all 5 rounds with {{correct}} of 5 correct!",
+    "sessionCompletePraise": "Fantastic! You are a geometry champion!",
+    "howToPlayTitle": "How to Play Shape Challenge",
+    "howToPlayAge5": "1. Look at the shape shown in the centre.\n2. Look at the 4 shape options below.\n3. Tap the card with the exact matching shape.\n4. Complete all 5 rounds to win 3 stars! ⭐",
+    "howToPlayAge6": "1. Look at the shape on the screen.\n2. Tap the microphone and say the shape name in {{language}}!\n3. Or tap the matching shape card below.\n4. Complete all 5 rounds to win 3 stars! ⭐",
+    "howToPlayAge7": "1. Look at the complex geometric polygon.\n2. Say its exact shape name clearly into the mic.\n3. Complete all 5 rounds to win 3 stars! ⭐"
+  },
+  "letterTracing": {
+    "title": "Letter Tracing",
+    "subtitle": "Handwriting Practice",
+    "age5Hero": "Trace the Letter! ✍️",
+    "age6Hero": "Follow the Path! ✏️",
+    "age7Hero": "Write the Letter! 📝",
+    "age5Desc": "Trace over the dotted letter on the screen with your finger!",
+    "age6Desc": "Follow the faint stroke path and anchor dots to form the letter!",
+    "age7Desc": "Write the letter freehand between the notebook guidelines!",
+    "tracePrompt": "Trace this letter:",
+    "writePrompt": "Write this letter:",
+    "undo": "Undo",
+    "clear": "Clear",
+    "check": "Check",
+    "tryAgain": "Almost! Trace carefully and try again 💛",
+    "drawMore": "Draw the letter on the canvas first! ✏️",
+    "greatJob": "Great job! Beautiful handwriting! 🎉",
+    "perfect": "Perfect letter tracing! 🌟",
+    "sessionCompleteTitle": "Handwriting Practice Complete!",
+    "sessionCompleteDesc": "You completed all 5 rounds with {{correct}} of 5 traced accurately!",
+    "sessionCompletePraise": "Incredible work! You are writing like a superstar!",
+    "howToPlayTitle": "How to Play Letter Tracing",
+    "howToPlayAge5": "1. Look at the letter shown above.\n2. Trace over the dotted lines with your finger.\n3. Tap 'Check' when you finish tracing.\n4. Complete all 5 rounds to win 3 stars! ⭐",
+    "howToPlayAge6": "1. Look at the letter and faint guide.\n2. Connect the dots and trace the strokes.\n3. Tap 'Check' when done.\n4. Complete all 5 rounds to win 3 stars! ⭐",
+    "howToPlayAge7": "1. Look at the target letter.\n2. Write it freehand between the notebook lines.\n3. Tap 'Check' to verify your writing.\n4. Complete all 5 rounds to win 3 stars! ⭐"
+  },
+  "mathChallenge": {
+    "title": "Math Challenge",
+    "subtitle": "Number Adventure",
+    "whatIsTheAnswer": "What is the answer?",
+    "solveEquation": "Solve the equation!",
+    "tapCorrectAnswer": "Tap the correct number card below!",
+    "greatJob": "Great job! That's correct! 🎉",
+    "tryAgain": "Not quite! Try another number 💛",
+    "additionTitle": "Addition",
+    "additionHero": "Add the Numbers! ➕",
+    "additionDesc": "Count and add the numbers together to find the sum!",
+    "subtractionTitle": "Subtraction",
+    "subtractionHero": "Subtract the Numbers! ➖",
+    "subtractionDesc": "Take away the numbers to find the difference!",
+    "biggerAdditionTitle": "Bigger Addition",
+    "biggerAdditionHero": "Bigger Addition Challenge! ➕",
+    "biggerAdditionDesc": "Add two-digit numbers to find the total sum!",
+    "multiplicationTitle": "Multiplication",
+    "multiplicationHero": "Multiply the Numbers! ✖️",
+    "multiplicationDesc": "Use your times tables to find the product!",
+    "divisionTitle": "Division",
+    "divisionHero": "Divide the Numbers! ➗",
+    "divisionDesc": "Share and divide numbers equally into groups!",
+    "sessionCompleteTitle": "Math Adventure Complete!",
+    "sessionCompleteDesc": "You solved {{correct}} of 5 questions correctly!",
+    "sessionCompletePraise": "Incredible math skills! You are a number superstar!",
+    "howToPlayTitle": "How to Play Math Challenge",
+    "howToPlayAddition": "1. Look at the addition equation shown above.\n2. Add the two numbers together.\n3. Tap the matching answer card from the 4 choices.\n4. Complete all 5 rounds to win 3 stars! ⭐",
+    "howToPlaySubtraction": "1. Look at the subtraction equation.\n2. Subtract the second number from the first.\n3. Tap the card with the correct answer.\n4. Complete all 5 rounds to win 3 stars! ⭐",
+    "howToPlayBiggerAddition": "1. Look at the two-digit addition equation.\n2. Add the tens and ones carefully.\n3. Tap the card with the total sum.\n4. Complete all 5 rounds to win 3 stars! ⭐",
+    "howToPlayMultiplication": "1. Look at the multiplication equation.\n2. Multiply the two numbers using times tables.\n3. Tap the matching product card.\n4. Complete all 5 rounds to win 3 stars! ⭐",
+    "howToPlayDivision": "1. Look at the division equation.\n2. Divide the number equally into groups.\n3. Tap the card with the exact quotient.\n4. Complete all 5 rounds to win 3 stars! ⭐"
+  },
+  "aptitudeChallenge": {
+    "title": "Aptitude & Logic",
+    "subtitle": "Brain Adventures",
+    "patternMatchHero": "Pattern Match! 🧩",
+    "patternMatchDesc": "Spot the repeating pattern and pick the right piece!",
+    "patternMatchPrompt": "What comes next in the pattern?",
+    "howToPlayPatternMatch": "1. Look at the row of repeating colors, shapes, or emojis.\n2. Find the repeating pattern.\n3. Tap the card that completes the sequence.\n4. Complete all 5 rounds to win 3 stars! ⭐",
+    "biggerSmallerHero": "Bigger or Smaller! ⚖️",
+    "biggerSmallerDesc": "Compare the numbers and choose the right one!",
+    "howToPlayBiggerSmaller": "1. Look at the numbers displayed on the screen.\n2. Read whether to find the bigger or smaller number.\n3. Tap the matching card.\n4. Complete all 5 rounds to win 3 stars! ⭐",
+    "whichIsBigger": "Which number is bigger?",
+    "whichIsSmaller": "Which number is smaller?",
+    "whatComesNextHero": "What Comes Next! ➡️",
+    "whatComesNextDesc": "Follow the sequence to find what comes next!",
+    "howToPlayWhatComesNext": "1. Look at the numbers or life-cycle steps.\n2. Follow the sequence carefully.\n3. Tap the card that comes next in order.\n4. Complete all 5 rounds to win 3 stars! ⭐",
+    "whatComesNextPrompt": "What comes next in order?",
+    "numberPatternHero": "Number Pattern! 🔢",
+    "numberPatternDesc": "Skip-count and discover the secret number rule!",
+    "howToPlayNumberPattern": "1. Look at the number sequence.\n2. Check how much the numbers change each step.\n3. Tap the number card that fits the question mark.\n4. Complete all 5 rounds to win 3 stars! ⭐",
+    "numberPatternPrompt": "Find the missing number in the sequence!",
+    "oddOneOutHero": "Odd One Out! 🔍",
+    "oddOneOutDesc": "Find which item does not belong with the others!",
+    "howToPlayOddOneOut": "1. Look at the 4 items shown.\n2. Think about what three of them have in common.\n3. Tap the one item that does not belong!\n4. Complete all 5 rounds to win 3 stars! ⭐",
+    "oddOneOutPrompt": "Which one does not belong?",
+    "oddOneOutExpAnimals": "Apple is a fruit, while the others are animals!",
+    "oddOneOutExpVehicles": "Lion is an animal, while the others are vehicles!",
+    "oddOneOutExpFruits": "Shoe is clothing, while the others are delicious fruits!",
+    "oddOneOutExpShapes": "7 is a number, while the others are geometric shapes!",
+    "oddOneOutExpWater": "Eagle flies in the sky, while the others live in water!",
+    "oddOneOutExpEven": "9 is an odd number, while the others are even numbers!",
+    "oddOneOutExpVeggies": "Cake is a sweet dessert, while the others are vegetables!",
+    "oddOneOutExpSky": "Octopus lives in the ocean, while the others are in the sky!",
+    "logicalSequenceHero": "Logical Sequence! ⏳",
+    "logicalSequenceDesc": "Think about what happens first, next, and last!",
+    "howToPlayLogicalSequence": "1. Look at the story steps connected by arrows.\n2. Think about what happens next in real life.\n3. Tap the card that finishes the sequence.\n4. Complete all 5 rounds to win 3 stars! ⭐",
+    "logicalSequencePrompt": "What happens next in this story?",
+    "visualReasoningHero": "Visual Reasoning! 🧠",
+    "visualReasoningDesc": "Solve visual patterns, grids, and shape mysteries!",
+    "howToPlayVisualReasoning": "1. Observe the shapes, colors, or grid layout.\n2. Find the visual rule or combination.\n3. Tap the matching card.\n4. Complete all 5 rounds to win 3 stars! ⭐",
+    "visualMatrixPrompt": "Find the missing shape in the pattern!",
+    "visualCombinePrompt": "Put the two halves together! What shape do they make?",
+    "visualSizePrompt": "Look at how it changes! What comes next?",
+    "visualMatchPrompt": "Find the matching piece!",
+    "sessionCompleteTitle": "Brain Adventure Complete!",
+    "sessionCompleteDesc": "You solved {{correct}} of 5 questions correctly!",
+    "sessionCompletePraise": "Fantastic thinking! Your brain is super sharp today!",
+    "howToPlayTitle": "How to Play",
+    "roundCounter": "Question {{current}} of {{total}}",
+    "greatJob": "Great job! That's correct! 🎉",
+    "tryAgain": "Not quite! Try another one 💛",
+    "nextRoundSoon": "Keep going!",
+    "startGame": "Start Challenge! 🚀",
+    "mascotSpeech": "Ready to train your brain? Tap Start to play!",
+    "highlight5Rounds": "5 Quick Challenges",
+    "highlightStars": "Earn Stars & XP",
+    "highlightPraise": "Child-Friendly Clues"
+  },
+  "grammarChallenge": {
+    "title": "Basic Grammar",
+    "subtitle": "Language Quests",
+    "nounOrVerbHero": "Noun or Verb! 📝",
+    "nounOrVerbDesc": "Is the word a naming word or an action word?",
+    "howToPlayNounOrVerb": "1. Look at the word on the card.\n2. Decide if it is a Noun (person, place, thing) or a Verb (action).\n3. Tap the matching button.\n4. Complete all 5 rounds to win 3 stars! ⭐",
+    "nounOrVerbPrompt": "Is this word a Noun or a Verb?",
+    "singularOrPluralHero": "Singular or Plural! 🔢",
+    "singularOrPluralDesc": "Does this word mean one item or more than one?",
+    "howToPlaySingularOrPlural": "1. Read the word carefully.\n2. Decide if it is Singular (One) or Plural (Many).\n3. Tap the matching card.\n4. Complete all 5 rounds to win 3 stars! ⭐",
+    "singularOrPluralPrompt": "Does this word mean One or Many?",
+    "completeSentenceHero": "Complete the Sentence! ✏️",
+    "completeSentenceDesc": "Choose the correct missing word to finish the sentence!",
+    "howToPlayCompleteSentence": "1. Read the sentence with the missing blank.\n2. Pick the word that completes it grammatically.\n3. Tap the card with the right answer.\n4. Complete all 5 rounds to win 3 stars! ⭐",
+    "completeSentencePrompt": "Choose the word that completes the sentence!",
+    "articlesHero": "Articles & Determiners! 🔤",
+    "articlesDesc": "Fill in the blank with the correct determiner word!",
+    "howToPlayArticles": "1. Read the sentence carefully.\n2. Look at the letter sound right after the blank.\n3. Tap the card with the right word (like a, an, the).\n4. Complete all 5 rounds to win 3 stars! ⭐",
+    "articlesPrompt": "Fill in the blank with the correct word!",
+    "pronounsHero": "Pronouns Adventure! 👤",
+    "pronounsDesc": "Replace the naming words with he, she, they, or we!",
+    "howToPlayPronouns": "1. Read the first sentence to see who the story is about.\n2. Choose the matching pronoun for the second sentence.\n3. Tap your answer card.\n4. Complete all 5 rounds to win 3 stars! ⭐",
+    "pronounsPrompt": "Choose the correct pronoun for the blank!",
+    "prepositionsHero": "Prepositions Quest! 📍",
+    "prepositionsDesc": "Discover where things are located in, on, and under!",
+    "howToPlayPrepositions": "1. Look at the sentence and the picture clue.\n2. Think about where the object is located.\n3. Tap the matching preposition card.\n4. Complete all 5 rounds to win 3 stars! ⭐",
+    "prepositionsPrompt": "Where is it? Choose the right word!",
+    "tensesHero": "Basic Tenses! ⏱️",
+    "tensesDesc": "Learn past, present, and future time words!",
+    "howToPlayTenses": "1. Read time clue words like 'yesterday', 'every day', or 'tomorrow'.\n2. Pick the action word in the correct time form.\n3. Tap the card.\n4. Complete all 5 rounds to win 3 stars! ⭐",
+    "tensesPrompt": "Choose the correct time-form for the sentence!",
+    "correctionHero": "Sentence Correction! ✔️",
+    "correctionDesc": "Find and pick the sentence written with perfect grammar!",
+    "howToPlayCorrection": "1. Read the 3 sentences shown.\n2. Look for the sentence that sounds natural and has correct grammar.\n3. Tap the correct sentence.\n4. Complete all 5 rounds to win 3 stars! ⭐",
+    "correctionPrompt": "Select the grammatically correct sentence!",
+    "sessionCompleteTitle": "Grammar Quest Complete!",
+    "sessionCompleteDesc": "You solved {{correct}} of 5 questions correctly!",
+    "sessionCompletePraise": "Outstanding language skills! You are a grammar superstar!",
+    "howToPlayTitle": "How to Play",
+    "roundCounter": "Question {{current}} / {{total}}",
+    "greatJob": "Great job! That's correct! 🎉",
+    "tryAgain": "Not quite! Try another one 💛",
+    "nextRoundSoon": "Keep going!",
+    "startGame": "Start Adventure! 🚀",
+    "mascotSpeech": "Ready to master words and sentences? Tap Start!",
+    "highlight5Questions": "5 Child-Friendly Questions",
+    "highlightStars": "Earn Stars & Grammar XP",
+    "highlightPraise": "Instant Feedback & Audio"
+  },
+  "missingLetters": {
+    "title": "Missing Letters 🔤",
+    "subtitle": "Find the missing letter to complete the sequence!",
+    "heroTitle": "Find the Missing Letter! ⭐",
+    "heroSubtitle": "Look at the letters and pick the one that comes next in line!",
+    "whichLetterIsMissing": "Which letter is missing?",
+    "listenSequence": "Hear sequence",
+    "greatJob": "Great job! That's the right letter! 🎉",
+    "tryAgain": "Good try! Let's see the next one! 🌱",
+    "sessionCompleteTitle": "Alphabet Superstar! 🌟",
+    "sessionCompleteDesc": "You completed all 5 letter sequences!",
+    "sessionCompletePraise": "You know your letters so well! You are an alphabet superstar!",
+    "howToPlayTitle": "How to Play",
+    "howToPlayStep1": "Look at the letters in the row.",
+    "howToPlayStep2": "Find the empty box with the question mark.",
+    "howToPlayStep3": "Tap the correct letter below to complete the line!",
+    "startGame": "Start Challenge 🚀"
+  },
+  "missingNumbers": {
+    "title": "Missing Numbers 🔢",
+    "subtitle": "Find the missing number!",
+    "heroTitle": "Find the Missing Number! 🔢",
+    "heroSubtitle": "Look at the counting train and find the missing number!",
+    "whichNumberIsMissing": "Which number is missing?",
+    "listenSequence": "Hear numbers",
+    "greatJob": "Great job! That's the right number! 🎉",
+    "tryAgain": "Good try! Let's see the next one! 🌱",
+    "sessionCompleteTitle": "Counting Superstar! 🌟",
+    "sessionCompleteDesc": "You completed all 5 number sequences!",
+    "sessionCompletePraise": "You are a counting champion!",
+    "howToPlayTitle": "How to Play",
+    "howToPlayStep1": "Count the numbers in the row.",
+    "howToPlayStep2": "Find the empty box with the question mark.",
+    "howToPlayStep3": "Tap the right number below to complete the count!",
+    "startGame": "Start Challenge 🚀"
+  },
+  "numberCounting": {
+    "title": "Number Counting 🍎",
+    "subtitle": "Count the objects!",
+    "heroTitle": "Count the Objects! 🍎",
+    "heroSubtitle": "Count the friendly objects and tap the matching number!",
+    "badge": "⭐ Age 5 Counting Quest",
+    "demoQuestion": "How many apples?",
+    "tip": "Tap each object with your finger to count 1, 2, 3!",
+    "choosePrompt": "Select the correct number:",
+    "greatJob": "Great job! You counted correctly! 🎉",
+    "tryAgain": "Good try! Keep counting! 🌱",
+    "sessionCompleteTitle": "Super Counter! 🍎",
+    "sessionCompleteDesc": "You counted all the objects like a champ!",
+    "sessionCompletePraise": "You are a counting champion!",
+    "howToPlayTitle": "How to Play 📖",
+    "howToPlayStep1": "Look at the friendly objects inside the white box.",
+    "howToPlayStep2": "Tap each object with your finger to count them one by one!",
+    "howToPlayStep3": "Choose the matching number card at the bottom!",
+    "startGame": "Start Counting! 🚀",
+    "quitTitle": "Leave Counting Game?",
+    "quitConfirm": "Are you sure you want to stop counting? Your progress in this session will not be saved."
+  },
+  "putInOrder": {
+    "title": "Put in Order! 🧩",
+    "subtitle": "Arrange in sequence!",
+    "heroTitle": "Put in Order! 🧩",
+    "heroSubtitle": "Arrange the cards in the correct sequence from start to finish!",
+    "badge": "⭐ Age 5 Sequencing Quest",
+    "previewTitle": "Sample Order ➔",
+    "tip": "Tap a card in the tray to place it. Tap any placed card to remove it!",
+    "trayPrompt": "Tap cards in order to place them:",
+    "greatJob": "Super! Everything is in the right order! 🎉",
+    "tryAgain": "Good try! Let us try arranging them again! 🌱",
+    "sessionCompleteTitle": "Order Master! 🧩",
+    "sessionCompleteDesc": "You arranged all sequences in the right order!",
+    "sessionCompletePraise": "You are an ordering champion!",
+    "howToPlayTitle": "How to Play 📖",
+    "howToPlayStep1": "Look at the scrambled cards in the tray below.",
+    "howToPlayStep2": "Tap each card in order to place it in the empty slots: 1st, 2nd, 3rd!",
+    "howToPlayStep3": "Tap any card in a slot if you want to put it back in the tray!",
+    "startGame": "Start Ordering! 🚀",
+    "quitTitle": "Leave Ordering Game?",
+    "quitConfirm": "Are you sure you want to stop? Your progress in this session will not be saved."
+  },
+  "guessTheShape": {
+    "title": "Guess the Shape! 🔷",
+    "subtitle": "Look at the shape and choose its matching name!",
+    "startChallenge": "Start Challenge ▶",
+    "whatShapeIsThis": "What shape is this? Look and choose its name!",
+    "age6Badge": "⭐ Age 6 • Intermediate Shapes",
+    "age7Badge": "🚀 Age 7 • Advanced Shapes",
+    "introPraiseAge6": "Welcome! Can you guess each shape by its name? Let us play!",
+    "introPraiseAge7": "Welcome to Advanced Shape Challenge! Look closely at the sides and corners.",
+    "rule1": "Look at the colorful shape shown in the middle of the card.",
+    "rule2": "Read the choices below and tap the matching shape name!",
+    "rule3": "If you miss on your first try, you get a helpful hint and a second chance!",
+    "educationalHint": "Look closely at the sides and corners!",
+    "sessionCompleteTitle": "Shape Adventure Complete! 🎉",
+    "sessionCompleteDesc": "You identified {{correct}} of {{total}} shapes correctly!",
+    "sessionCompletePraise": "You are a true shape master! Wonderful job recognizing all the shapes!"
+  },
+  "missingLetterWords": {
+    "title": "Missing Letter Words! 🔤",
+    "subtitle": "Find the missing letter to complete each word!",
+    "startChallenge": "Start Challenge!",
+    "howToPlay": "How to Play",
+    "age6Badge": "⭐ Age 6 • Fun Words",
+    "age7Badge": "🚀 Age 7 • Tougher Words",
+    "introPraiseAge6": "Find the missing letter to make the word! Let us play!",
+    "introPraiseAge7": "Find the missing letter to complete each word! Are you ready?",
+    "rule1": "Look at the word on screen with the missing blank space (e.g. C _ T).",
+    "rule2": "Choose the missing letter from the 4 choices below.",
+    "rule3": "Get it right on your first try for +15 XP! If you need help, you get 1 more try for +10 XP.",
+    "rule4": "Hear the completed word spoken aloud to learn its pronunciation!",
+    "findMissingLetterPrompt": "What letter is missing? Choose the correct letter!",
+    "chooseMissingLetter": "Which letter is missing? Tap the correct letter!",
+    "correctionHelp": "Look at the word and find the missing letter!",
+    "correctionExplanation": "Look at the word carefully and pick the missing letter!",
+    "completedAllWords": "You completed the word challenge!",
+    "sessionCompletePraise": "You are a spelling superstar! Fantastic job completing all the words!",
+    "reportTitle": "Word Challenge Report"
+  },
+  "findTheCorrectWord": {
+    "title": "Find the Correct Word! 📝",
+    "subtitle": "Look at the picture and find the word spelled correctly!",
+    "startChallenge": "Start Challenge!",
+    "howToPlay": "How to Play",
+    "age6Badge": "⭐ Age 6 • Word Spelling",
+    "age7Badge": "🚀 Age 7 • Tricky Spellings",
+    "introPraiseAge6": "Look at the picture and pick the correctly spelled word! Let us play!",
+    "introPraiseAge7": "Look at the picture and find the word with the correct spelling! Are you ready?",
+    "rule1": "Look closely at the picture displayed on the card.",
+    "rule2": "Look at the word options below. Watch out for tricky spellings!",
+    "rule3": "Choose the correctly spelled word on your 1st attempt for +15 XP!",
+    "rule4": "If you make a mistake, you get a helpful tip and 1 more chance for +10 XP.",
+    "choosePrompt": "Look at the picture and choose the correctly spelled word!",
+    "questionPrompt": "Which is the correct spelling? Tap the right word!",
+    "correctionHelp": "Look at the picture and find the word spelled correctly!",
+    "correctionExplanation": "Look closely at the letters in each word and pick the correct spelling!",
+    "completedAllWords": "You completed the word challenge!",
+    "sessionCompletePraise": "You are a spelling champion! Wonderful job finding the correct words!"
+  },
+  "oddWordOut": {
+    "title": "Odd Word Out! 🎯",
+    "subtitle": "Find the word that doesn't belong in the group!",
+    "startChallenge": "Start Challenge!",
+    "howToPlay": "How to Play",
+    "age7Badge": "🚀 Age 7 • Category Detective",
+    "introPraiseAge7": "Welcome to Odd Word Out! Read the four words and find which one is different. Are you ready?",
+    "rule1": "Read all four words shown on the screen carefully.",
+    "rule2": "Three words belong to the same category, but one word is different!",
+    "rule3": "Tap the odd word out on your 1st attempt to earn +15 XP!",
+    "rule4": "If you need another try, you get a helpful clue and a second chance for +10 XP.",
+    "questionPrompt": "Which word is different?",
+    "completedAllRounds": "You completed the category challenge!",
+    "sessionCompletePraise": "Brilliant thinking! You found all the odd words!"
   }
 }

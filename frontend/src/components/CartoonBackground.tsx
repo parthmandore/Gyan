@@ -19,9 +19,40 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Polygon, Path } from 'react-native-svg';
 import { Colors } from '../theme/colors';
 
+export type CartoonBackgroundTheme =
+  | 'meadow'
+  | 'evening'
+  | 'hub'
+  | 'jungle'
+  | 'orchard'
+  | 'nature'
+  | 'math'
+  | 'puzzle'
+  | 'library'
+  | 'rainbow'
+  | 'geometry'
+  | 'art'
+  | 'alphabet';
+
 export interface CartoonBackgroundProps {
-  theme?: 'meadow' | 'evening' | 'hub';
+  theme?: CartoonBackgroundTheme;
 }
+
+/**
+ * Standard vertical height to ensure all interactive controls, cards, and text
+ * start completely clear of the top cartoon clouds, sun, and mobile status panel.
+ */
+export const CLOUD_CLEARANCE_HEIGHT = 125;
+
+export interface CloudClearanceSpacerProps {
+  height?: number;
+}
+
+export const CloudClearanceSpacer: React.FC<CloudClearanceSpacerProps> = React.memo(
+  ({ height = CLOUD_CLEARANCE_HEIGHT }) => (
+    <View style={{ height, width: '100%' }} pointerEvents="none" />
+  )
+);
 
 export const CartoonBackground: React.FC<CartoonBackgroundProps> = React.memo(({ theme = 'meadow' }) => {
   const { width } = useWindowDimensions();
@@ -170,42 +201,160 @@ export const CartoonBackground: React.FC<CartoonBackgroundProps> = React.memo(({
 
   const svgWidth = Math.max(width, 480);
 
-  const meadowSky: [string, string, ...string[]] = ['#38BDF8', '#60A5FA', '#93C5FD', '#BAE6FD', '#E0F2FE'];
-  const eveningSky: [string, string, ...string[]] = ['#2E1065', '#581C87', '#831843', '#BE185D', '#F43F5E', '#FB923C'];
-  const hubSky: [string, string, ...string[]] = ['#0E7490', '#06B6D4', '#67E8F9', '#FDE047', '#FEF08A'];
-  const skyColors = isEvening ? eveningSky : isHub ? hubSky : meadowSky;
+  // 1. Multi-Stop Sky Gradient Tokens
+  let skyColors: [string, string, ...string[]] = ['#38BDF8', '#60A5FA', '#93C5FD', '#BAE6FD', '#E0F2FE'];
+  let skyLocations: [number, number, ...number[]] = [0, 0.32, 0.58, 0.82, 1.0];
 
-  const mountain1Fill = isEvening ? Colors.sceneEvening.mountainDark : isHub ? Colors.sceneHub.mountainDark : '#334155';
-  const mountain2Fill = isEvening ? Colors.sceneEvening.mountainMid : isHub ? Colors.sceneHub.mountainMid : '#475569';
+  if (theme === 'evening') {
+    skyColors = ['#2E1065', '#581C87', '#831843', '#BE185D', '#F43F5E', '#FB923C'];
+    skyLocations = [0, 0.22, 0.45, 0.68, 0.86, 1.0];
+  } else if (theme === 'hub') {
+    skyColors = ['#0E7490', '#06B6D4', '#67E8F9', '#FDE047', '#FEF08A'];
+    skyLocations = [0, 0.25, 0.5, 0.75, 1.0];
+  } else if (theme === 'jungle') {
+    skyColors = ['#064E3B', '#047857', '#059669', '#10B981', '#34D399', '#A7F3D0'];
+    skyLocations = [0, 0.2, 0.4, 0.6, 0.8, 1.0];
+  } else if (theme === 'orchard') {
+    skyColors = ['#EA580C', '#F97316', '#FB923C', '#FDE047', '#FEF08A'];
+    skyLocations = [0, 0.25, 0.5, 0.75, 1.0];
+  } else if (theme === 'nature') {
+    skyColors = ['#0284C7', '#38BDF8', '#7DD3FC', '#BAE6FD', '#F0FDF4'];
+    skyLocations = [0, 0.25, 0.5, 0.75, 1.0];
+  } else if (theme === 'math') {
+    skyColors = ['#1E1B4B', '#312E81', '#4338CA', '#6366F1', '#A5B4FC', '#E0E7FF'];
+    skyLocations = [0, 0.2, 0.4, 0.6, 0.8, 1.0];
+  } else if (theme === 'puzzle') {
+    skyColors = ['#3B0764', '#581C87', '#7E22CE', '#A855F7', '#D8B4FE', '#FAF5FF'];
+    skyLocations = [0, 0.2, 0.4, 0.6, 0.8, 1.0];
+  } else if (theme === 'library') {
+    skyColors = ['#78350F', '#92400E', '#B45309', '#F59E0B', '#FDE68A', '#FEF3C7'];
+    skyLocations = [0, 0.2, 0.4, 0.6, 0.8, 1.0];
+  } else if (theme === 'rainbow') {
+    skyColors = ['#E11D48', '#EA580C', '#D97706', '#16A34A', '#2563EB', '#7C3AED', '#EC4899'];
+    skyLocations = [0, 0.16, 0.33, 0.5, 0.67, 0.84, 1.0];
+  } else if (theme === 'geometry') {
+    skyColors = ['#0F172A', '#1E293B', '#334155', '#2563EB', '#60A5FA', '#93C5FD'];
+    skyLocations = [0, 0.2, 0.4, 0.6, 0.8, 1.0];
+  } else if (theme === 'art') {
+    skyColors = ['#831843', '#BE185D', '#DB2777', '#F472B6', '#FBCFE8', '#FFF1F2'];
+    skyLocations = [0, 0.2, 0.4, 0.6, 0.8, 1.0];
+  } else if (theme === 'alphabet') {
+    skyColors = ['#4338CA', '#6366F1', '#818CF8', '#A5B4FC', '#C7D2FE', '#EEF2FF'];
+    skyLocations = [0, 0.2, 0.4, 0.6, 0.8, 1.0];
+  }
 
-  const hill1Bg = isEvening ? Colors.sceneEvening.hillBack : isHub ? Colors.sceneHub.hillBack : '#F472B6';
-  const hill2Bg = isEvening ? Colors.sceneEvening.hillMid : isHub ? Colors.sceneHub.hillMid : '#4ADE80';
-  const hill3Bg = isEvening ? Colors.sceneEvening.hillFront : isHub ? Colors.sceneHub.hillFront : '#22C55E';
+  // 2. Mountains Fill
+  let mountain1Fill = '#334155';
+  let mountain2Fill = '#475569';
+  if (theme === 'evening') {
+    mountain1Fill = Colors.sceneEvening.mountainDark;
+    mountain2Fill = Colors.sceneEvening.mountainMid;
+  } else if (theme === 'hub') {
+    mountain1Fill = Colors.sceneHub.mountainDark;
+    mountain2Fill = Colors.sceneHub.mountainMid;
+  } else if (theme === 'jungle') {
+    mountain1Fill = '#022C22';
+    mountain2Fill = '#064E3B';
+  } else if (theme === 'orchard') {
+    mountain1Fill = '#7C2D12';
+    mountain2Fill = '#9A3412';
+  } else if (theme === 'math') {
+    mountain1Fill = '#1E1B4B';
+    mountain2Fill = '#312E81';
+  } else if (theme === 'puzzle') {
+    mountain1Fill = '#2E1065';
+    mountain2Fill = '#3B0764';
+  } else if (theme === 'library') {
+    mountain1Fill = '#451A03';
+    mountain2Fill = '#78350F';
+  } else if (theme === 'rainbow') {
+    mountain1Fill = '#4C1D95';
+    mountain2Fill = '#6B21A8';
+  } else if (theme === 'geometry') {
+    mountain1Fill = '#0F172A';
+    mountain2Fill = '#1E293B';
+  } else if (theme === 'art') {
+    mountain1Fill = '#500724';
+    mountain2Fill = '#831843';
+  } else if (theme === 'alphabet') {
+    mountain1Fill = '#312E81';
+    mountain2Fill = '#3730A3';
+  }
 
-  const treeTrunkBg = isEvening ? Colors.sceneEvening.treeTrunk : isHub ? Colors.sceneHub.treeTrunk : Colors.scene.treeTrunk;
-  const treeDarkBg = isEvening ? Colors.sceneEvening.treeLeafDark : isHub ? Colors.sceneHub.treeLeafDark : Colors.scene.treeLeafDark;
-  const treeMidBg = isEvening ? Colors.sceneEvening.treeLeafMid : isHub ? Colors.sceneHub.treeLeafMid : Colors.scene.treeLeafMid;
-  const treeLightBg = isEvening ? Colors.sceneEvening.treeLeafLight : isHub ? Colors.sceneHub.treeLeafLight : Colors.scene.treeLeafLight;
+  // 3. Hills Fill
+  let hill1Bg = '#F472B6';
+  let hill2Bg = '#4ADE80';
+  let hill3Bg = '#22C55E';
+  if (theme === 'evening') {
+    hill1Bg = Colors.sceneEvening.hillBack;
+    hill2Bg = Colors.sceneEvening.hillMid;
+    hill3Bg = Colors.sceneEvening.hillFront;
+  } else if (theme === 'hub') {
+    hill1Bg = Colors.sceneHub.hillBack;
+    hill2Bg = Colors.sceneHub.hillMid;
+    hill3Bg = Colors.sceneHub.hillFront;
+  } else if (theme === 'jungle') {
+    hill1Bg = '#047857';
+    hill2Bg = '#059669';
+    hill3Bg = '#10B981';
+  } else if (theme === 'orchard') {
+    hill1Bg = '#FB923C';
+    hill2Bg = '#84CC16';
+    hill3Bg = '#65A30D';
+  } else if (theme === 'math') {
+    hill1Bg = '#3730A3';
+    hill2Bg = '#4F46E5';
+    hill3Bg = '#6366F1';
+  } else if (theme === 'puzzle') {
+    hill1Bg = '#7C3AED';
+    hill2Bg = '#8B5CF6';
+    hill3Bg = '#A855F7';
+  } else if (theme === 'library') {
+    hill1Bg = '#D97706';
+    hill2Bg = '#B45309';
+    hill3Bg = '#059669';
+  } else if (theme === 'rainbow') {
+    hill1Bg = '#EC4899';
+    hill2Bg = '#8B5CF6';
+    hill3Bg = '#10B981';
+  } else if (theme === 'geometry') {
+    hill1Bg = '#1D4ED8';
+    hill2Bg = '#2563EB';
+    hill3Bg = '#3B82F6';
+  } else if (theme === 'art') {
+    hill1Bg = '#DB2777';
+    hill2Bg = '#EC4899';
+    hill3Bg = '#F472B6';
+  } else if (theme === 'alphabet') {
+    hill1Bg = '#6366F1';
+    hill2Bg = '#10B981';
+    hill3Bg = '#059669';
+  }
 
-  const bushDarkFill = isEvening ? Colors.sceneEvening.bushDark : isHub ? Colors.sceneHub.bushDark : '#064E3B';
-  const bushMidFill = isEvening ? Colors.sceneEvening.bushMid : isHub ? Colors.sceneHub.bushMid : '#14532D';
-  const bushFrontFill = isEvening ? Colors.sceneEvening.bushFront : isHub ? Colors.sceneHub.bushFront : '#166534';
+  const treeTrunkBg = isEvening ? Colors.sceneEvening.treeTrunk : Colors.scene.treeTrunk;
+  const treeDarkBg = isEvening ? Colors.sceneEvening.treeLeafDark : Colors.scene.treeLeafDark;
+  const treeMidBg = isEvening ? Colors.sceneEvening.treeLeafMid : Colors.scene.treeLeafMid;
+  const treeLightBg = isEvening ? Colors.sceneEvening.treeLeafLight : Colors.scene.treeLeafLight;
 
-  const sunCoreColor = isEvening ? Colors.sceneEvening.sunCore : isHub ? Colors.sceneHub.sunCore : Colors.scene.sunCore;
-  const sunBorderColor = isEvening ? Colors.sceneEvening.sunBorder : isHub ? Colors.sceneHub.sunBorder : Colors.scene.sunBorder;
-  const sunGlowColor = isEvening ? Colors.sceneEvening.sunGlow : isHub ? Colors.sceneHub.sunGlow : Colors.scene.sunGlow;
+  const bushDarkFill = isEvening ? Colors.sceneEvening.bushDark : '#064E3B';
+  const bushMidFill = isEvening ? Colors.sceneEvening.bushMid : '#14532D';
+  const bushFrontFill = isEvening ? Colors.sceneEvening.bushFront : '#166534';
+
+  const sunCoreColor = isEvening ? Colors.sceneEvening.sunCore : Colors.scene.sunCore;
+  const sunBorderColor = isEvening ? Colors.sceneEvening.sunBorder : Colors.scene.sunBorder;
+  const sunGlowColor = isEvening ? Colors.sceneEvening.sunGlow : Colors.scene.sunGlow;
 
   return (
     <View style={styles.container} pointerEvents="none">
       {/* Multi-Stop Continuous Sky Gradient */}
       <LinearGradient
         colors={skyColors}
-        locations={isEvening ? [0, 0.22, 0.45, 0.68, 0.86, 1.0] : isHub ? [0, 0.25, 0.5, 0.75, 1.0] : [0, 0.32, 0.58, 0.82, 1.0]}
+        locations={skyLocations}
         style={StyleSheet.absoluteFill}
       />
 
-      {/* Evening Dusk Stars */}
-      {isEvening && (
+      {/* Themed Floating Sky Elements */}
+      {theme === 'evening' && (
         <>
           <Animated.Text style={[styles.duskStar, { top: '4%', left: '12%' }, starStyle]}>✨</Animated.Text>
           <Animated.Text style={[styles.duskStar, { top: '8%', left: '38%' }, starStyle]}>⭐</Animated.Text>
@@ -213,6 +362,97 @@ export const CartoonBackground: React.FC<CartoonBackgroundProps> = React.memo(({
           <Animated.Text style={[styles.duskStar, { top: '7%', left: '84%' }, starStyle]}>✨</Animated.Text>
           <Animated.Text style={[styles.duskStar, { top: '12%', left: '22%' }, starStyle]}>✦</Animated.Text>
           <Animated.Text style={[styles.duskStar, { top: '14%', left: '76%' }, starStyle]}>⭐</Animated.Text>
+        </>
+      )}
+      {theme === 'math' && (
+        <>
+          <Animated.Text style={[styles.duskStar, { top: '4%', left: '10%' }, starStyle]}>➕</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '11%', left: '26%' }, starStyle]}>🔢</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '3%', left: '46%' }, starStyle]}>✖️</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '12%', left: '68%' }, starStyle]}>➗</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '5%', left: '84%' }, starStyle]}>➖</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '15%', left: '38%' }, starStyle]}>⭐</Animated.Text>
+        </>
+      )}
+      {theme === 'puzzle' && (
+        <>
+          <Animated.Text style={[styles.duskStar, { top: '4%', left: '12%' }, starStyle]}>🧩</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '10%', left: '32%' }, starStyle]}>💎</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '3%', left: '55%' }, starStyle]}>🔮</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '12%', left: '72%' }, starStyle]}>💡</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '6%', left: '86%' }, starStyle]}>⏳</Animated.Text>
+        </>
+      )}
+      {theme === 'library' && (
+        <>
+          <Animated.Text style={[styles.duskStar, { top: '4%', left: '14%' }, starStyle]}>📖</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '12%', left: '28%' }, starStyle]}>✏️</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '3%', left: '52%' }, starStyle]}>🔤</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '13%', left: '70%' }, starStyle]}>📜</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '5%', left: '85%' }, starStyle]}>✨</Animated.Text>
+        </>
+      )}
+      {theme === 'jungle' && (
+        <>
+          <Animated.Text style={[styles.duskStar, { top: '4%', left: '12%' }, starStyle]}>🦋</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '10%', left: '25%' }, starStyle]}>🐾</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '3%', left: '58%' }, starStyle]}>🌿</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '12%', left: '74%' }, starStyle]}>🌴</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '6%', left: '88%' }, starStyle]}>✨</Animated.Text>
+        </>
+      )}
+      {theme === 'orchard' && (
+        <>
+          <Animated.Text style={[styles.duskStar, { top: '4%', left: '14%' }, starStyle]}>🍎</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '11%', left: '30%' }, starStyle]}>🍊</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '3%', left: '54%' }, starStyle]}>🍓</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '13%', left: '72%' }, starStyle]}>🍇</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '5%', left: '86%' }, starStyle]}>🐝</Animated.Text>
+        </>
+      )}
+      {theme === 'rainbow' && (
+        <>
+          <Animated.Text style={[styles.duskStar, { top: '3%', left: '10%' }, starStyle]}>🌈</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '11%', left: '28%' }, starStyle]}>✨</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '4%', left: '48%' }, starStyle]}>⭐</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '12%', left: '70%' }, starStyle]}>🌸</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '5%', left: '85%' }, starStyle]}>💫</Animated.Text>
+        </>
+      )}
+      {theme === 'geometry' && (
+        <>
+          <Animated.Text style={[styles.duskStar, { top: '4%', left: '12%' }, starStyle]}>🔺</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '11%', left: '30%' }, starStyle]}>🔷</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '3%', left: '52%' }, starStyle]}>🟡</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '13%', left: '72%' }, starStyle]}>⬡</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '5%', left: '86%' }, starStyle]}>💠</Animated.Text>
+        </>
+      )}
+      {theme === 'art' && (
+        <>
+          <Animated.Text style={[styles.duskStar, { top: '4%', left: '12%' }, starStyle]}>🎨</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '11%', left: '30%' }, starStyle]}>🖌️</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '3%', left: '54%' }, starStyle]}>✨</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '12%', left: '72%' }, starStyle]}>🖍️</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '6%', left: '86%' }, starStyle]}>💫</Animated.Text>
+        </>
+      )}
+      {theme === 'nature' && (
+        <>
+          <Animated.Text style={[styles.duskStar, { top: '4%', left: '14%' }, starStyle]}>🍃</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '10%', left: '32%' }, starStyle]}>🌸</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '3%', left: '56%' }, starStyle]}>🌻</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '12%', left: '74%' }, starStyle]}>🌱</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '6%', left: '88%' }, starStyle]}>✨</Animated.Text>
+        </>
+      )}
+      {theme === 'alphabet' && (
+        <>
+          <Animated.Text style={[styles.duskStar, { top: '4%', left: '10%' }, starStyle]}>🔤</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '11%', left: '26%' }, starStyle]}>🅰️</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '3%', left: '50%' }, starStyle]}>⭐</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '12%', left: '72%' }, starStyle]}>🅱️</Animated.Text>
+          <Animated.Text style={[styles.duskStar, { top: '5%', left: '86%' }, starStyle]}>✨</Animated.Text>
         </>
       )}
 
@@ -233,19 +473,19 @@ export const CartoonBackground: React.FC<CartoonBackgroundProps> = React.memo(({
       </View>
 
       {/* Double-Arc Bird Vector Silhouettes */}
-      <Animated.View style={[styles.birdContainer, { top: '6%', left: '8%' }, bird1Style]}>
-        <Svg width="32" height="14" viewBox="0 0 32 14">
-          <Path d="M 2 11 Q 8 2 16 9 Q 24 2 30 11" fill="none" stroke={isEvening ? '#FEF08A' : '#1E293B'} strokeWidth="2.8" strokeLinecap="round" opacity={0.85} />
+      <Animated.View style={[styles.birdContainer, { top: 38, left: '20%' }, bird1Style]}>
+        <Svg width="28" height="12" viewBox="0 0 28 12">
+          <Path d="M 2 9 Q 7 2 14 8 Q 21 2 26 9" fill="none" stroke={isEvening ? '#FEF08A' : '#1E293B'} strokeWidth="2.5" strokeLinecap="round" opacity={0.85} />
         </Svg>
       </Animated.View>
 
-      <Animated.View style={[styles.birdContainer, { top: '10%', left: '24%' }, bird2Style]}>
+      <Animated.View style={[styles.birdContainer, { top: 68, left: '46%' }, bird2Style]}>
         <Svg width="26" height="12" viewBox="0 0 26 12">
           <Path d="M 2 9 Q 6 2 13 8 Q 20 2 24 9" fill="none" stroke={isEvening ? '#FEF08A' : '#1E293B'} strokeWidth="2.4" strokeLinecap="round" opacity={0.85} />
         </Svg>
       </Animated.View>
 
-      <Animated.View style={[styles.birdContainer, { top: '14%', left: '42%' }, bird3Style]}>
+      <Animated.View style={[styles.birdContainer, { top: 92, left: '40%' }, bird3Style]}>
         <Svg width="34" height="15" viewBox="0 0 34 15">
           <Path d="M 2 12 Q 8 2 17 10 Q 26 2 32 12" fill="none" stroke={isEvening ? '#FEF08A' : '#1E293B'} strokeWidth="3" strokeLinecap="round" opacity={0.85} />
         </Svg>
@@ -271,7 +511,7 @@ export const CartoonBackground: React.FC<CartoonBackgroundProps> = React.memo(({
       </Animated.View>
 
       {/* Natural Organic SVG Clouds */}
-      <Animated.View style={[styles.cloudContainer, { top: '6%', left: '8%' }, cloud1Style]}>
+      <Animated.View style={[styles.cloudContainer, { top: 20, left: '6%' }, cloud1Style]}>
         <Svg width="120" height="44" viewBox="0 0 120 44">
           <Path
             d="M 10 38 Q 0 25 15 15 Q 30 2 50 12 Q 70 0 90 12 Q 110 8 115 25 Q 120 38 100 42 Q 50 44 10 38 Z"
@@ -281,7 +521,7 @@ export const CartoonBackground: React.FC<CartoonBackgroundProps> = React.memo(({
         </Svg>
       </Animated.View>
 
-      <Animated.View style={[styles.cloudContainer, { top: '11%', left: '32%' }, cloud2Style]}>
+      <Animated.View style={[styles.cloudContainer, { top: 50, left: '30%' }, cloud2Style]}>
         <Svg width="100" height="38" viewBox="0 0 100 38">
           <Path
             d="M 8 32 Q 0 20 12 12 Q 25 2 42 10 Q 58 0 75 10 Q 92 6 96 22 Q 100 34 82 36 Q 40 38 8 32 Z"
@@ -291,7 +531,7 @@ export const CartoonBackground: React.FC<CartoonBackgroundProps> = React.memo(({
         </Svg>
       </Animated.View>
 
-      <Animated.View style={[styles.cloudContainer, { top: '14%', left: '54%' }, cloud3Style]}>
+      <Animated.View style={[styles.cloudContainer, { top: 76, left: '56%' }, cloud3Style]}>
         <Svg width="90" height="34" viewBox="0 0 90 34">
           <Path
             d="M 6 28 Q 0 18 10 10 Q 22 2 38 8 Q 52 0 68 8 Q 82 4 86 18 Q 90 30 74 32 Q 35 34 6 28 Z"
@@ -346,10 +586,10 @@ export const CartoonBackground: React.FC<CartoonBackgroundProps> = React.memo(({
             <Path d="M 0 90 Q 0 55 25 35 Q 55 15 85 28 Q 115 15 130 50 Q 140 75 130 90 Z" fill={bushMidFill} />
             <Path d="M -5 90 Q -5 60 20 42 Q 48 24 75 38 Q 100 28 115 55 Q 125 78 115 90 Z" fill={bushFrontFill} />
           </Svg>
-          <Text style={styles.flower1}>{isEvening ? '✨' : '🌸'}</Text>
-          <Text style={styles.flower2}>{isEvening ? '🌺' : '🌻'}</Text>
-          <Text style={styles.flower3}>{isEvening ? '🌙' : '🌱'}</Text>
-          <Text style={styles.flower4}>{isEvening ? '🌷' : '🌷'}</Text>
+          <Text style={styles.flower1}>{theme === 'rainbow' ? '🌸' : theme === 'orchard' ? '🍎' : theme === 'jungle' ? '🌿' : theme === 'math' ? '⭐' : isEvening ? '✨' : '🌸'}</Text>
+          <Text style={styles.flower2}>{theme === 'rainbow' ? '🌺' : theme === 'orchard' ? '🍊' : theme === 'jungle' ? '🐾' : theme === 'math' ? '✦' : isEvening ? '🌺' : '🌻'}</Text>
+          <Text style={styles.flower3}>{theme === 'rainbow' ? '🌼' : theme === 'orchard' ? '🍓' : theme === 'jungle' ? '🦋' : theme === 'puzzle' ? '💎' : isEvening ? '🌙' : '🌱'}</Text>
+          <Text style={styles.flower4}>{theme === 'rainbow' ? '🌷' : theme === 'orchard' ? '🌻' : theme === 'jungle' ? '🌱' : theme === 'art' ? '🎨' : isEvening ? '🌷' : '🌷'}</Text>
         </View>
 
         {/* Right Bush Cluster */}
@@ -359,10 +599,10 @@ export const CartoonBackground: React.FC<CartoonBackgroundProps> = React.memo(({
             <Path d="M 30 90 Q 20 55 45 35 Q 75 15 105 28 Q 135 15 150 50 Q 160 75 150 90 Z" fill={bushMidFill} />
             <Path d="M 45 90 Q 35 60 60 42 Q 88 24 115 38 Q 140 28 155 55 Q 165 78 155 90 Z" fill={bushFrontFill} />
           </Svg>
-          <Text style={styles.flower5}>{isEvening ? '🌺' : '🌺'}</Text>
-          <Text style={styles.flower6}>{isEvening ? '✨' : '🌼'}</Text>
-          <Text style={styles.flower7}>{isEvening ? '🌙' : '🌱'}</Text>
-          <Text style={styles.flower8}>{isEvening ? '🌸' : '🌸'}</Text>
+          <Text style={styles.flower5}>{theme === 'rainbow' ? '🌺' : theme === 'orchard' ? '🍇' : theme === 'jungle' ? '🌴' : theme === 'math' ? '💫' : isEvening ? '🌺' : '🌺'}</Text>
+          <Text style={styles.flower6}>{theme === 'rainbow' ? '🌹' : theme === 'orchard' ? '🐝' : theme === 'jungle' ? '🍃' : theme === 'puzzle' ? '🔮' : isEvening ? '✨' : '🌼'}</Text>
+          <Text style={styles.flower7}>{theme === 'rainbow' ? '🌻' : theme === 'orchard' ? '🌱' : theme === 'jungle' ? '🌱' : theme === 'geometry' ? '💠' : isEvening ? '🌙' : '🌱'}</Text>
+          <Text style={styles.flower8}>{theme === 'rainbow' ? '🌸' : theme === 'orchard' ? '🍎' : theme === 'jungle' ? '🦋' : theme === 'art' ? '✨' : isEvening ? '🌸' : '🌸'}</Text>
         </View>
       </View>
     </View>
@@ -401,16 +641,16 @@ const styles = StyleSheet.create({
   },
   sunContainer: {
     position: 'absolute',
-    top: '2%',
-    right: '4%',
+    top: 14,
+    right: 18,
     width: 76,
     height: 76,
     justifyContent: 'center',
     alignItems: 'center',
   },
   sunEveningPos: {
-    top: '16%',
-    right: '8%',
+    top: 26,
+    right: 22,
   },
   sunOuterHalo: {
     position: 'absolute',

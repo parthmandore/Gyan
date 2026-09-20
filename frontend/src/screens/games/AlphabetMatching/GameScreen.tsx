@@ -38,7 +38,7 @@ import { FriendlyModal } from '../../../components/FriendlyModal';
 import { CelebrationOverlay } from '../../../components/CelebrationOverlay';
 import { TeachingOverlay } from '../../../components/TeachingOverlay';
 import { FlyingStarOverlay } from '../../../components/FlyingStarOverlay';
-import { CartoonBackground } from '../../../components/CartoonBackground';
+import { CartoonBackground, CloudClearanceSpacer } from '../../../components/CartoonBackground';
 import { Colors } from '../../../theme/colors';
 import { Typography } from '../../../theme/typography';
 import {
@@ -329,11 +329,16 @@ export const GameScreen: React.FC = React.memo(() => {
 
     fetchContent();
 
+    const unsubscribe = navigation.addListener('beforeRemove', () => {
+      stopSpeech();
+    });
+
     return () => {
       isMounted = false;
+      unsubscribe();
       stopSpeech();
     };
-  }, [currentDifficulty, mode, loadRound]);
+  }, [currentDifficulty, mode, loadRound, navigation]);
 
   const handleTilePress = useCallback((tappedLetter: string) => {
     if (roundLocked || !currentRound) return;
@@ -473,6 +478,7 @@ export const GameScreen: React.FC = React.memo(() => {
     <View style={styles.webOuterContainer}>
       <SafeAreaView style={styles.safeArea}>
         <StatusBar barStyle="light-content" backgroundColor="#1B2B5A" />
+        <CloudClearanceSpacer />
 
         {/* Full Decorative Cartoon Background Scenery */}
         <CartoonBackground />
@@ -616,7 +622,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: Colors.header.topBarNavy,
+    backgroundColor: 'rgba(255,255,255,0.88)',
     paddingHorizontal: 12,
     width: '100%',
     zIndex: 20,
@@ -628,7 +634,7 @@ const styles = StyleSheet.create({
     minHeight: 48,
     borderRadius: 18,
     backgroundColor: Colors.header.exitRed,
-    borderColor: '#FFFFFF',
+    borderColor: 'rgba(255,255,255,0.95)',
     borderWidth: 3,
     justifyContent: 'center',
     alignItems: 'center',

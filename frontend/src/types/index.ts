@@ -9,7 +9,7 @@ export interface AppState {
 }
 
 export type RootStackParamList = {
-  LanguageGate: undefined;
+  LanguageGate: { initialStep?: 'motherTongue' | 'learningLanguage' | 'age' } | undefined;
   GameCatalog: undefined;
   Home: undefined;
   Games: NavigatorScreenParams<GamesStackParamList>;

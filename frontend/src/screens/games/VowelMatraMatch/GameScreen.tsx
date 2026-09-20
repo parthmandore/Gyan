@@ -26,6 +26,7 @@ import { VowelMatraMatchStackParamList } from './types';
 import { generateVowelMatraRound } from './logic/roundGenerator';
 import { HINDI_VOWEL_MATRA_PAIRS } from './data/vowelMatraPairs.hi';
 import { MARATHI_VOWEL_MATRA_PAIRS } from './data/vowelMatraPairs.mr';
+import { useAppLanguageStore } from '../../../state/appLanguageStore';
 import { MatchTile, MatchTileState } from '../CapitalSmallMatch/components/MatchTile';
 import { MatchConnectorLines } from '../CapitalSmallMatch/components/MatchConnectorLines';
 import { FingerTrailOverlay, TouchPoint } from '../CapitalSmallMatch/components/FingerTrailOverlay';
@@ -37,7 +38,8 @@ import { BigTouchTarget } from '../../../components/BigTouchTarget';
 import { Colors } from '../../../theme/colors';
 import { Typography } from '../../../theme/typography';
 import { triggerHapticSuccess, triggerHapticWarning } from '../../../services/hapticsService';
-import { speakPhrase } from '../../../services/speechService';
+import { speakPhrase, stopSpeech } from '../../../services/speechService';
+import { xpService } from '../../../services/xpService';
 
 type NavProp = NativeStackNavigationProp<VowelMatraMatchStackParamList>;
 
@@ -49,11 +51,12 @@ const INITIAL_TIMER_SECONDS = 50;
 const TOTAL_ROUNDS = 3;
 
 export const GameScreen: React.FC = React.memo(() => {
-  const { i18n, t } = useTranslation();
+  const { t } = useTranslation();
   const navigation = useNavigation<NavProp>();
 
-  // Determine language dataset
-  const activeDataset = i18n.language === 'mr' ? MARATHI_VOWEL_MATRA_PAIRS : HINDI_VOWEL_MATRA_PAIRS;
+  // Determine language dataset based on learningLanguage
+  const learningLanguage = useAppLanguageStore((s) => s.learningLanguage) || 'hi';
+  const activeDataset = learningLanguage === 'mr' ? MARATHI_VOWEL_MATRA_PAIRS : HINDI_VOWEL_MATRA_PAIRS;
 
   // Store selectors
   const roundPairs = useVowelMatraMatchStore((s) => s.roundPairs);
@@ -77,6 +80,7 @@ export const GameScreen: React.FC = React.memo(() => {
   const setSessionStartTime = useVowelMatraMatchStore((s) => s.setSessionStartTime);
 
   const handledRoundIndexRef = useRef<number>(-1);
+  const sessionIdRef = useRef<string>(`vmm_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`);
 
   // Bidirectional selection state
   const [selectedMatra, setSelectedMatra] = useState<string | null>(null);
@@ -93,7 +97,7 @@ export const GameScreen: React.FC = React.memo(() => {
 
   const [gameAreaDimensions, setGameAreaDimensions] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
 
-  // --- Initialize first round on mount ---
+  // --- Initialize first round & exit listener on mount ---
   useEffect(() => {
     if (roundPairs.length === 0) {
       handledRoundIndexRef.current = -1;
@@ -104,7 +108,16 @@ export const GameScreen: React.FC = React.memo(() => {
         setSessionStartTime(Date.now());
       }
     }
-  }, [roundPairs.length, activeDataset, setRound, sessionStartTime, setSessionStartTime]);
+
+    const unsubscribe = navigation.addListener('beforeRemove', () => {
+      stopSpeech();
+    });
+
+    return () => {
+      unsubscribe();
+      stopSpeech();
+    };
+  }, [roundPairs.length, activeDataset, setRound, sessionStartTime, setSessionStartTime, navigation]);
 
   // --- 50s Countdown Timer ---
   const handleTimeUp = useCallback(() => {
@@ -115,6 +128,7 @@ export const GameScreen: React.FC = React.memo(() => {
     const xpEarned = score > 0 ? score : itemsCorrect * 10;
 
     navigation.navigate('VowelMatraMatchSessionComplete', {
+      sessionId: sessionIdRef.current,
       starsEarned,
       xpEarned,
       itemsCorrect,
@@ -174,6 +188,7 @@ export const GameScreen: React.FC = React.memo(() => {
         const xpEarned = score > 0 ? score : itemsCorrect * 10;
 
         navigation.navigate('VowelMatraMatchSessionComplete', {
+          sessionId: sessionIdRef.current,
           starsEarned,
           xpEarned,
           itemsCorrect,
@@ -211,6 +226,16 @@ export const GameScreen: React.FC = React.memo(() => {
         selectVowel(null);
         setSelectedMatra(null);
 
+        // Record answer XP deterministically
+        xpService.recordAnswerXP({
+          sessionId: sessionIdRef.current,
+          roundIndex,
+          attemptNum: 1,
+          isCorrect: true,
+          gameId: 'vowel_matra_match',
+          metadata: { vowel: vowelChar, matra: matraChar },
+        }).catch(() => {});
+
         setTimeout(() => {
           setJustMatchedVowel(null);
           setInteractionLocked(false);
@@ -242,7 +267,7 @@ export const GameScreen: React.FC = React.memo(() => {
     (vowel: string) => {
       if (interactionLocked) return;
       if (matchedVowels.includes(vowel)) return;
-      speakPhrase(vowel);
+      speakPhrase(vowel, { language: learningLanguage });
 
       if (selectedMatra) {
         setInteractionLocked(true);
@@ -253,7 +278,7 @@ export const GameScreen: React.FC = React.memo(() => {
         selectVowel(vowel);
       }
     },
-    [interactionLocked, matchedVowels, selectedMatra, selectedVowel, selectVowel, evaluateMatch]
+    [interactionLocked, matchedVowels, selectedMatra, selectedVowel, selectVowel, evaluateMatch, learningLanguage]
   );
 
   const handleMatraTap = useCallback(
@@ -261,7 +286,7 @@ export const GameScreen: React.FC = React.memo(() => {
       if (interactionLocked) return;
       const pair = roundPairs.find((p) => p.matraForm === matraForm);
       if (pair && matchedVowels.includes(pair.vowel)) return;
-      speakPhrase(matraForm);
+      speakPhrase(matraForm, { language: learningLanguage });
 
       if (selectedVowel) {
         setInteractionLocked(true);
@@ -272,7 +297,7 @@ export const GameScreen: React.FC = React.memo(() => {
         setSelectedMatra(matraForm);
       }
     },
-    [interactionLocked, roundPairs, matchedVowels, selectedVowel, selectedMatra, evaluateMatch]
+    [interactionLocked, roundPairs, matchedVowels, selectedVowel, selectedMatra, evaluateMatch, learningLanguage]
   );
 
   const handleGameAreaLayout = useCallback((e: LayoutChangeEvent) => {

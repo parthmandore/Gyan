@@ -18,7 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BigTouchTarget } from '../../../components/BigTouchTarget';
-import { CartoonBackground } from '../../../components/CartoonBackground';
+import { CartoonBackground, CloudClearanceSpacer } from '../../../components/CartoonBackground';
 import { Colors } from '../../../theme/colors';
 import { Typography } from '../../../theme/typography';
 import { useAlphabetMatchingStore } from './store/alphabetMatchingStore';
@@ -63,7 +63,7 @@ export const ModeSelectionScreen: React.FC = React.memo(() => {
     <View style={styles.webOuterContainer}>
       <SafeAreaView style={styles.safeArea}>
         <StatusBar barStyle="light-content" backgroundColor="#1B2B5A" />
-
+        <CloudClearanceSpacer />
         {/* Cartoon Background Scenery */}
         <CartoonBackground />
 
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    backgroundColor: Colors.header.topBarNavy,
+    backgroundColor: 'rgba(255,255,255,0.88)',
     paddingHorizontal: 16,
     zIndex: 20,
     gap: 16,
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 18,
-    backgroundColor: '#334155',
+    backgroundColor: 'rgba(255,255,255,0.88)',
     minHeight: 40,
     justifyContent: 'center',
     alignItems: 'center',
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
     minHeight: 84,
     borderRadius: 26,
     borderWidth: 4,
-    borderColor: '#FFFFFF',
+    borderColor: 'rgba(255,255,255,0.95)',
     borderBottomWidth: 8,
     paddingHorizontal: 20,
     justifyContent: 'center',
