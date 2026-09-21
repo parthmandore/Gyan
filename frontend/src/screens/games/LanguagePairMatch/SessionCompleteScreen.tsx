@@ -11,11 +11,11 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ScrollView,
   useWindowDimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -113,15 +113,11 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
       <SafeAreaView style={styles.safeArea}>
         <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
+        <View style={styles.contentContainer}>
           <View style={[styles.mainCard, { width: containerWidth }]}>
             {/* Mascot */}
             <View style={styles.mascotContainer}>
-              <MascotCharacter state="celebrating" style={{ width: 100, height: 100 }} />
+              <MascotCharacter state="celebrating" style={{ width: 80, height: 80 }} />
             </View>
 
             {/* Stars Cluster */}
@@ -206,7 +202,7 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
               </BigTouchTarget>
             </View>
           </View>
-        </ScrollView>
+        </View>
 
         {/* Detailed Match Report Modal */}
         <LanguagePairReportModal
@@ -231,102 +227,101 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
-    width: '100%',
-    maxWidth: 480,
     backgroundColor: 'transparent',
   },
-  scrollView: {
+  contentContainer: {
     flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: 24,
-    paddingBottom: 40,
+    justifyContent: 'center',
     alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
   },
   mainCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.97)',
-    borderRadius: 32,
-    borderWidth: 4,
+    borderRadius: 24,
+    borderWidth: 3,
     borderColor: '#FFFFFF',
-    borderBottomWidth: 8,
+    borderBottomWidth: 6,
     borderBottomColor: '#E2E8F0',
-    padding: 24,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
     alignItems: 'center',
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 8 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowRadius: 10,
+    elevation: 6,
   },
   mascotContainer: {
-    marginBottom: 8,
+    marginBottom: 4,
   },
   starsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   starGlyph: {
-    fontSize: 40,
+    fontSize: 32,
   },
   centerStar: {
-    fontSize: 54,
-    marginTop: -8,
+    fontSize: 42,
+    marginTop: -4,
   },
   titleText: {
     fontFamily: Typography.fonts.bold,
     fontSize: 22,
     color: '#0F172A',
     textAlign: 'center',
-    marginBottom: 6,
+    marginBottom: 2,
   },
   subtitleText: {
     fontFamily: Typography.fonts.medium,
-    fontSize: 14,
+    fontSize: 13,
     color: '#475569',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   metricsContainer: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 8,
     width: '100%',
-    marginBottom: 18,
+    marginBottom: 10,
   },
   metricCard: {
     flex: 1,
     backgroundColor: '#F8FAFC',
-    borderRadius: 18,
-    borderWidth: 2,
+    borderRadius: 14,
+    borderWidth: 1.5,
     borderColor: '#E2E8F0',
-    paddingVertical: 12,
+    paddingVertical: 8,
     alignItems: 'center',
   },
   metricValue: {
     fontFamily: Typography.fonts.bold,
-    fontSize: 18,
+    fontSize: 15,
     color: '#1E3A8A',
   },
   metricLabel: {
     fontFamily: Typography.fonts.medium,
-    fontSize: 11,
+    fontSize: 10,
     color: '#64748B',
     marginTop: 2,
   },
   reportButton: {
     backgroundColor: '#F1F5F9',
-    borderRadius: 18,
+    borderRadius: 16,
     borderWidth: 2,
     borderColor: '#CBD5E1',
-    borderBottomWidth: 4,
+    borderBottomWidth: 3,
     borderBottomColor: '#94A3B8',
     width: '100%',
-    paddingVertical: 12,
+    height: 44,
+    minHeight: 44,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 8,
   },
   reportButtonText: {
     fontFamily: Typography.fonts.bold,
@@ -335,39 +330,43 @@ const styles = StyleSheet.create({
   },
   actionsRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
     width: '100%',
   },
   playAgainBtn: {
     flex: 1,
     backgroundColor: '#EC4899',
-    borderRadius: 20,
+    borderRadius: 18,
     borderWidth: 2,
     borderColor: '#F472B6',
-    borderBottomWidth: 5,
+    borderBottomWidth: 4,
     borderBottomColor: '#BE185D',
-    paddingVertical: 14,
+    height: 48,
+    minHeight: 48,
+    justifyContent: 'center',
     alignItems: 'center',
   },
   playAgainBtnText: {
     fontFamily: Typography.fonts.bold,
-    fontSize: 15,
+    fontSize: 14,
     color: '#FFFFFF',
   },
   catalogBtn: {
     flex: 1,
     backgroundColor: '#3B82F6',
-    borderRadius: 20,
+    borderRadius: 18,
     borderWidth: 2,
     borderColor: '#60A5FA',
-    borderBottomWidth: 5,
+    borderBottomWidth: 4,
     borderBottomColor: '#1D4ED8',
-    paddingVertical: 14,
+    height: 48,
+    minHeight: 48,
+    justifyContent: 'center',
     alignItems: 'center',
   },
   catalogBtnText: {
     fontFamily: Typography.fonts.bold,
-    fontSize: 15,
+    fontSize: 14,
     color: '#FFFFFF',
   },
 });

@@ -10,13 +10,13 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ScrollView,
   ActivityIndicator,
   AccessibilityInfo,
   useWindowDimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -46,6 +46,8 @@ import {
   AchievementsData,
   EarnedBadge,
 } from '../../../services/achievementsService';
+import { useProgressStore } from '../../../state/useProgressStore';
+import { calculateLevelProgress } from '../../../config/xpConfig';
 
 const BADGE_ICONS: Record<string, string> = {
   quick_learner: '⚡',
@@ -72,9 +74,18 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
   const resetSession = useAlphabetMatchingStore((state) => state.resetSession);
   const resetPlaybackState = useSpeechPlaybackStore((state) => state.resetPlaybackState);
 
-  const [rewards, setRewards] = useState<RewardsSummaryData | null>(null);
+  const [rewards, setRewards] = useState<RewardsSummaryData>(() => {
+    const store = useProgressStore.getState();
+    const info = calculateLevelProgress(store.totalXp);
+    return {
+      xp_total: info.totalXp,
+      level: info.currentLevel,
+      xp_earned_in_level: info.xpInCurrentLevel,
+      xp_to_next_level: info.xpToNextLevel,
+    };
+  });
   const [achievements, setAchievements] = useState<AchievementsData | null>(null);
-  const [isLoadingRewards, setIsLoadingRewards] = useState(true);
+  const [isLoadingRewards, setIsLoadingRewards] = useState(false);
   const [rewardsFetchFailed, setRewardsFetchFailed] = useState(false);
 
   const capturedModeRef = useRef<GameMode>(mode);
@@ -137,30 +148,43 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
 
   useEffect(() => {
     let isMounted = true;
+    const timeoutTimer = setTimeout(() => {
+      if (isMounted) {
+        setIsLoadingRewards(false);
+      }
+    }, 1200);
+
     const fetchData = async () => {
-      const results = await Promise.allSettled([
-        fetchRewardsSummary(),
-        fetchAchievements(),
-      ]);
+      try {
+        const results = await Promise.allSettled([
+          fetchRewardsSummary(),
+          fetchAchievements(),
+        ]);
 
-      if (!isMounted) return;
+        if (!isMounted) return;
 
-      if (results[0].status === 'fulfilled' && results[0].value.success) {
-        setRewards(results[0].value.data);
-      } else {
-        setRewardsFetchFailed(true);
+        const rewardsResult = results[0];
+        if (rewardsResult.status === 'fulfilled' && rewardsResult.value?.success && rewardsResult.value?.data) {
+          setRewards(rewardsResult.value.data);
+        }
+
+        const achievementsResult = results[1];
+        if (achievementsResult.status === 'fulfilled' && achievementsResult.value?.success && achievementsResult.value?.data) {
+          setAchievements(achievementsResult.value.data);
+        }
+      } catch (error) {
+        console.warn('[AlphabetMatchingSessionComplete] Error fetching rewards/achievements:', error);
+      } finally {
+        if (isMounted) {
+          setIsLoadingRewards(false);
+        }
       }
-
-      if (results[1].status === 'fulfilled' && results[1].value.success) {
-        setAchievements(results[1].value.data);
-      }
-
-      setIsLoadingRewards(false);
     };
 
     fetchData();
     return () => {
       isMounted = false;
+      clearTimeout(timeoutTimer);
     };
   }, []);
 
@@ -264,11 +288,7 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
         {/* Playful Layered Background Scenery */}
         <CartoonBackground />
 
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
+        <View style={styles.contentContainer}>
           {/* Celebratory Title */}
           <Animated.View style={[styles.titleContainer, titleAnimatedStyle]}>
             <Text style={styles.titleText}>🎉 {t('game.greatJob')}</Text>
@@ -385,7 +405,7 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
               <Text style={styles.secondaryChooseModeText}>{t('sessionComplete.chooseGame')} 🎮</Text>
             </BigTouchTarget>
           </Animated.View>
-        </ScrollView>
+        </View>
       </SafeAreaView>
     </View>
   );
@@ -397,25 +417,18 @@ const styles = StyleSheet.create({
   webOuterContainer: {
     flex: 1,
     backgroundColor: '#1B2B5A',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   safeArea: {
     flex: 1,
-    width: '100%',
-    maxWidth: 480,
-    maxHeight: 920,
     backgroundColor: '#1B2B5A',
   },
-  scrollView: {
+  contentContainer: {
     flex: 1,
-    zIndex: 10,
-  },
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: 20,
-    paddingBottom: 40,
+    justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    zIndex: 10,
   },
 
   /* Top Section */
@@ -424,13 +437,13 @@ const styles = StyleSheet.create({
   },
   titleContainer: {
     alignItems: 'center',
-    marginTop: 28,
-    marginBottom: 16,
+    marginTop: 8,
+    marginBottom: 6,
     paddingHorizontal: 16,
   },
   titleText: {
     fontFamily: Typography.fonts.bold,
-    fontSize: 32,
+    fontSize: 26,
     color: '#0F2042',
     textShadowColor: 'rgba(255, 255, 255, 0.9)',
     textShadowOffset: { width: 0, height: 2 },
@@ -439,9 +452,9 @@ const styles = StyleSheet.create({
   },
   subtitleText: {
     fontFamily: Typography.fonts.bold,
-    fontSize: 17,
+    fontSize: 15,
     color: '#1E3A8A',
-    marginTop: 4,
+    marginTop: 2,
     textAlign: 'center',
     textShadowColor: 'rgba(255, 255, 255, 0.8)',
     textShadowOffset: { width: 0, height: 1 },
@@ -454,12 +467,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
-    marginBottom: 18,
+    marginBottom: 8,
     flexWrap: 'wrap',
     paddingHorizontal: 12,
   },
   largeStarItem: {
-    fontSize: 28,
+    fontSize: 24,
   },
   largeStarFilled: {
     textShadowColor: 'rgba(253, 224, 71, 0.9)',
@@ -477,52 +490,52 @@ const styles = StyleSheet.create({
   rewardScoreCard: {
     backgroundColor: '#FFFFFF',
     borderColor: '#38BDF8',
-    borderWidth: 4,
-    borderRadius: 26,
-    paddingHorizontal: 20,
-    paddingVertical: 18,
-    marginBottom: 16,
+    borderWidth: 3,
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginBottom: 8,
     alignItems: 'center',
     shadowColor: '#0F2042',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 4,
   },
   scoreHeaderRow: {
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: 6,
   },
   scoreCardTitle: {
     fontFamily: Typography.fonts.bold,
-    fontSize: 22,
+    fontSize: 18,
     color: '#0F2042',
   },
   percentagePill: {
     backgroundColor: '#E0F2FE',
     borderColor: '#BAE6FD',
     borderWidth: 2,
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 4,
+    borderRadius: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 2,
   },
   percentagePillText: {
     fontFamily: Typography.fonts.bold,
-    fontSize: 18,
+    fontSize: 15,
     color: '#0284C7',
   },
   scoreFractionText: {
     fontFamily: Typography.fonts.bold,
-    fontSize: 26,
+    fontSize: 22,
     color: '#1E293B',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   encouragementText: {
     fontFamily: Typography.fonts.medium,
-    fontSize: 16,
+    fontSize: 14,
     color: '#16A34A',
     textAlign: 'center',
   },
@@ -532,139 +545,139 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC',
     borderColor: '#E2E8F0',
     borderWidth: 2,
-    borderRadius: 22,
-    paddingHorizontal: 18,
-    paddingVertical: 16,
-    marginBottom: 16,
+    borderRadius: 18,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    marginBottom: 8,
     shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowRadius: 4,
+    elevation: 2,
   },
   loadingContainer: {
-    paddingVertical: 12,
+    paddingVertical: 8,
     alignItems: 'center',
   },
   xpHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   levelBadgePill: {
     backgroundColor: '#FDE047',
     borderColor: '#EAB308',
     borderWidth: 2,
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 4,
+    borderRadius: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 2,
   },
   levelBadgeText: {
     fontFamily: Typography.fonts.bold,
-    fontSize: 15,
+    fontSize: 13,
     color: '#713F12',
   },
   xpEarnedText: {
     fontFamily: Typography.fonts.bold,
-    fontSize: 18,
+    fontSize: 16,
     color: '#2563EB',
   },
   xpBarTrack: {
     width: '100%',
-    height: 12,
+    height: 10,
     backgroundColor: '#CBD5E1',
-    borderRadius: 6,
+    borderRadius: 5,
     overflow: 'hidden',
   },
   xpBarFill: {
     height: '100%',
     backgroundColor: '#3B82F6',
-    borderRadius: 6,
+    borderRadius: 5,
   },
 
   /* Badges Section */
   badgesSection: {
-    marginBottom: 16,
+    marginBottom: 8,
   },
   badgesSectionTitle: {
     fontFamily: Typography.fonts.bold,
-    fontSize: 18,
+    fontSize: 16,
     color: '#FFFFFF',
-    marginBottom: 10,
+    marginBottom: 6,
   },
   badgesScrollContent: {
-    gap: 12,
+    gap: 8,
   },
   badgeCard: {
-    width: 95,
-    height: 95,
+    width: 80,
+    height: 80,
     backgroundColor: '#FFFFFF',
     borderColor: '#FDE047',
-    borderWidth: 3,
-    borderRadius: 20,
+    borderWidth: 2,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 8,
+    padding: 6,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowRadius: 3,
+    elevation: 2,
   },
   badgeIcon: {
-    fontSize: 32,
-    marginBottom: 4,
+    fontSize: 26,
+    marginBottom: 2,
   },
   badgeTitle: {
     fontFamily: Typography.fonts.medium,
-    fontSize: 11,
+    fontSize: 10,
     color: '#0F2042',
     textAlign: 'center',
   },
 
   /* Action Buttons */
   buttonsContainer: {
-    gap: 12,
-    marginTop: 8,
+    gap: 8,
+    marginTop: 4,
   },
   primaryPlayAgainButton: {
     width: '100%',
-    height: 56,
-    minHeight: 84,
+    height: 52,
+    minHeight: 52,
     backgroundColor: '#2563EB',
     borderColor: '#1D4ED8',
     borderWidth: 3,
-    borderBottomWidth: 7,
+    borderBottomWidth: 5,
     borderBottomColor: '#1E40AF',
-    borderRadius: 22,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#1D4ED8',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 5,
+    shadowRadius: 4,
+    elevation: 4,
   },
   primaryPlayAgainText: {
     fontFamily: Typography.fonts.bold,
-    fontSize: 20,
+    fontSize: 18,
     color: '#FFFFFF',
   },
   secondaryChooseModeButton: {
     width: '100%',
-    height: 54,
-    minHeight: 84,
+    height: 48,
+    minHeight: 48,
     backgroundColor: '#FFFFFF',
     borderColor: '#CBD5E1',
     borderWidth: 2,
-    borderRadius: 22,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
   },
   secondaryChooseModeText: {
     fontFamily: Typography.fonts.bold,
-    fontSize: 18,
+    fontSize: 16,
     color: '#0F2042',
   },
 });

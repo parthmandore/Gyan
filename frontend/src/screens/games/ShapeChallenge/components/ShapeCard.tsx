@@ -26,6 +26,7 @@ export interface ShapeCardProps {
   onPress: () => void;
   disabled?: boolean;
   showName?: boolean;
+  compact?: boolean;
 }
 
 export const ShapeCard: React.FC<ShapeCardProps> = React.memo(({
@@ -35,14 +36,18 @@ export const ShapeCard: React.FC<ShapeCardProps> = React.memo(({
   onPress,
   disabled = false,
   showName = false,
+  compact = false,
 }) => {
-  const { width: screenWidth } = useWindowDimensions();
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   // Responsive card sizing
-  const cardWidth = Math.min((screenWidth - 64) / 2, 170);
-  const cardHeight = cardWidth * 0.95;
-  const svgSize = cardWidth * 0.58;
+  const isShortScreen = screenHeight <= 750;
+  const cardWidth = compact
+    ? Math.min((screenWidth - 64) / 4, 72)
+    : Math.min((screenWidth - 56) / 2, isShortScreen ? 135 : 155);
+  const cardHeight = compact ? cardWidth : cardWidth * (isShortScreen ? 0.76 : 0.82);
+  const svgSize = compact ? cardWidth * 0.55 : cardWidth * 0.52;
 
   const handlePressIn = () => {
     if (disabled) return;

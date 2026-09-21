@@ -17,6 +17,7 @@ export interface FriendlyModalProps {
   title: string;
   description?: string;
   dismissText?: string;
+  hideDismissButton?: boolean;
   onMountVoiceLine?: () => void;
   accessibilityLabel?: string;
   children?: React.ReactNode;
@@ -30,6 +31,7 @@ export const FriendlyModal: React.FC<FriendlyModalProps> = React.memo(
     title,
     description,
     dismissText,
+    hideDismissButton = false,
     onMountVoiceLine,
     accessibilityLabel,
     children,
@@ -52,6 +54,7 @@ export const FriendlyModal: React.FC<FriendlyModalProps> = React.memo(
         transparent
         animationType="fade"
         onRequestClose={onDismiss}
+        statusBarTranslucent
       >
         <View
           style={styles.backdrop}
@@ -69,14 +72,16 @@ export const FriendlyModal: React.FC<FriendlyModalProps> = React.memo(
 
             {children}
 
-            <BigTouchTarget
-              onPress={onDismiss}
-              accessibilityLabel={t('accessibility.closeModal', { title })}
-              accessibilityRole="button"
-              style={styles.dismissButton}
-            >
-              <Text style={styles.dismissButtonText}>{resolvedDismissText}</Text>
-            </BigTouchTarget>
+            {!hideDismissButton && (
+              <BigTouchTarget
+                onPress={onDismiss}
+                accessibilityLabel={t('accessibility.closeModal', { title })}
+                accessibilityRole="button"
+                style={styles.dismissButton}
+              >
+                <Text style={styles.dismissButtonText}>{resolvedDismissText}</Text>
+              </BigTouchTarget>
+            )}
           </View>
         </View>
       </Modal>

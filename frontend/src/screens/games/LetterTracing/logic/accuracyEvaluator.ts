@@ -85,15 +85,15 @@ export function getAgeEvaluationParams(age: AppAge): {
   switch (age) {
     case 5:
       return {
-        toleranceRadius: 18, // Forgiving for age 5 motor instability
-        passThreshold: 0.45, // 45% coverage to pass
-        minPoints: 12,
+        toleranceRadius: 16, // Forgiving for age 5 motor instability (tightened from 18)
+        passThreshold: 0.50, // 50% coverage to pass (tightened from 0.45)
+        minPoints: 14,
       };
     case 6:
       return {
-        toleranceRadius: 15, // Moderate tolerance
-        passThreshold: 0.55, // 55% coverage to pass
-        minPoints: 15,
+        toleranceRadius: 14, // Moderate tolerance (tightened from 15)
+        passThreshold: 0.58, // 58% coverage to pass (tightened from 0.55)
+        minPoints: 16,
       };
     case 7:
     default:
@@ -232,8 +232,17 @@ export function evaluateTracing(
   const radiusSquared = params.toleranceRadius * params.toleranceRadius;
   let coveredGuidePoints = 0;
 
+  // Track coverage across 2x2 quadrants relative to guide bounding box center
+  const midX = (minGuideX + maxGuideX) / 2;
+  const midY = (minGuideY + maxGuideY) / 2;
+  const guidePointsInQuadrant = [0, 0, 0, 0];
+  const coveredGuidePointsInQuadrant = [0, 0, 0, 0];
+
   // Measure guide coverage
   for (const guidePt of guideSamples) {
+    const qIndex = (guidePt.x <= midX ? 0 : 1) + (guidePt.y <= midY ? 0 : 2);
+    guidePointsInQuadrant[qIndex]++;
+
     let isCovered = false;
     for (const drawnPt of normalizedDrawnPoints) {
       const dx = drawnPt.x - guidePt.x;
@@ -245,10 +254,49 @@ export function evaluateTracing(
     }
     if (isCovered) {
       coveredGuidePoints++;
+      coveredGuidePointsInQuadrant[qIndex]++;
     }
   }
 
   const coverageRatio = coveredGuidePoints / guideSamples.length;
+
+  // Quadrant balance check:
+  // A quadrant is considered significant if it contains at least 12% of total guide points (min 4 points)
+  let significantQuadrants = 0;
+  let coveredQuadrants = 0;
+  for (let q = 0; q < 4; q++) {
+    if (guidePointsInQuadrant[q] >= Math.max(guideSamples.length * 0.12, 4)) {
+      significantQuadrants++;
+      const qCoverage = coveredGuidePointsInQuadrant[q] / guidePointsInQuadrant[q];
+      if (qCoverage >= 0.20) {
+        coveredQuadrants++;
+      }
+    }
+  }
+
+  // Penalize drawings localized to one corner/quadrant
+  let quadrantPenalty = 1.0;
+  if (significantQuadrants >= 3 && coveredQuadrants <= 1) {
+    quadrantPenalty = 0.35; // Severely penalize single-corner drawing
+  } else if (significantQuadrants >= 4 && coveredQuadrants === 2) {
+    quadrantPenalty = 0.80; // Moderately penalize missing half the letter
+  } else if (significantQuadrants === 2 && coveredQuadrants <= 1) {
+    quadrantPenalty = 0.60;
+  }
+
+  // Dimension span check: drawing must span a reasonable fraction of letter dimensions
+  const guideWidth = maxGuideX - minGuideX;
+  const guideHeight = maxGuideY - minGuideY;
+  const drawnWidth = maxDrawnX - minDrawnX;
+  const drawnHeight = maxDrawnY - minDrawnY;
+
+  let spanPenalty = 1.0;
+  if (guideWidth >= 25 && drawnWidth < guideWidth * 0.25) {
+    spanPenalty *= 0.5;
+  }
+  if (guideHeight >= 25 && drawnHeight < guideHeight * 0.25) {
+    spanPenalty *= 0.5;
+  }
 
   // Wild scribble suppression:
   // Measure what ratio of drawn points are reasonably near the letter
@@ -272,12 +320,12 @@ export function evaluateTracing(
 
   const precisionRatio = relevantDrawnPoints / totalDrawnPoints;
 
-  // If drawn points are mostly wild scribbles away from the letter (< 35% precision), fail
-  let effectiveCoverage = coverageRatio;
+  // Apply precision, quadrant, and span adjustments to coverage
+  let effectiveCoverage = coverageRatio * quadrantPenalty * spanPenalty;
   if (precisionRatio < 0.35) {
     effectiveCoverage = 0;
   } else if (precisionRatio < 0.50) {
-    effectiveCoverage = coverageRatio * 0.7;
+    effectiveCoverage = effectiveCoverage * 0.7;
   }
 
   const rawScore = Math.round(effectiveCoverage * 100);
@@ -298,6 +346,8 @@ export function evaluateTracing(
       stars = 1;
       feedbackKey = 'letterTracing.greatJob';
     }
+  } else if (quadrantPenalty < 1.0 || spanPenalty < 1.0) {
+    feedbackKey = 'letterTracing.drawMore';
   }
 
   return {

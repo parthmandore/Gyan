@@ -12,11 +12,11 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ScrollView,
   useWindowDimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -24,10 +24,11 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CartoonBackground, CloudClearanceSpacer } from '../../../components/CartoonBackground';
 import { ProgressStarTrail } from '../../../components/ProgressStarTrail';
 import { CelebrationOverlay } from '../../../components/CelebrationOverlay';
-import { FriendlyModal } from '../../../components/FriendlyModal';
+import { QuitGameModal } from '../../../components/QuitGameModal';
 import { BigTouchTarget } from '../../../components/BigTouchTarget';
 import { SessionCountdownTimer } from '../../../components/SessionCountdownTimer';
 import { EducationalCorrectionModal } from '../../../components/EducationalCorrectionModal';
+import { GameHUD } from '../../../components/GameHUD';
 import { CategoryCueCard } from './components/CategoryCueCard';
 import { WordChoiceButton } from './components/WordChoiceButton';
 
@@ -350,43 +351,20 @@ export const GameScreen: React.FC = React.memo(() => {
         <StatusBar barStyle="light-content" backgroundColor="#7C3AED" />
         <CloudClearanceSpacer />
 
-        {/* Top Control Bar with 90-Second Session Countdown Timer */}
-        <View style={[styles.topBar, { width: containerWidth }]}>
-          <BigTouchTarget
-            onPress={() => setShowExitModal(true)}
-            accessibilityLabel={t('common.exit', 'Exit')}
-            accessibilityRole="button"
-            style={styles.exitButton}
-          >
-            <Text style={styles.exitButtonText}>✕</Text>
-          </BigTouchTarget>
+        {/* Unified Responsive 2-Row GameHUD */}
+        <GameHUD
+          onQuit={() => setShowExitModal(true)}
+          currentRound={roundIndex}
+          totalRounds={rounds.length || TOTAL_ODD_WORD_OUT_ROUNDS}
+          score={score}
+          initialSeconds={90}
+          onExpire={handleTimeExpired}
+          isPaused={showCorrectionModal || showExitModal || showCelebration}
+          containerWidth={containerWidth}
+        />
 
-          {/* Continuous Session Timer */}
-          <SessionCountdownTimer
-            initialSeconds={90}
-            isPaused={showCorrectionModal || showExitModal || showCelebration}
-            onExpire={handleTimeExpired}
-          />
-
-          {/* XP Score Badge */}
-          <View style={styles.scoreBadge}>
-            <Text style={styles.scoreText}>⭐ {score}</Text>
-          </View>
-        </View>
-
-        {/* 10-Round Star Trail */}
-        <View style={[styles.trailContainer, { width: containerWidth }]}>
-          <ProgressStarTrail
-            current={roundIndex}
-            total={rounds.length || TOTAL_ODD_WORD_OUT_ROUNDS}
-          />
-        </View>
-
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
+        {/* Non-Scrolling Responsive Gameplay Content */}
+        <View style={styles.gameContentContainer}>
           {/* Round Subtitle */}
           <View style={[styles.roundBadgeContainer, { width: containerWidth }]}>
             <Text style={styles.roundBadgeText}>
@@ -420,7 +398,7 @@ export const GameScreen: React.FC = React.memo(() => {
               />
             ))}
           </View>
-        </ScrollView>
+        </View>
       </SafeAreaView>
 
       {/* Celebration animation overlay on correct answer */}
@@ -439,44 +417,14 @@ export const GameScreen: React.FC = React.memo(() => {
       />
 
       {/* Exit Confirmation Modal */}
-      <FriendlyModal
+      <QuitGameModal
         visible={showExitModal}
-        title={t('common.pauseGame', 'Pause Challenge?')}
-        onDismiss={() => setShowExitModal(false)}
-      >
-        <View style={styles.exitModalBody}>
-          <Text style={styles.exitModalText}>
-            {t(
-              'common.exitConfirmExplanation',
-              'Do you want to stop now? Your score and report will be saved!'
-            )}
-          </Text>
-
-          <View style={styles.exitModalActions}>
-            <BigTouchTarget
-              onPress={() => setShowExitModal(false)}
-              accessibilityLabel={t('common.keepPlaying', 'Keep Playing')}
-              accessibilityRole="button"
-              style={styles.keepPlayingBtn}
-            >
-              <Text style={styles.keepPlayingText}>
-                ▶ {t('common.keepPlaying', 'Keep Playing')}
-              </Text>
-            </BigTouchTarget>
-
-            <BigTouchTarget
-              onPress={handleConfirmExit}
-              accessibilityLabel={t('common.viewReport', 'View Report & Exit')}
-              accessibilityRole="button"
-              style={styles.exitReportBtn}
-            >
-              <Text style={styles.exitReportText}>
-                📊 {t('common.viewReport', 'View Report & Exit')}
-              </Text>
-            </BigTouchTarget>
-          </View>
-        </View>
-      </FriendlyModal>
+        onContinue={() => setShowExitModal(false)}
+        onExit={handleConfirmExit}
+        gameTitle={t('oddWordOut.title', { defaultValue: 'Odd Word Out' })}
+        currentRound={roundIndex + 1}
+        totalRounds={rounds.length || 10}
+      />
     </View>
   );
 });
@@ -548,12 +496,12 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 8,
   },
-  scrollView: {
+  gameContentContainer: {
     flex: 1,
-  },
-  scrollContent: {
     alignItems: 'center',
-    paddingBottom: 24,
+    justifyContent: 'space-evenly',
+    paddingBottom: 12,
+    width: '100%',
   },
   roundBadgeContainer: {
     alignItems: 'center',

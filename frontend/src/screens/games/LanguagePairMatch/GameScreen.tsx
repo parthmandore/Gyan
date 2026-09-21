@@ -18,13 +18,13 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   useWindowDimensions,
   LayoutChangeEvent,
   AccessibilityInfo,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -41,7 +41,8 @@ import { useAppLanguageStore } from '../../../state/appLanguageStore';
 import { CartoonBackground } from '../../../components/CartoonBackground';
 import { ProgressStarTrail } from '../../../components/ProgressStarTrail';
 import { BigTouchTarget } from '../../../components/BigTouchTarget';
-import { FriendlyModal } from '../../../components/FriendlyModal';
+import { QuitGameModal } from '../../../components/QuitGameModal';
+import { GameHUD } from '../../../components/GameHUD';
 import { CelebrationOverlay } from '../../../components/CelebrationOverlay';
 import { Typography } from '../../../theme/typography';
 import { Colors } from '../../../theme/colors';
@@ -689,12 +690,7 @@ export const GameScreen: React.FC = React.memo(() => {
     clearAllTimers();
     stopSpeech();
     setShowExitModal(false);
-
-    if (itemsAttempted > 0) {
-      handleSessionEnd();
-    } else {
-      navigation.getParent()?.goBack();
-    }
+    handleSessionEnd();
   };
 
   const containerWidth = Math.min(screenWidth - 24, 440);
@@ -771,37 +767,18 @@ export const GameScreen: React.FC = React.memo(() => {
         <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
         <SafeAreaView style={styles.safe}>
-          {/* Top Bar Header */}
-          <View style={styles.header}>
-            <BigTouchTarget
-              onPress={() => setShowExitModal(true)}
-              accessibilityLabel={t('accessibility.exitToModeSelection')}
-              accessibilityHint={t('accessibility.exitGameHint')}
-              style={styles.exitButton}
-            >
-              <Text style={styles.exitIcon}>✕</Text>
-            </BigTouchTarget>
-
-            {/* Continuous 10-Star Session Progress Trail */}
-            <ProgressStarTrail
-              current={sessionResults.length}
-              total={TOTAL_SESSION_PAIRS}
-              roundResults={sessionResults}
-              style={styles.starTrail}
-            />
-
-            {/* Live 50-Second Continuous Countdown Timer Badge */}
-            <View style={styles.timerBadge}>
-              <Text style={styles.timerIcon}>⏱️</Text>
-              <Text style={styles.timerText}>{timeLeft}s</Text>
-            </View>
-
-            {/* XP Score Badge */}
-            <View style={styles.scoreContainer}>
-              <Text style={styles.scoreStar}>⭐</Text>
-              <Text style={styles.scoreText}>{score}</Text>
-            </View>
-          </View>
+          {/* Unified Responsive 2-Row GameHUD */}
+          <GameHUD
+            onQuit={() => setShowExitModal(true)}
+            currentRound={sessionResults.length}
+            totalRounds={TOTAL_SESSION_PAIRS}
+            score={score}
+            roundResults={sessionResults as any}
+            initialSeconds={INITIAL_TIMER_SECONDS}
+            onTimeExpired={handleTimeUp}
+            isPaused={interactionLocked || showExitModal || showReportModal || !currentRound || showRoundCelebration}
+            containerWidth={containerWidth}
+          />
 
           {/* Core Game Area Container */}
           <View style={styles.gameArea} onLayout={handleGameAreaLayout}>
@@ -907,22 +884,14 @@ export const GameScreen: React.FC = React.memo(() => {
         </SafeAreaView>
 
         {/* Exit Confirmation Modal */}
-        <FriendlyModal
+        <QuitGameModal
           visible={showExitModal}
-          title={t('game.leaveGameTitle', 'Leave Game?')}
-          description={t('game.leaveGameDesc', 'Are you sure you want to exit? Your current progress will be saved.')}
-          dismissText={t('game.keepPlaying', 'Keep Playing')}
-          onDismiss={() => setShowExitModal(false)}
-        >
-          <BigTouchTarget
-            onPress={handleConfirmQuit}
-            accessibilityLabel={t('game.quitGame', 'Quit Game')}
-            accessibilityRole="button"
-            style={styles.quitModalBtn}
-          >
-            <Text style={styles.quitModalBtnText}>{t('game.quitGame', 'Quit Game')}</Text>
-          </BigTouchTarget>
-        </FriendlyModal>
+          onContinue={() => setShowExitModal(false)}
+          onExit={handleConfirmQuit}
+          gameTitle={t('languagePairMatch.title', { defaultValue: 'Language Pair Match' })}
+          currentRound={roundIndex + 1}
+          totalRounds={totalRounds}
+        />
 
         {/* Detailed Match Report Modal */}
         <LanguagePairReportModal

@@ -7,7 +7,10 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Gyan requires microphone access for speech recognition learning games."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -16,6 +19,10 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
+      "permissions": [
+        "RECORD_AUDIO",
+        "MODIFY_AUDIO_SETTINGS"
+      ],
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.frontend"
     },
@@ -24,7 +31,9 @@
     },
     "plugins": [
       "expo-localization",
-      "expo-font"
+      "expo-font",
+      "expo-audio",
+      "expo-asset"
     ]
   }
 }

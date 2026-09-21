@@ -11,11 +11,11 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ScrollView,
   useWindowDimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -113,15 +113,11 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
           </BigTouchTarget>
         </View>
 
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
+        <View style={styles.contentContainer}>
           <View style={[styles.mainCard, { width: containerWidth }]}>
             {/* Celebrating Mascot */}
             <View style={styles.mascotWrapper}>
-              <MascotCharacter state="celebrating" />
+              <MascotCharacter state="celebrating" style={{ width: 80, height: 80 }} />
             </View>
 
             {/* Stars Row */}
@@ -129,7 +125,7 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
               {[1, 2, 3].map((starIndex) => (
                 <View key={starIndex} style={styles.starWrapper}>
                   <CuteStar
-                    size={48}
+                    size={38}
                     variant="gold"
                     style={{ opacity: starIndex <= starsEarned ? 1 : 0.25 }}
                   />
@@ -208,7 +204,7 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
               </BigTouchTarget>
             </View>
           </View>
-        </ScrollView>
+        </View>
       </SafeAreaView>
 
       <GameAnalysisReportModal
@@ -249,112 +245,114 @@ const styles = StyleSheet.create({
   homeButtonText: {
     fontSize: 22,
   },
-  scrollView: {
+  contentContainer: {
     flex: 1,
-  },
-  scrollContent: {
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingBottom: 32,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
   },
   mainCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 28,
-    padding: 24,
+    borderRadius: 24,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
     alignItems: 'center',
     borderWidth: 2,
     borderColor: '#A7F3D0',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
-    shadowRadius: 12,
-    elevation: 6,
+    shadowRadius: 8,
+    elevation: 4,
   },
   mascotWrapper: {
-    height: 120,
+    height: 80,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   starsRow: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 16,
-    marginVertical: 12,
+    gap: 10,
+    marginVertical: 6,
   },
   starWrapper: {
-    padding: 4,
+    padding: 2,
   },
   completeTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '900',
     color: '#065F46',
     textAlign: 'center',
-    marginTop: 8,
-    marginBottom: 6,
+    marginTop: 4,
+    marginBottom: 2,
   },
   completeDesc: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: '#047857',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   statsCard: {
     flexDirection: 'row',
     backgroundColor: '#F0FDF4',
-    borderRadius: 18,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
+    borderRadius: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     width: '100%',
     justifyContent: 'space-around',
     alignItems: 'center',
     borderWidth: 1.5,
     borderColor: '#BBF7D0',
-    marginBottom: 16,
+    marginBottom: 10,
   },
   statItem: {
     alignItems: 'center',
     flex: 1,
   },
   statNumber: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '900',
     color: '#065F46',
     marginBottom: 2,
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
     color: '#047857',
   },
   statDivider: {
     width: 1,
-    height: 32,
+    height: 28,
     backgroundColor: '#86EFAC',
   },
   levelBanner: {
     backgroundColor: '#FEF3C7',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 12,
     borderWidth: 1.5,
     borderColor: '#FCD34D',
-    marginBottom: 24,
+    marginBottom: 12,
   },
   levelBannerText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '800',
     color: '#92400E',
   },
   actionsContainer: {
     width: '100%',
-    gap: 12,
+    gap: 6,
   },
   viewReportButton: {
     backgroundColor: '#ECFDF5',
-    borderRadius: 22,
-    height: 52,
+    borderRadius: 18,
+    height: 44,
+    minHeight: 44,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
@@ -366,34 +364,36 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   viewReportButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
     color: '#065F46',
   },
   playAgainButton: {
     backgroundColor: '#10B981',
-    borderRadius: 22,
-    height: 56,
+    borderRadius: 20,
+    height: 48,
+    minHeight: 48,
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 3,
   },
   playAgainButtonText: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '900',
     color: '#FFFFFF',
   },
   moreGamesButton: {
     backgroundColor: '#F1F5F9',
-    borderRadius: 22,
-    height: 56,
+    borderRadius: 18,
+    height: 44,
+    minHeight: 44,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
     borderColor: '#E2E8F0',
   },
   moreGamesButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
     color: '#475569',
   },

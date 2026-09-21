@@ -11,11 +11,11 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ScrollView,
   useWindowDimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -129,11 +129,7 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
       <SafeAreaView style={styles.safeArea}>
         <StatusBar barStyle="light-content" backgroundColor="#059669" />
 
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
+        <View style={styles.contentContainer}>
           <View style={[styles.mainCard, { width: containerWidth }]}>
             {/* Celebrating Mascot */}
             <View style={styles.mascotWrapper}>
@@ -165,9 +161,9 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
             {/* Stars Row */}
             <View style={styles.starsRow}>
               {[1, 2, 3].map((starIndex) => (
-                <View key={starIndex} style={{ marginHorizontal: 8 }}>
+                <View key={starIndex} style={{ marginHorizontal: 6 }}>
                   <CuteStar
-                    size={52}
+                    size={38}
                     variant="gold"
                     style={{ opacity: starIndex <= starsEarned ? 1 : 0.25 }}
                   />
@@ -245,7 +241,7 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
               </Text>
             </BigTouchTarget>
           </View>
-        </ScrollView>
+        </View>
       </SafeAreaView>
 
       {/* Universal Detailed Analysis Report Modal */}
@@ -269,95 +265,96 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  scrollView: {
+  contentContainer: {
     flex: 1,
-  },
-  scrollContent: {
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
   },
   mainCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 28,
-    padding: 24,
+    borderRadius: 24,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
     alignItems: 'center',
     shadowColor: '#065F46',
-    shadowOffset: { width: 0, height: 8 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowRadius: 10,
+    elevation: 6,
     borderWidth: 2,
     borderColor: '#A7F3D0',
   },
   mascotWrapper: {
-    marginBottom: 8,
+    marginBottom: 4,
   },
   timeExpiredPill: {
     backgroundColor: '#D1FAE5',
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#6EE7B7',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   timeExpiredText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '800',
     color: '#047857',
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '900',
     color: '#1E293B',
     textAlign: 'center',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: '#64748B',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: 10,
   },
   starsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   metricsCard: {
     flexDirection: 'row',
     backgroundColor: '#F8FAFC',
-    borderRadius: 20,
-    paddingVertical: 14,
-    paddingHorizontal: 12,
+    borderRadius: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
     width: '100%',
     justifyContent: 'space-around',
     alignItems: 'center',
     borderWidth: 1.5,
     borderColor: '#E2E8F0',
-    marginBottom: 16,
+    marginBottom: 10,
   },
   metricColumn: {
     alignItems: 'center',
     flex: 1,
   },
   metricValue: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: '900',
     color: '#059669',
     marginBottom: 2,
   },
   metricLabel: {
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: '700',
     color: '#64748B',
     textTransform: 'uppercase',
   },
   metricDivider: {
     width: 1,
-    height: 32,
+    height: 28,
     backgroundColor: '#CBD5E1',
   },
   levelProgressRow: {
@@ -365,28 +362,29 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '100%',
     backgroundColor: '#D1FAE5',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 14,
-    marginBottom: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 12,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: '#6EE7B7',
   },
   levelLabel: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '800',
     color: '#047857',
   },
   totalXpLabel: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '800',
     color: '#047857',
   },
   playAgainBtn: {
     width: '100%',
+    height: 48,
+    minHeight: 48,
     backgroundColor: '#10B981',
-    borderRadius: 20,
-    paddingVertical: 16,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
@@ -394,43 +392,45 @@ const styles = StyleSheet.create({
     borderBottomWidth: 5,
     borderBottomColor: '#047857',
     shadowColor: '#065F46',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 4,
-    marginBottom: 12,
+    shadowRadius: 5,
+    elevation: 3,
+    marginBottom: 6,
   },
   playAgainText: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '900',
     color: '#FFFFFF',
     letterSpacing: 0.5,
   },
   reportBtn: {
     width: '100%',
+    height: 44,
+    minHeight: 44,
     backgroundColor: '#FFFFFF',
     borderRadius: 18,
-    paddingVertical: 14,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
     borderColor: '#CBD5E1',
-    marginBottom: 12,
+    marginBottom: 6,
   },
   reportBtnText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '800',
     color: '#475569',
   },
   backBtn: {
     width: '100%',
+    height: 40,
+    minHeight: 40,
     backgroundColor: 'transparent',
-    paddingVertical: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
   backBtnText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
     color: '#64748B',
   },

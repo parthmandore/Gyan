@@ -11,12 +11,12 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   useWindowDimensions,
   LayoutChangeEvent,
   AccessibilityInfo,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -34,6 +34,8 @@ import { CelebrationOverlay } from '../../../components/CelebrationOverlay';
 import { ProgressStarTrail } from '../../../components/ProgressStarTrail';
 import { CartoonBackground } from '../../../components/CartoonBackground';
 import { BigTouchTarget } from '../../../components/BigTouchTarget';
+import { GameHUD } from '../../../components/GameHUD';
+import { QuitGameModal } from '../../../components/QuitGameModal';
 import { Colors } from '../../../theme/colors';
 import { Typography } from '../../../theme/typography';
 import { fetchCapitalSmallMatchConfig } from '../../../services/gameConfigService';
@@ -101,6 +103,7 @@ export const GameScreen: React.FC = React.memo(() => {
   const [justMatchedCapital, setJustMatchedCapital] = useState<string | null>(null);
   const [showRoundCelebration, setShowRoundCelebration] = useState(false);
   const [interactionLocked, setInteractionLocked] = useState(false);
+  const [showExitModal, setShowExitModal] = useState(false);
 
   // 12-Star Session-Wide Progress Trail State (accumulates across 3 rounds)
   const [sessionResults, setSessionResults] = useState<Array<'correct' | 'wrong'>>([]);
@@ -508,9 +511,32 @@ export const GameScreen: React.FC = React.memo(() => {
   }, [roundPairs, matchedPairs, wrongFlashPair, selectedLowercase]);
 
   // --- Exit handler ---
-  const handleExit = useCallback(() => {
-    navigation.getParent()?.goBack();
-  }, [navigation]);
+  const handleExitPress = useCallback(() => {
+    setShowExitModal(true);
+  }, []);
+
+  const handleConfirmExit = useCallback(() => {
+    setShowExitModal(false);
+    const duration = sessionStartTime
+      ? Math.round((Date.now() - sessionStartTime) / 1000)
+      : INITIAL_TIMER_SECONDS;
+    const accuracy = itemsAttempted > 0
+      ? Math.round((itemsCorrect / itemsAttempted) * 100)
+      : (itemsCorrect > 0 ? 100 : 0);
+    const starsEarned = accuracy >= 90 ? 3 : accuracy >= 70 ? 2 : (itemsCorrect > 0 ? 1 : 0);
+    const xpEarned = score > 0 ? score : (itemsCorrect * 10);
+
+    navigation.navigate('CapitalSmallMatchSessionComplete', {
+      sessionId: sessionIdRef.current,
+      starsEarned,
+      xpEarned,
+      itemsCorrect,
+      sessionLength: SESSION_TOTAL_PAIRS,
+      accuracy,
+      durationSeconds: duration,
+      sessionResults,
+    });
+  }, [navigation, sessionStartTime, itemsAttempted, itemsCorrect, score, sessionResults]);
 
   if (roundPairs.length === 0) {
     return (
@@ -533,37 +559,16 @@ export const GameScreen: React.FC = React.memo(() => {
         <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
         <SafeAreaView style={styles.safe}>
-          {/* Top Bar Header */}
-          <View style={styles.header}>
-            <BigTouchTarget
-              onPress={handleExit}
-              accessibilityLabel={t('accessibility.exitToModeSelection')}
-              accessibilityHint={t('accessibility.exitGameHint')}
-              style={styles.exitButton}
-            >
-              <Text style={styles.exitIcon}>✕</Text>
-            </BigTouchTarget>
-
-            {/* Continuous 12-Star Session Progress Trail */}
-            <ProgressStarTrail
-              current={sessionResults.length}
-              total={SESSION_TOTAL_PAIRS}
-              roundResults={sessionResults}
-              style={styles.starTrail}
-            />
-
-            {/* Live 50-Second Countdown Timer Badge */}
-            <View style={styles.timerBadge}>
-              <Text style={styles.timerIcon}>⏱️</Text>
-              <Text style={styles.timerText}>{timeLeft}s</Text>
-            </View>
-
-            {/* XP Score Badge */}
-            <View style={styles.scoreContainer}>
-              <Text style={styles.scoreStar}>⭐</Text>
-              <Text style={styles.scoreText}>{score}</Text>
-            </View>
-          </View>
+          {/* Unified Responsive 2-Row GameHUD */}
+          <GameHUD
+            onQuit={handleExitPress}
+            currentRound={sessionResults.length}
+            totalRounds={SESSION_TOTAL_PAIRS}
+            score={score}
+            roundResults={sessionResults}
+            initialSeconds={50}
+            timerDisabled={false}
+          />
 
           {/* Core Game Area Container */}
           <View style={styles.gameArea} onLayout={handleGameAreaLayout}>
@@ -681,6 +686,16 @@ export const GameScreen: React.FC = React.memo(() => {
         <CelebrationOverlay
           visible={showRoundCelebration}
           isBigCelebration
+        />
+
+        {/* Standardized 2-Button Exit Confirmation Modal */}
+        <QuitGameModal
+          visible={showExitModal}
+          onContinue={() => setShowExitModal(false)}
+          onExit={handleConfirmExit}
+          gameTitle={t('capitalSmallMatch.gameTitle', { defaultValue: 'Capital & Small Match' })}
+          currentRound={sessionResults.length + 1}
+          totalRounds={SESSION_TOTAL_PAIRS}
         />
       </View>
     </GestureHandlerRootView>

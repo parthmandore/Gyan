@@ -11,17 +11,16 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
-  ScrollView,
   useWindowDimensions,
-  TouchableOpacity,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { CartoonBackground, CloudClearanceSpacer } from '../../../components/CartoonBackground';
+import { BigTouchTarget } from '../../../components/BigTouchTarget';
 import { MascotCharacter } from '../../../components/MascotCharacter';
 import { CuteStar } from '../../../components/CuteStar';
 import { GameAnalysisReportModal, GameQuestionReportItem } from '../../../components/GameAnalysisReportModal';
@@ -104,15 +103,14 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
       <SafeAreaView style={styles.safeArea}>
         {/* Top Header */}
         <View style={[styles.header, { width: containerWidth }]}>
-          <TouchableOpacity
+          <BigTouchTarget
             onPress={handleBackToCatalog}
             accessibilityRole="button"
             accessibilityLabel="Go back to Games Catalog"
             style={styles.homeButton}
-            activeOpacity={0.7}
           >
             <Text style={styles.homeButtonText}>🏠</Text>
-          </TouchableOpacity>
+          </BigTouchTarget>
 
           <View style={styles.levelBadge}>
             <Text style={styles.levelBadgeText}>
@@ -121,10 +119,7 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
           </View>
         </View>
 
-        <ScrollView
-          contentContainerStyle={[styles.scrollContent, { width: containerWidth }]}
-          showsVerticalScrollIndicator={false}
-        >
+        <View style={styles.contentContainer}>
           {/* Mascot Celebration */}
           <View style={styles.mascotContainer}>
             <MascotCharacter state="celebrating" />
@@ -146,7 +141,7 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
             {[1, 2, 3].map((starIndex) => (
               <View key={starIndex} style={styles.starWrapper}>
                 <CuteStar
-                  size={starIndex === 2 ? 62 : 48}
+                  size={starIndex === 2 ? 46 : 38}
                   variant="gold"
                   style={{ opacity: starIndex <= starsEarned ? 1 : 0.25 }}
                 />
@@ -183,37 +178,34 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
 
           {/* Action CTAs */}
           <View style={styles.actionButtons}>
-            <TouchableOpacity
+            <BigTouchTarget
               onPress={() => setShowReportModal(true)}
               style={styles.viewReportBtn}
-              activeOpacity={0.8}
               accessibilityRole="button"
               accessibilityLabel="View Detailed Question Report"
             >
               <Text style={styles.viewReportBtnText}>📋 View Detailed Report</Text>
-            </TouchableOpacity>
+            </BigTouchTarget>
 
-            <TouchableOpacity
+            <BigTouchTarget
               onPress={handlePlayAgain}
               style={styles.playAgainBtn}
-              activeOpacity={0.8}
               accessibilityRole="button"
               accessibilityLabel="Play Missing Numbers again"
             >
               <Text style={styles.playAgainBtnText}>Play Again 🔄</Text>
-            </TouchableOpacity>
+            </BigTouchTarget>
 
-            <TouchableOpacity
+            <BigTouchTarget
               onPress={handleBackToCatalog}
               style={styles.moreGamesBtn}
-              activeOpacity={0.8}
               accessibilityRole="button"
               accessibilityLabel="Explore more games in catalog"
             >
               <Text style={styles.moreGamesBtnText}>More Games 🎮</Text>
-            </TouchableOpacity>
+            </BigTouchTarget>
           </View>
-        </ScrollView>
+        </View>
       </SafeAreaView>
 
       <GameAnalysisReportModal
@@ -248,6 +240,8 @@ const styles = StyleSheet.create({
   homeButton: {
     width: 44,
     height: 44,
+    minWidth: 44,
+    minHeight: 44,
     borderRadius: 22,
     backgroundColor: 'rgba(255, 255, 255, 0.94)',
     justifyContent: 'center',
@@ -276,39 +270,41 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#B45309',
   },
-  scrollContent: {
+  contentContainer: {
+    flex: 1,
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingBottom: 32,
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
   },
   mascotContainer: {
-    height: 100,
+    height: 70,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 8,
-    marginBottom: 4,
+    marginTop: 4,
+    marginBottom: 2,
   },
   titleText: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: '900',
     color: '#0F172A',
     textAlign: 'center',
-    marginTop: 4,
+    marginTop: 2,
   },
   subtitleText: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '600',
     color: '#475569',
     textAlign: 'center',
-    marginTop: 4,
-    marginBottom: 16,
+    marginTop: 2,
+    marginBottom: 8,
   },
   starsRow: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 12,
-    marginBottom: 20,
+    gap: 10,
+    marginBottom: 8,
   },
   starWrapper: {
     marginHorizontal: 4,
@@ -316,31 +312,31 @@ const styles = StyleSheet.create({
   statsCard: {
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',
-    borderRadius: 22,
-    paddingVertical: 16,
-    paddingHorizontal: 20,
+    borderRadius: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     width: '100%',
     justifyContent: 'space-around',
     alignItems: 'center',
-    borderWidth: 2.5,
+    borderWidth: 2,
     borderColor: '#BAE6FD',
     shadowColor: '#0284C7',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 4,
-    marginBottom: 20,
+    shadowRadius: 6,
+    elevation: 3,
+    marginBottom: 10,
   },
   statItem: {
     alignItems: 'center',
     flex: 1,
   },
   statEmoji: {
-    fontSize: 22,
+    fontSize: 18,
     marginBottom: 2,
   },
   statValue: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: '900',
     color: '#0F172A',
   },
@@ -348,24 +344,25 @@ const styles = StyleSheet.create({
     color: '#D97706',
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: '700',
     color: '#64748B',
     marginTop: 2,
   },
   statDivider: {
     width: 1.5,
-    height: 38,
+    height: 28,
     backgroundColor: '#E2E8F0',
   },
   actionButtons: {
     width: '100%',
-    gap: 10,
+    gap: 6,
   },
   viewReportBtn: {
     width: '100%',
-    height: 52,
-    borderRadius: 26,
+    height: 44,
+    minHeight: 44,
+    borderRadius: 18,
     backgroundColor: '#F0F9FF',
     borderWidth: 2,
     borderColor: '#0284C7',
@@ -378,44 +375,46 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   viewReportBtnText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
     color: '#0284C7',
   },
   playAgainBtn: {
     width: '100%',
-    height: 56,
-    borderRadius: 28,
+    height: 48,
+    minHeight: 48,
+    borderRadius: 20,
     backgroundColor: '#0284C7',
-    borderWidth: 3,
+    borderWidth: 2.5,
     borderColor: '#38BDF8',
     borderBottomWidth: 5,
     borderBottomColor: '#0369A1',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#0284C7',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowRadius: 5,
+    elevation: 3,
   },
   playAgainBtnText: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '900',
     color: '#FFFFFF',
   },
   moreGamesBtn: {
     width: '100%',
-    height: 52,
-    borderRadius: 26,
+    height: 44,
+    minHeight: 44,
+    borderRadius: 18,
     backgroundColor: '#FFFFFF',
-    borderWidth: 2.5,
+    borderWidth: 2,
     borderColor: '#BAE6FD',
     justifyContent: 'center',
     alignItems: 'center',
   },
   moreGamesBtnText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
     color: '#0284C7',
   },

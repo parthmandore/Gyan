@@ -10,11 +10,11 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ActivityIndicator,
   useWindowDimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -34,7 +34,8 @@ import { BigTouchTarget } from '../../../components/BigTouchTarget';
 import { LetterTile, LetterTileState } from '../../../components/LetterTile';
 import { ProgressStarTrail } from '../../../components/ProgressStarTrail';
 import { RoundTimer } from '../../../components/RoundTimer';
-import { FriendlyModal } from '../../../components/FriendlyModal';
+import { QuitGameModal } from '../../../components/QuitGameModal';
+import { GameHUD } from '../../../components/GameHUD';
 import { CelebrationOverlay } from '../../../components/CelebrationOverlay';
 import { TeachingOverlay } from '../../../components/TeachingOverlay';
 import { FlyingStarOverlay } from '../../../components/FlyingStarOverlay';
@@ -89,7 +90,7 @@ export const GameScreen: React.FC = React.memo(() => {
   const [tileStates, setTileStates] = useState<Record<string, LetterTileState>>({});
 
   const [, setItemsAttempted] = useState<number>(0);
-  const [, setItemsCorrect] = useState<number>(0);
+  const [itemsCorrect, setItemsCorrect] = useState<number>(0);
   const [roundResults, setRoundResults] = useState<Array<'correct' | 'wrong' | 'pending'>>([]);
 
   const [attemptsInCurrentRound, setAttemptsInCurrentRound] = useState<number>(0);
@@ -450,8 +451,8 @@ export const GameScreen: React.FC = React.memo(() => {
     setShowTeaching(false);
     setShowFlyingStar(false);
     stopSpeech();
-    navigation.navigate('AlphabetMatchingModeSelection');
-  }, [navigation]);
+    finishSessionAndSubmitProgress();
+  }, [finishSessionAndSubmitProgress]);
 
   const totalOptionsCount = getGridSizeForDifficulty(currentDifficulty);
   const numColumns = totalOptionsCount > 4 ? 3 : 2;
@@ -476,33 +477,21 @@ export const GameScreen: React.FC = React.memo(() => {
 
   return (
     <View style={styles.webOuterContainer}>
+      {/* Full Decorative Cartoon Background Scenery */}
+      <CartoonBackground />
+      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
       <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="light-content" backgroundColor="#1B2B5A" />
         <CloudClearanceSpacer />
 
-        {/* Full Decorative Cartoon Background Scenery */}
-        <CartoonBackground />
-
-        {/* Top Header Navigation Bar */}
-        <View style={styles.topHeaderContainer}>
-          <BigTouchTarget
-            onPress={() => setShowExitModal(true)}
-            accessibilityLabel={t('common.back')}
-            accessibilityHint={t('accessibility.exitGameHint')}
-            style={styles.redExitButton}
-          >
-            <Text style={styles.redExitButtonText}>✕</Text>
-          </BigTouchTarget>
-
-          {/* Responsive Star Trail Pill */}
-          <View style={styles.starTrailPill}>
-            <ProgressStarTrail
-              current={roundIndex + 1}
-              total={sessionLength}
-              roundResults={roundResults}
-            />
-          </View>
-        </View>
+        {/* Unified Responsive 2-Row GameHUD */}
+        <GameHUD
+          onQuit={() => setShowExitModal(true)}
+          currentRound={roundIndex + 1}
+          totalRounds={sessionLength}
+          score={itemsCorrect * 10}
+          roundResults={roundResults}
+          timerDisabled={true}
+        />
 
         {/* Main Content Area */}
         <View style={styles.mainContentContainer}>
@@ -573,21 +562,14 @@ export const GameScreen: React.FC = React.memo(() => {
         />
 
         {/* Exit Confirmation Modal */}
-        <FriendlyModal
+        <QuitGameModal
           visible={showExitModal}
-          onDismiss={() => setShowExitModal(false)}
-          title={t('game.leaveGameTitle')}
-          description={t('game.leaveGameDesc')}
-          dismissText={t('game.keepPlaying')}
-        >
-          <BigTouchTarget
-            onPress={handleConfirmExit}
-            accessibilityLabel={t('accessibility.exitToModeSelection')}
-            style={styles.modalExitButton}
-          >
-            <Text style={styles.modalExitButtonText}>{t('game.exitGame')}</Text>
-          </BigTouchTarget>
-        </FriendlyModal>
+          onContinue={() => setShowExitModal(false)}
+          onExit={handleConfirmExit}
+          gameTitle={t('alphabetMatching.title', { defaultValue: 'Alphabet Matching' })}
+          currentRound={roundIndex + 1}
+          totalRounds={sessionLength}
+        />
       </SafeAreaView>
     </View>
   );

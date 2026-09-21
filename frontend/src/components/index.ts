@@ -6,3 +6,4 @@ export * from './FriendlyModal';
 export * from './SessionCountdownTimer';
 export * from './EducationalCorrectionModal';
 export * from './GameAnalysisReportModal';
+export * from './GameHUD';

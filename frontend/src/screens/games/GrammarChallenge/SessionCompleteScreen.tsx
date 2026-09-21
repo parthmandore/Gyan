@@ -11,11 +11,11 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ScrollView,
   useWindowDimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -116,10 +116,7 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
           </BigTouchTarget>
         </View>
 
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
+        <View style={styles.contentContainer}>
           <View style={[styles.mainCard, { width: containerWidth }]}>
             {/* Mascot */}
             <View style={styles.mascotWrapper}>
@@ -217,7 +214,7 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
               </BigTouchTarget>
             </View>
           </View>
-        </ScrollView>
+        </View>
       </SafeAreaView>
 
       <GameAnalysisReportModal
@@ -263,111 +260,115 @@ const styles = StyleSheet.create({
   homeButtonText: {
     fontSize: 22,
   },
-  scrollContent: {
-    paddingVertical: 12,
+  contentContainer: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
   mainCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 28,
-    padding: 24,
+    borderRadius: 24,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
     alignItems: 'center',
     borderWidth: 2.5,
     borderColor: '#E2E8F0',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 12,
+    shadowRadius: 8,
     elevation: 4,
   },
   mascotWrapper: {
-    marginBottom: 10,
+    marginBottom: 6,
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '900',
     color: '#1E293B',
     textAlign: 'center',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
     color: '#64748B',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: 8,
   },
   starsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 12,
-    marginVertical: 12,
+    gap: 10,
+    marginVertical: 6,
   },
   centerStar: {
-    marginBottom: 14,
+    marginBottom: 8,
   },
   statsContainer: {
     flexDirection: 'row',
     backgroundColor: '#F8FAFC',
-    borderRadius: 18,
-    paddingVertical: 12,
+    borderRadius: 16,
+    paddingVertical: 8,
     paddingHorizontal: 8,
     width: '100%',
     justifyContent: 'space-around',
     alignItems: 'center',
     borderWidth: 1.5,
     borderColor: '#E2E8F0',
-    marginTop: 8,
-    marginBottom: 14,
+    marginTop: 4,
+    marginBottom: 8,
   },
   statBox: {
     alignItems: 'center',
     flex: 1,
   },
   statEmoji: {
-    fontSize: 18,
+    fontSize: 16,
     marginBottom: 2,
   },
   statValue: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '900',
     color: '#0F172A',
   },
   statLabel: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
     color: '#64748B',
     marginTop: 2,
   },
   statDivider: {
     width: 1,
-    height: 36,
+    height: 28,
     backgroundColor: '#CBD5E1',
   },
   levelPill: {
     backgroundColor: '#FEF3C7',
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 4,
+    borderRadius: 14,
     borderWidth: 1.5,
     borderColor: '#F59E0B',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   levelText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '800',
     color: '#B45309',
   },
   actionButtons: {
     width: '100%',
-    gap: 12,
+    gap: 6,
   },
   viewReportBtn: {
     width: '100%',
-    height: 52,
-    borderRadius: 26,
+    height: 44,
+    minHeight: 44,
+    borderRadius: 22,
     backgroundColor: '#EFF6FF',
     justifyContent: 'center',
     alignItems: 'center',
@@ -376,32 +377,34 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   viewReportBtnText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
     color: '#1D4ED8',
   },
   playAgainBtn: {
     width: '100%',
-    height: 52,
-    borderRadius: 26,
+    height: 48,
+    minHeight: 48,
+    borderRadius: 24,
     backgroundColor: '#3B82F6',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#2563EB',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.25,
-    shadowRadius: 8,
+    shadowRadius: 6,
     elevation: 3,
   },
   playAgainBtnText: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '900',
     color: '#FFFFFF',
   },
   catalogBtn: {
     width: '100%',
-    height: 52,
-    borderRadius: 26,
+    height: 44,
+    minHeight: 44,
+    borderRadius: 22,
     backgroundColor: '#F1F5F9',
     justifyContent: 'center',
     alignItems: 'center',
@@ -409,7 +412,7 @@ const styles = StyleSheet.create({
     borderColor: '#CBD5E1',
   },
   catalogBtnText: {
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: '800',
     color: '#475569',
   },

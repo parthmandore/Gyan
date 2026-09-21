@@ -10,11 +10,11 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ScrollView,
   useWindowDimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -53,8 +53,11 @@ export const IntroScreen: React.FC = React.memo(() => {
   const [backendReady, setBackendReady] = useState<boolean | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
     checkSTTHealth().then((health) => {
-      setBackendReady(health.status === 'ok' && health.model_loaded);
+      if (isMounted) {
+        setBackendReady(health.status === 'ok' && health.model_loaded);
+      }
     });
 
     const unsubscribe = navigation.addListener('beforeRemove', () => {
@@ -62,6 +65,7 @@ export const IntroScreen: React.FC = React.memo(() => {
     });
 
     return () => {
+      isMounted = false;
       unsubscribe();
       stopSpeech();
     };

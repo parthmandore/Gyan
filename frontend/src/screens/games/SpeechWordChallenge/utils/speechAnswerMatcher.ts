@@ -183,25 +183,29 @@ export const isAnswerCorrect = (
   // -------------------------------------------------------------------------
   // 3. DEVANAGARI LINGUISTIC & DIALECTAL MATCHING (Hindi / Marathi)
   // -------------------------------------------------------------------------
-  const devanagariRecognized = normalizeDevanagari(recognizedText);
-  const devanagariWords = devanagariRecognized.split(' ');
+  const isDevanagariTarget = candidateTargets.some((t) => /[\u0900-\u097F]/.test(t));
+  if (isDevanagariTarget) {
+    const devanagariRecognized = normalizeDevanagari(recognizedText);
+    const devanagariWords = devanagariRecognized.split(' ');
 
-  for (const target of candidateTargets) {
-    const devTarget = normalizeDevanagari(target);
-    if (devanagariRecognized === devTarget) {
-      return { isCorrect: true, matchedVariant: target };
-    }
-    if (devanagariWords.includes(devTarget)) {
-      return { isCorrect: true, matchedVariant: target };
-    }
+    for (const target of candidateTargets) {
+      if (!/[\u0900-\u097F]/.test(target)) continue;
+      const devTarget = normalizeDevanagari(target);
+      if (devanagariRecognized === devTarget) {
+        return { isCorrect: true, matchedVariant: target };
+      }
+      if (devanagariWords.includes(devTarget)) {
+        return { isCorrect: true, matchedVariant: target };
+      }
 
-    // Levenshtein on Devanagari
-    for (const recWord of devanagariWords) {
-      const allowedDist = devTarget.length >= 6 ? 3 : devTarget.length >= 4 ? 1 : 0;
-      if (allowedDist > 0) {
-        const dist = levenshteinDistance(recWord, devTarget);
-        if (dist <= allowedDist) {
-          return { isCorrect: true, matchedVariant: target };
+      // Levenshtein on Devanagari
+      for (const recWord of devanagariWords) {
+        const allowedDist = devTarget.length >= 6 ? 2 : devTarget.length >= 4 ? 1 : 0;
+        if (allowedDist > 0) {
+          const dist = levenshteinDistance(recWord, devTarget);
+          if (dist <= allowedDist) {
+            return { isCorrect: true, matchedVariant: target };
+          }
         }
       }
     }

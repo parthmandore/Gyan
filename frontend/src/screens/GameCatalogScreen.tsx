@@ -5,16 +5,16 @@
  * Folder: frontend/src/screens
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ScrollView,
   useWindowDimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -22,10 +22,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { BigTouchTarget } from '../components/BigTouchTarget';
 import { CartoonBackground } from '../components/CartoonBackground';
-import { Colors } from '../theme/colors';
 import { Typography } from '../theme/typography';
 import { GAME_REGISTRY, GameRegistryEntry } from '../config/gameRegistry';
 import { useAppLanguageStore } from '../state/appLanguageStore';
+import { useProgressStore } from '../state/useProgressStore';
 import { RootStackParamList } from '../types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'GameCatalog'>;
@@ -40,27 +40,28 @@ export const GameCatalogScreen: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const navigation = useNavigation<NavigationProp>();
   const { width: screenWidth } = useWindowDimensions();
-  const selectedLanguage = useAppLanguageStore((s) => s.selectedLanguage) || 'en';
+  const motherTongue = useAppLanguageStore((s) => s.motherTongue) || 'en';
+  const learningLanguage = useAppLanguageStore((s) => s.learningLanguage) || 'en';
+  const selectedLanguage = useAppLanguageStore((s) => s.selectedLanguage) || motherTongue;
   const selectedAge = useAppLanguageStore((s) => s.selectedAge) || 5;
+
+  useEffect(() => {
+    useProgressStore.getState().initProgress();
+  }, []);
 
   const availableGames = GAME_REGISTRY.filter(
     (game) =>
-      game.supportedLanguages.includes(selectedLanguage) &&
+      (game.supportedLanguages.includes(selectedLanguage) ||
+        game.supportedLanguages.includes(learningLanguage) ||
+        game.supportedLanguages.includes(motherTongue)) &&
       game.ageGroups.includes(selectedAge)
   );
 
   const handleOpenGame = (game: GameRegistryEntry) => {
-    if (game.id === 'alphabet_matching') {
-      navigation.navigate('Games', { screen: 'AlphabetMatchingModeSelection' });
-    } else if (game.id === 'capital_small_match') {
-      navigation.navigate('Games', { screen: 'CapitalSmallMatchIntro' });
-    } else if (game.id === 'vowel_matra_match') {
-      navigation.navigate('Games', { screen: 'VowelMatraMatchIntro' });
-    } else if (game.id === 'speech_word_challenge') {
-      navigation.navigate('Games', { screen: 'SpeechWordChallengeIntro' as any });
-    } else {
-      console.log(`[GameCatalog] Selected game: ${game.id}`);
-    }
+    navigation.navigate('Games', {
+      screen: game.navigatorRoute as any,
+      params: game.routeParams || undefined,
+    });
   };
 
   const handleOpenLanguageGate = () => {

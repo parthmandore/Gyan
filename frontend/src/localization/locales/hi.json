@@ -20,10 +20,14 @@
     "practice": "अभ्यास चाहिए",
     "noAttemptsYet": "अभी तक कोई प्रयास रिकॉर्ड नहीं हुआ।",
     "keepPlaying": "खेलते रहो",
+    "continuePlaying": "खेलते रहें",
     "exit": "बाहर निकलें",
     "leave": "छोड़ें",
     "leaveGame": "खेल छोड़ें?",
-    "leaveGameConfirm": "क्या आप वाकई खेल छोड़ना चाहते हैं? आपकी प्रगति सहेजी जाएगी।"
+    "leaveGameConfirm": "क्या आप वाकई खेल छोड़ना चाहते हैं? आपकी प्रगति सहेजी जाएगी।",
+    "pauseGame": "खेल रोकें?",
+    "exitConfirmExplanation": "क्या आप अभी रुकना चाहते हैं? आपका स्कोर और रिपोर्ट सहेजी जाएगी!",
+    "viewReport": "रिपोर्ट देखें और बाहर निकलें"
   },
   "navigation": {
     "home": "मुख्य पृष्ठ",
@@ -279,7 +283,8 @@
     "wrongMatchGotIt": "समझ गया! ▶",
     "wrongMatchSpeak": "यह है {{left}} और {{right}}",
     "spokenCapital": "बड़ा अक्षर {{letter}}",
-    "spokenSmall": "छोटा अक्षर {{letter}}"
+    "spokenSmall": "छोटा अक्षर {{letter}}",
+    "quitConfirm": "क्या आप सचमुच खेल छोड़ना चाहते हैं? आपकी प्रगति सहेजी नहीं जाएगी।"
   },
   "vowelMatraMatch": {
     "gameTitle": "स्वर और मात्रा मिलान",
@@ -351,9 +356,17 @@
     "correct": "सही!",
     "leaveGameTitle": "खेल छोड़ें?",
     "leaveGameDesc": "क्या आप खेल छोड़ना चाहते हैं? आपका वर्तमान परिणाम सुरक्षित किया जाएगा।",
+    "quitTitle": "खेल छोड़ें?",
+    "quitMessage": "क्या आप सचमुच खेल छोड़ना चाहते हैं? आपकी प्रगति सहेजी नहीं जाएगी।",
     "keepPlaying": "खेलते रहें",
+    "continuePlaying": "खेल जारी रखें",
     "exitGame": "खेल छोड़ें",
     "quitGame": "खेल छोड़ें",
+    "quitMotivationEarly": "आप बहुत बढ़िया कर रहे हैं! आगे बढ़ते रहें! 🌟",
+    "quitMotivationHalfway": "आपने {{total}} में से {{done}} राउंड पूरे कर लिए हैं! रुकिए मत! 💪",
+    "quitMotivationAlmost": "बस {{remaining}} राउंड और बाकी है! 🎯",
+    "quitMotivationAlmostPlural": "बस {{remaining}} राउंड और बाकी हैं! 🎯",
+    "quitMotivationDefault": "हर राउंड आपको और होशियार बनाता है! 🧠",
     "listenForLetter": "अक्षर सुनें!",
     "listenForNumber": "संख्या सुनें!",
     "loadingAudio": "लोड हो रहा है...",

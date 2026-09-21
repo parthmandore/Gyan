@@ -49,9 +49,11 @@ export interface CloudClearanceSpacerProps {
 }
 
 export const CloudClearanceSpacer: React.FC<CloudClearanceSpacerProps> = React.memo(
-  ({ height = CLOUD_CLEARANCE_HEIGHT }) => (
-    <View style={{ height, width: '100%' }} pointerEvents="none" />
-  )
+  ({ height }) => {
+    const { height: windowHeight } = useWindowDimensions();
+    const effectiveHeight = height !== undefined ? height : (windowHeight <= 750 ? 10 : 18);
+    return <View style={{ height: effectiveHeight, width: '100%' }} pointerEvents="none" />;
+  }
 );
 
 export const CartoonBackground: React.FC<CartoonBackgroundProps> = React.memo(({ theme = 'meadow' }) => {

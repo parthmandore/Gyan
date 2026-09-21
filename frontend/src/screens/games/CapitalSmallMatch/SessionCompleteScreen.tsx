@@ -12,13 +12,13 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ScrollView,
   ActivityIndicator,
   AccessibilityInfo,
   useWindowDimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -41,6 +41,8 @@ import { Typography } from '../../../theme/typography';
 import { submitGameProgress } from '../../../services/progressService';
 import { fetchRewardsSummary, RewardsSummaryData } from '../../../services/rewardsService';
 import { fetchAchievements, AchievementsData } from '../../../services/achievementsService';
+import { useProgressStore } from '../../../state/useProgressStore';
+import { calculateLevelProgress } from '../../../config/xpConfig';
 import { speakPraise } from '../../../services/praiseService';
 import { triggerHapticSuccess } from '../../../services/hapticsService';
 
@@ -69,9 +71,18 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
   const resetSession = useCapitalSmallMatchStore((s) => s.resetSession);
   const itemsAttempted = useCapitalSmallMatchStore((s) => s.itemsAttempted);
 
-  const [rewards, setRewards] = useState<RewardsSummaryData | null>(null);
+  const [rewards, setRewards] = useState<RewardsSummaryData>(() => {
+    const store = useProgressStore.getState();
+    const info = calculateLevelProgress(store.totalXp);
+    return {
+      xp_total: info.totalXp,
+      level: info.currentLevel,
+      xp_earned_in_level: info.xpInCurrentLevel,
+      xp_to_next_level: info.xpToNextLevel,
+    };
+  });
   const [achievements, setAchievements] = useState<AchievementsData | null>(null);
-  const [isLoadingRewards, setIsLoadingRewards] = useState(true);
+  const [isLoadingRewards, setIsLoadingRewards] = useState(false);
 
   // Entrance Animation Values
   const mascotScale = useSharedValue(0);
@@ -92,31 +103,43 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
   // Submit session progress & load rewards on mount
   useEffect(() => {
     let isMounted = true;
+    const timeoutTimer = setTimeout(() => {
+      if (isMounted) {
+        setIsLoadingRewards(false);
+      }
+    }, 1200);
 
     triggerHapticSuccess();
     speakPraise();
 
     const loadDataAndSubmit = async () => {
       try {
-        await submitGameProgress({
+        // Fire submit in background non-blocking
+        submitGameProgress({
           game_type: 'capital_small_match',
           difficulty: 1,
           items_attempted: itemsAttempted || itemsCorrect,
           items_correct: itemsCorrect,
           time_taken_seconds: durationSeconds,
+        }).catch((err) => {
+          console.warn('[CapitalSmallMatchSessionComplete] Non-critical progress submit error:', err);
         });
 
-        const [rewardsRes, achievementsRes] = await Promise.all([
+        const [rewardsRes, achievementsRes] = await Promise.allSettled([
           fetchRewardsSummary(),
           fetchAchievements(),
         ]);
 
         if (isMounted) {
-          setRewards(rewardsRes.data);
-          setAchievements(achievementsRes.data);
+          if (rewardsRes.status === 'fulfilled' && rewardsRes.value?.data) {
+            setRewards(rewardsRes.value.data);
+          }
+          if (achievementsRes.status === 'fulfilled' && achievementsRes.value?.data) {
+            setAchievements(achievementsRes.value.data);
+          }
         }
       } catch (err) {
-        console.warn('[CapitalSmallMatchSessionComplete] Error submitting progress or fetching rewards:', err);
+        console.warn('[CapitalSmallMatchSessionComplete] Error fetching rewards:', err);
       } finally {
         if (isMounted) setIsLoadingRewards(false);
       }
@@ -136,6 +159,11 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
       cardScale.value = 1;
       buttonsOpacity.value = 1;
     }
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timeoutTimer);
+    };
   }, [itemsAttempted, itemsCorrect, sessionLength, starsEarned, xpEarned, durationSeconds, reduceMotion, mascotScale, cardOpacity, cardScale, buttonsOpacity]);
 
   const handlePlayAgain = useCallback(() => {
@@ -169,11 +197,7 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
         <StatusBar barStyle="light-content" backgroundColor="#1B2B5A" />
         <CartoonBackground theme="evening" />
 
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
+        <View style={styles.contentContainer}>
           {/* Title Header */}
           <Text style={styles.titleText}>{t('game.correct', 'Great Job!')}</Text>
 
@@ -203,7 +227,7 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
 
             {/* Rewards Summary if available */}
             {isLoadingRewards ? (
-              <ActivityIndicator color={Colors.primary.main} style={{ marginVertical: 12 }} />
+              <ActivityIndicator color={Colors.primary.main} style={{ marginVertical: 8 }} />
             ) : rewards ? (
               <View style={styles.rewardsRow}>
                 <Text style={styles.rewardsText}>
@@ -233,7 +257,7 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
               <Text style={styles.chooseGameButtonText}>🌐 Choose Game</Text>
             </BigTouchTarget>
           </Animated.View>
-        </ScrollView>
+        </View>
       </SafeAreaView>
     </View>
   );
@@ -245,25 +269,19 @@ const styles = StyleSheet.create({
   webOuterContainer: {
     flex: 1,
     backgroundColor: '#1B2B5A',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   safeArea: {
     flex: 1,
     width: '100%',
-    maxWidth: 480,
-    maxHeight: 920,
     backgroundColor: '#1B2B5A',
   },
-  scrollView: {
+  contentContainer: {
     flex: 1,
-    zIndex: 10,
-  },
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: 100,
-    paddingBottom: 40,
+    justifyContent: 'space-evenly',
     alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    zIndex: 10,
   },
   mascotWrapper: {
     width: 120,
@@ -355,41 +373,42 @@ const styles = StyleSheet.create({
     color: '#1E40AF',
   },
   buttonsContainer: {
-    gap: 14,
+    gap: 10,
+    width: '100%',
   },
   playAgainButton: {
     width: '100%',
-    height: 64,
-    minHeight: 84,
+    height: 52,
+    minHeight: 52,
     backgroundColor: '#10B981',
-    borderWidth: 3,
+    borderWidth: 2,
     borderColor: '#FFFFFF',
-    borderBottomWidth: 7,
+    borderBottomWidth: 5,
     borderBottomColor: '#047857',
-    borderRadius: 22,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: Colors.neutral.shadow,
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 6,
+    shadowRadius: 5,
+    elevation: 4,
   },
   playAgainButtonText: {
     fontFamily: Typography.fonts.bold,
-    fontSize: 20,
+    fontSize: 18,
     color: '#FFFFFF',
   },
   chooseGameButton: {
     width: '100%',
-    height: 64,
-    minHeight: 84,
+    height: 48,
+    minHeight: 48,
     backgroundColor: '#3B82F6',
-    borderWidth: 3,
+    borderWidth: 2,
     borderColor: '#FFFFFF',
-    borderBottomWidth: 7,
+    borderBottomWidth: 5,
     borderBottomColor: '#1D4ED8',
-    borderRadius: 22,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: Colors.neutral.shadow,

@@ -12,12 +12,12 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   useWindowDimensions,
   StatusBar,
   Modal,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
@@ -26,6 +26,8 @@ import { CelebrationOverlay } from '../../../components/CelebrationOverlay';
 import { ProgressStarTrail } from '../../../components/ProgressStarTrail';
 import { SessionCountdownTimer } from '../../../components/SessionCountdownTimer';
 import { EducationalCorrectionModal } from '../../../components/EducationalCorrectionModal';
+import { QuitGameModal } from '../../../components/QuitGameModal';
+import { GameHUD } from '../../../components/GameHUD';
 import { NumberSequenceDisplay } from './components/NumberSequenceDisplay';
 import { NumberOptionCard } from './components/NumberOptionCard';
 import { useMissingNumbersStore } from './store/useMissingNumbersStore';
@@ -295,12 +297,7 @@ export const GameScreen: React.FC = React.memo(() => {
     stopSpeech();
     if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
     setShowExitModal(false);
-    if (roundResults.length > 0 || roundIndex > 0 || itemsCorrect > 0) {
-      finishSession(itemsCorrect, false);
-    } else {
-      resetGame();
-      navigation.goBack();
-    }
+    finishSession(itemsCorrect, false);
   };
 
   if (!currentRound) {
@@ -322,48 +319,31 @@ export const GameScreen: React.FC = React.memo(() => {
   return (
     <View style={styles.outerContainer}>
       <CartoonBackground theme="math" />
-      <StatusBar barStyle="dark-content" backgroundColor="#EFF6FF" />
+      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
       <SafeAreaView style={styles.safeArea}>
-        {/* Top Header Bar */}
-        <View style={[styles.headerBar, { width: containerWidth }]}>
-          <TouchableOpacity
-            onPress={() => setShowExitModal(true)}
-            accessibilityRole="button"
-            accessibilityLabel="Exit game"
-            style={styles.exitButton}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.exitButtonText}>✕</Text>
-          </TouchableOpacity>
+        <CloudClearanceSpacer />
 
-          {/* Session Timer */}
-          <SessionCountdownTimer
-            initialSeconds={90}
-            onTimeExpired={handleTimeExpired}
-            isPaused={showCorrectionModal || showCelebration || showExitModal}
-          />
-
-          {/* Star Trail Progress */}
-          <View style={styles.progressContainer}>
-            <ProgressStarTrail
-              current={roundIndex + 1}
-              total={TOTAL_MISSING_NUMBERS_ROUNDS}
-              roundResults={roundResults}
-            />
-          </View>
-
-          {/* Live XP / Score Badge */}
-          <View style={styles.xpBadge}>
-            <Text style={styles.xpBadgeText}>⭐ {score}</Text>
-          </View>
-        </View>
+        {/* Unified Responsive 2-Row GameHUD */}
+        <GameHUD
+          onQuit={() => setShowExitModal(true)}
+          currentRound={roundIndex + 1}
+          totalRounds={TOTAL_MISSING_NUMBERS_ROUNDS}
+          score={score}
+          initialSeconds={90}
+          onTimeExpired={handleTimeExpired}
+          isPaused={showCorrectionModal || showCelebration || showExitModal}
+          roundResults={roundResults}
+          containerWidth={containerWidth}
+        />
 
         {/* Main Game Stage */}
         <View style={[styles.stageContainer, { width: containerWidth }]}>
-          {/* Prompt Label */}
-          <Text style={styles.promptText}>
-            {t('missingNumbers.whichNumberIsMissing', 'Which number is missing?')}
-          </Text>
+          {/* Prompt Label in high-contrast card */}
+          <View style={styles.promptContainer}>
+            <Text style={styles.promptText}>
+              {t('missingNumbers.whichNumberIsMissing', 'Which number is missing?')}
+            </Text>
+          </View>
 
           {/* Number Sequence Track Display */}
           <NumberSequenceDisplay
@@ -411,39 +391,14 @@ export const GameScreen: React.FC = React.memo(() => {
       {showCelebration && <CelebrationOverlay visible={showCelebration} />}
 
       {/* Quit Confirmation Modal */}
-      <Modal
+      <QuitGameModal
         visible={showExitModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowExitModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalCard, { maxWidth: containerWidth }]}>
-            <Text style={styles.modalTitle}>Leave Game?</Text>
-            <Text style={styles.modalText}>
-              Are you sure you want to exit? Your progress in this session will not be saved.
-            </Text>
-
-            <View style={styles.modalActions}>
-              <TouchableOpacity
-                style={styles.keepPlayingBtn}
-                onPress={() => setShowExitModal(false)}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.keepPlayingBtnText}>Keep Playing 🚀</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.quitGameBtn}
-                onPress={handleQuitGame}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.quitGameBtnText}>Quit Game</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+        onContinue={() => setShowExitModal(false)}
+        onExit={handleQuitGame}
+        gameTitle={t('missingNumbers.title', { defaultValue: 'Missing Numbers' })}
+        currentRound={roundIndex + 1}
+        totalRounds={TOTAL_MISSING_NUMBERS_ROUNDS}
+      />
 
       {/* Educational Correction Modal (Attempt 1 Wrong) */}
       <EducationalCorrectionModal
@@ -534,6 +489,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
     paddingVertical: 8,
+  },
+  promptContainer: {
+    alignSelf: 'center',
   },
   promptText: {
     fontSize: 20,

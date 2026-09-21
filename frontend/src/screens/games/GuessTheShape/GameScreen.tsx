@@ -12,11 +12,11 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ScrollView,
   useWindowDimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -24,10 +24,11 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CartoonBackground, CloudClearanceSpacer } from '../../../components/CartoonBackground';
 import { ProgressStarTrail } from '../../../components/ProgressStarTrail';
 import { CelebrationOverlay } from '../../../components/CelebrationOverlay';
-import { FriendlyModal } from '../../../components/FriendlyModal';
+import { QuitGameModal } from '../../../components/QuitGameModal';
 import { BigTouchTarget } from '../../../components/BigTouchTarget';
 import { SessionCountdownTimer } from '../../../components/SessionCountdownTimer';
 import { EducationalCorrectionModal } from '../../../components/EducationalCorrectionModal';
+import { GameHUD } from '../../../components/GameHUD';
 import { ShapeVisualTarget } from './components/ShapeVisualTarget';
 import { ShapeOptionButton } from './components/ShapeOptionButton';
 
@@ -324,20 +325,14 @@ export const GameScreen: React.FC = React.memo(() => {
     speakWord(targetWord, learningLanguage);
   }, [currentRound, learningLanguage]);
 
-  // Exit handling: If child played any rounds, route to results report
+  // Exit handling: Always route to results report
   const handleExitGame = () => {
     stopSpeech();
     setShowExitModal(false);
     if (transitionTimeoutRef.current) {
       clearTimeout(transitionTimeoutRef.current);
     }
-
-    if (roundIndex > 0 || itemsCorrect > 0 || attempts.length > 0) {
-      handleCompleteSession(itemsCorrect, false);
-    } else {
-      resetGame();
-      navigation.navigate('GameCatalog' as any);
-    }
+    handleCompleteSession(itemsCorrect, false);
   };
 
   const containerWidth = Math.min(screenWidth - 32, 440);
@@ -363,49 +358,25 @@ export const GameScreen: React.FC = React.memo(() => {
         {/* Cloud & Sun Clearance: ensures sky, clouds, sun and mobile notification panel are 100% free */}
         <CloudClearanceSpacer />
 
-        {/* Top Control Bar: Exit, 90s Timer, Progress Trail, XP Pill */}
-        <View style={[styles.topBar, { width: containerWidth }]}>
-          <BigTouchTarget
-            onPress={() => setShowExitModal(true)}
-            accessibilityLabel={t('common.close', 'Exit game')}
-            accessibilityRole="button"
-            style={styles.exitButton}
-          >
-            <Text style={styles.exitButtonText}>✕</Text>
-          </BigTouchTarget>
+        {/* Unified Responsive 2-Row GameHUD */}
+        <GameHUD
+          onQuit={() => setShowExitModal(true)}
+          currentRound={roundIndex}
+          totalRounds={rounds.length || TOTAL_GUESS_SHAPE_ROUNDS}
+          score={score}
+          initialSeconds={90}
+          onExpire={handleTimeExpired}
+          isPaused={
+            isRoundLocked ||
+            showCelebration ||
+            showExitModal ||
+            showCorrectionModal
+          }
+          containerWidth={containerWidth}
+        />
 
-          {/* 90-Second Continuous Total Session Timer */}
-          <SessionCountdownTimer
-            initialSeconds={90}
-            isPaused={
-              isRoundLocked ||
-              showCelebration ||
-              showExitModal ||
-              showCorrectionModal
-            }
-            onExpire={handleTimeExpired}
-          />
-
-          {/* 10-Star Progress Trail */}
-          <View style={styles.progressTrailWrapper}>
-            <ProgressStarTrail
-              current={roundIndex}
-              total={rounds.length || TOTAL_GUESS_SHAPE_ROUNDS}
-            />
-          </View>
-
-          {/* Live Score Pill */}
-          <View style={styles.scorePill}>
-            <Text style={styles.scoreText}>⭐ {score} XP</Text>
-          </View>
-        </View>
-
-        {/* Scrollable Gameplay Canvas */}
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
+        {/* Non-Scrolling Responsive Gameplay Content */}
+        <View style={styles.gameContentContainer}>
           {/* Question Cue Card */}
           <View style={[styles.cueCard, { width: containerWidth }]}>
             <Text style={styles.cueText}>
@@ -434,7 +405,7 @@ export const GameScreen: React.FC = React.memo(() => {
               />
             ))}
           </View>
-        </ScrollView>
+        </View>
 
         {/* Celebration Overlay */}
         <CelebrationOverlay
@@ -443,40 +414,14 @@ export const GameScreen: React.FC = React.memo(() => {
         />
 
         {/* Quit Confirmation Modal */}
-        <FriendlyModal
+        <QuitGameModal
           visible={showExitModal}
-          title={t('common.close', 'Exit game?')}
-          onDismiss={() => setShowExitModal(false)}
-        >
-          <Text style={styles.modalText}>
-            {t(
-              'common.leaveGameConfirm',
-              'Do you want to leave the game? Your progress will be saved in your report!'
-            )}
-          </Text>
-          <View style={styles.modalButtonsRow}>
-            <BigTouchTarget
-              onPress={() => setShowExitModal(false)}
-              accessibilityLabel={t('common.keepPlaying', 'Keep Playing')}
-              accessibilityRole="button"
-              style={styles.cancelExitButton}
-            >
-              <Text style={styles.cancelExitText}>
-                {t('common.keepPlaying', 'Keep Playing 🌱')}
-              </Text>
-            </BigTouchTarget>
-            <BigTouchTarget
-              onPress={handleExitGame}
-              accessibilityLabel={t('common.exit', 'Exit')}
-              accessibilityRole="button"
-              style={styles.confirmExitButton}
-            >
-              <Text style={styles.confirmExitText}>
-                {t('common.exit', 'Exit 🚪')}
-              </Text>
-            </BigTouchTarget>
-          </View>
-        </FriendlyModal>
+          onContinue={() => setShowExitModal(false)}
+          onExit={handleExitGame}
+          gameTitle={t('guessTheShape.title', { defaultValue: 'Guess the Shape' })}
+          currentRound={roundIndex + 1}
+          totalRounds={rounds.length || 10}
+        />
 
         {/* Two-Attempt Educational Correction Modal */}
         <EducationalCorrectionModal
@@ -561,14 +506,12 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#92400E',
   },
-  scrollView: {
+  gameContentContainer: {
     flex: 1,
-    width: '100%',
-  },
-  scrollContent: {
     alignItems: 'center',
-    paddingTop: 10,
-    paddingBottom: 32,
+    justifyContent: 'space-evenly',
+    paddingBottom: 12,
+    width: '100%',
   },
   cueCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',

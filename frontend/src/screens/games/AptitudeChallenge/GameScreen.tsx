@@ -11,11 +11,11 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ScrollView,
   useWindowDimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -23,10 +23,11 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CartoonBackground, CloudClearanceSpacer } from '../../../components/CartoonBackground';
 import { ProgressStarTrail } from '../../../components/ProgressStarTrail';
 import { CelebrationOverlay } from '../../../components/CelebrationOverlay';
-import { FriendlyModal } from '../../../components/FriendlyModal';
+import { QuitGameModal } from '../../../components/QuitGameModal';
 import { BigTouchTarget } from '../../../components/BigTouchTarget';
 import { SessionCountdownTimer } from '../../../components/SessionCountdownTimer';
 import { EducationalCorrectionModal } from '../../../components/EducationalCorrectionModal';
+import { GameHUD } from '../../../components/GameHUD';
 import { StimulusDisplay } from './components/StimulusDisplay';
 import { AptitudeOptionCard } from './components/AptitudeOptionCard';
 
@@ -354,24 +355,21 @@ export const GameScreen: React.FC = React.memo(() => {
   const handleConfirmExit = () => {
     setShowExitModal(false);
     stopSpeech();
-    if (roundIndex > 0 || itemsCorrect > 0) {
-      finishSession(itemsCorrect, false);
-    } else {
-      resetSession();
-      navigation.goBack();
-    }
+    finishSession(itemsCorrect, false);
   };
 
   if (!currentRound) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={styles.outerContainer}>
         <CartoonBackground theme="puzzle" />
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>
-            {t('common.loading', 'Loading questions...')}
-          </Text>
-        </View>
-      </SafeAreaView>
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.loadingContainer}>
+            <Text style={styles.loadingText}>
+              {t('common.loading', 'Loading questions...')}
+            </Text>
+          </View>
+        </SafeAreaView>
+      </View>
     );
   }
 
@@ -380,102 +378,78 @@ export const GameScreen: React.FC = React.memo(() => {
     currentRound.question.promptFallback
   );
   const isTwoOptions = currentRound.question.options.length === 2;
+  const contentWidth = Math.min(screenWidth - 24, 440);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F0FDF4" />
+    <View style={styles.outerContainer}>
       <CartoonBackground theme="puzzle" />
+      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+      <SafeAreaView style={styles.safeArea}>
+        <CloudClearanceSpacer />
 
-      {/* Cloud & Sun Clearance: ensures sky, clouds, sun and mobile notification panel are 100% free */}
-      <CloudClearanceSpacer />
-
-      {/* Top Header */}
-      <View style={styles.header}>
-        <View style={styles.headerBtnWrapper}>
-          <BigTouchTarget
-            onPress={() => setShowExitModal(true)}
-            accessibilityLabel="Quit game session"
-            accessibilityRole="button"
-            style={styles.backButton}
-          >
-            <Text style={styles.backButtonText}>✕</Text>
-          </BigTouchTarget>
-        </View>
-
-        {/* Continuous Session Timer */}
-        <SessionCountdownTimer
+        {/* Unified Responsive 2-Row GameHUD */}
+        <GameHUD
+          onQuit={() => setShowExitModal(true)}
+          currentRound={roundIndex}
+          totalRounds={TOTAL_APTITUDE_ROUNDS}
+          score={score}
           initialSeconds={90}
+          onExpire={handleTimeExpired}
           isPaused={
             isRoundLocked ||
             showCelebration ||
             showExitModal ||
             showCorrectionModal
           }
-          onExpire={handleTimeExpired}
+          containerWidth={contentWidth}
         />
 
-        {/* Progress Star Trail */}
-        <View style={styles.progressContainer}>
-          <ProgressStarTrail
-            total={TOTAL_APTITUDE_ROUNDS}
-            current={roundIndex}
-          />
-        </View>
-
-        {/* Score / XP Pill */}
-        <View style={styles.scorePill}>
-          <Text style={styles.scorePillText}>⭐ {score}</Text>
-        </View>
-      </View>
-
-      <ScrollView
-        contentContainerStyle={[
-          styles.scrollContent,
-          screenWidth > 600 && styles.wideContent,
-        ]}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Round Counter */}
-        <Text style={styles.roundCounterText}>
-          {t('aptitudeChallenge.roundCounter', {
-            defaultValue: 'Question {{current}} of {{total}}',
-            current: roundIndex + 1,
-            total: TOTAL_APTITUDE_ROUNDS,
-          })}
-        </Text>
-
-        {/* Stimulus Display */}
-        <StimulusDisplay
-          question={currentRound.question}
-          gameType={gameType}
-          promptText={promptText}
-          onHear={handleSpeakQuestion}
-        />
-
-        {/* Feedback Message */}
-        {feedbackMessage && (
-          <View style={styles.feedbackContainer}>
-            <Text style={styles.feedbackText}>{feedbackMessage}</Text>
-            {explanationText && (
-              <Text style={styles.explanationText}>{explanationText}</Text>
-            )}
+        {/* Non-Scrolling Responsive Playable Area */}
+        <View style={[styles.gameContentContainer, { width: contentWidth }]}>
+          {/* Round Counter */}
+          <View style={styles.roundPill}>
+            <Text style={styles.roundCounterText}>
+              {t('aptitudeChallenge.roundCounter', {
+                defaultValue: 'Question {{current}} of {{total}}',
+                current: roundIndex + 1,
+                total: TOTAL_APTITUDE_ROUNDS,
+              })}
+            </Text>
           </View>
-        )}
 
-        {/* Multiple-Choice Options Grid */}
-        <View style={styles.optionsContainer}>
-          {currentRound.question.options.map((opt) => (
-            <AptitudeOptionCard
-              key={opt.id}
-              option={opt}
-              status={optionStatuses[opt.id] || 'idle'}
-              onPress={() => handleSelectOption(opt)}
-              disabled={isRoundLocked}
-              isTwoOptions={isTwoOptions}
-            />
-          ))}
+          {/* Stimulus Display */}
+          <StimulusDisplay
+            question={currentRound.question}
+            gameType={gameType}
+            promptText={promptText}
+            onHear={handleSpeakQuestion}
+          />
+
+          {/* Feedback Message */}
+          {feedbackMessage && (
+            <View style={styles.feedbackContainer}>
+              <Text style={styles.feedbackText}>{feedbackMessage}</Text>
+              {explanationText && (
+                <Text style={styles.explanationText}>{explanationText}</Text>
+              )}
+            </View>
+          )}
+
+          {/* Multiple-Choice Options Grid */}
+          <View style={styles.optionsContainer}>
+            {currentRound.question.options.map((opt) => (
+              <AptitudeOptionCard
+                key={opt.id}
+                option={opt}
+                status={optionStatuses[opt.id] || 'idle'}
+                onPress={() => handleSelectOption(opt)}
+                disabled={isRoundLocked}
+                isTwoOptions={isTwoOptions}
+              />
+            ))}
+          </View>
         </View>
-      </ScrollView>
+      </SafeAreaView>
 
       {/* Celebration Confetti */}
       <CelebrationOverlay
@@ -485,42 +459,14 @@ export const GameScreen: React.FC = React.memo(() => {
       />
 
       {/* Quit Game Confirmation Modal */}
-      <FriendlyModal
+      <QuitGameModal
         visible={showExitModal}
-        title={t('common.leaveGame', 'Leave Game?')}
-        onDismiss={() => setShowExitModal(false)}
-      >
-        <View style={styles.exitModalContent}>
-          <Text style={styles.exitModalText}>
-            {t(
-              'common.leaveGameConfirm',
-              'Are you sure you want to leave? Your progress in this session will not be saved.'
-            )}
-          </Text>
-          <View style={styles.exitModalButtons}>
-            <BigTouchTarget
-              onPress={() => setShowExitModal(false)}
-              accessibilityLabel="Stay in game"
-              accessibilityRole="button"
-              style={styles.stayButton}
-            >
-              <Text style={styles.stayButtonText}>
-                {t('common.keepPlaying', 'Keep Playing')}
-              </Text>
-            </BigTouchTarget>
-            <BigTouchTarget
-              onPress={handleConfirmExit}
-              accessibilityLabel="Confirm leave game"
-              accessibilityRole="button"
-              style={styles.leaveButton}
-            >
-              <Text style={styles.leaveButtonText}>
-                {t('common.leave', 'Leave')}
-              </Text>
-            </BigTouchTarget>
-          </View>
-        </View>
-      </FriendlyModal>
+        onContinue={() => setShowExitModal(false)}
+        onExit={handleConfirmExit}
+        gameTitle={t('aptitudeChallenge.title', { defaultValue: 'Aptitude Challenge' })}
+        currentRound={roundIndex + 1}
+        totalRounds={rounds.length || 5}
+      />
       {/* Educational Correction Modal for Attempt 1 */}
       <EducationalCorrectionModal
         visible={showCorrectionModal}
@@ -532,80 +478,43 @@ export const GameScreen: React.FC = React.memo(() => {
         }
         onRetry={() => setShowCorrectionModal(false)}
       />
-    </SafeAreaView>
+    </View>
   );
 });
 
 const styles = StyleSheet.create({
-  container: {
+  outerContainer: {
     flex: 1,
     backgroundColor: '#F8FAFC',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    zIndex: 10,
+  safeArea: {
+    flex: 1,
   },
-  headerBtnWrapper: {
-    width: 44,
-    height: 44,
-  },
-  backButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#E2E8F0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  backButtonText: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#64748B',
-  },
-  progressContainer: {
+  gameContentContainer: {
     flex: 1,
     alignItems: 'center',
-    paddingHorizontal: 8,
-  },
-  scorePill: {
-    backgroundColor: '#FEF3C7',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    borderWidth: 1.5,
-    borderColor: '#F59E0B',
-  },
-  scorePillText: {
-    fontSize: 14,
-    fontWeight: '900',
-    color: '#B45309',
-  },
-  scrollContent: {
-    paddingHorizontal: 18,
-    paddingBottom: 32,
-    alignItems: 'center',
-  },
-  wideContent: {
-    maxWidth: 580,
+    justifyContent: 'space-evenly',
     alignSelf: 'center',
-    width: '100%',
+    paddingBottom: 12,
+  },
+  roundPill: {
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+    paddingHorizontal: 14,
+    paddingVertical: 4,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginBottom: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   roundCounterText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '800',
-    color: '#64748B',
-    marginBottom: 8,
+    color: '#475569',
     textAlign: 'center',
     textTransform: 'uppercase',
     letterSpacing: 0.5,

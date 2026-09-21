@@ -160,7 +160,7 @@ export const OrderSlotTarget: React.FC<OrderSlotTargetProps> = React.memo(
 
 const styles = StyleSheet.create({
   wrapper: {
-    marginHorizontal: 5,
+    marginHorizontal: 3,
     marginVertical: 4,
   },
   slot: {

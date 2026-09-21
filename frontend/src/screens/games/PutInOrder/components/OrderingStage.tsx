@@ -1,6 +1,7 @@
 /**
- * Purpose: Enclosed ordering puzzle stage framing destination slots and prompt,
- *          visually isolating the puzzle from the living cartoon background.
+ * Purpose: Enclosed ordering puzzle stage framing destination slots and prompt.
+ *          Prompt is in a compact instruction pill and sequence slots sit directly
+ *          on the cartoon background without a white box, sized responsively to prevent overflow.
  * Module: Put in Order — Components
  * Folder: frontend/src/screens/games/PutInOrder/components
  */
@@ -40,51 +41,56 @@ export const OrderingStage: React.FC<OrderingStageProps> = React.memo(
   }) => {
     const { width: screenWidth } = useWindowDimensions();
 
-    const isFourItems = totalSlots >= 4;
-    const slotSize = isFourItems ? Math.min((screenWidth - 100) / 4, 76) : 84;
+    const availableWidth = Math.min(screenWidth - 24, 430);
+    const arrowCount = Math.max(0, totalSlots - 1);
+    const arrowWidth = 14;
+    const slotWrapperMargin = 6; // 3 on each side
+    const totalOverhead = (arrowCount * arrowWidth) + (totalSlots * slotWrapperMargin) + 8;
+    const calculatedSlotSize = Math.min(
+      Math.floor((availableWidth - totalOverhead) / totalSlots),
+      72
+    );
+    const slotSize = Math.max(calculatedSlotSize, 48);
 
     const hasAnyPlaced = placedItems.some((item) => item !== null);
 
     return (
-      <View
-        style={[
-          styles.container,
-          { width: Math.min(screenWidth - 32, 430) },
-        ]}
-      >
-        {/* Header with Prompt & Speaker */}
-        <View style={styles.headerRow}>
-          <View style={styles.promptContainer}>
-            <Text style={styles.promptText} numberOfLines={2}>
-              {promptText}
-            </Text>
-          </View>
-          <TouchableOpacity
-            style={styles.speakerButton}
-            onPress={onPressSpeak}
-            activeOpacity={0.7}
-            accessibilityLabel="Listen to instruction"
-            accessibilityRole="button"
-          >
-            <Text style={styles.speakerIcon}>🔊</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Direction Flow Guide */}
-        <View style={styles.orderLabelRow}>
-          <Text style={styles.orderLabelText}>First ➔ Next ➔ Last</Text>
-          {hasAnyPlaced && !isLocked && evaluationStatus === 'idle' && (
+      <View style={[styles.container, { width: availableWidth }]}>
+        {/* Compact Instruction Pill Card */}
+        <View style={styles.promptCard}>
+          <View style={styles.headerRow}>
+            <View style={styles.promptContainer}>
+              <Text style={styles.promptText} numberOfLines={2}>
+                {promptText}
+              </Text>
+            </View>
             <TouchableOpacity
-              onPress={onPressClearAll}
-              style={styles.clearButton}
+              style={styles.speakerButton}
+              onPress={onPressSpeak}
               activeOpacity={0.7}
+              accessibilityLabel="Listen to instruction"
+              accessibilityRole="button"
             >
-              <Text style={styles.clearButtonText}>Reset 🔄</Text>
+              <Text style={styles.speakerIcon}>🔊</Text>
             </TouchableOpacity>
-          )}
+          </View>
+
+          {/* Direction Flow Guide */}
+          <View style={styles.orderLabelRow}>
+            <Text style={styles.orderLabelText}>First ➔ Next ➔ Last</Text>
+            {hasAnyPlaced && !isLocked && evaluationStatus === 'idle' && (
+              <TouchableOpacity
+                onPress={onPressClearAll}
+                style={styles.clearButton}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.clearButtonText}>Reset 🔄</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
 
-        {/* Destination Slots Row with Arrows */}
+        {/* Destination Slots Row directly on living background */}
         <View style={styles.slotsRow}>
           {Array.from({ length: totalSlots }).map((_, index) => {
             const placedItem = placedItems[index] || null;
@@ -121,40 +127,44 @@ export const OrderingStage: React.FC<OrderingStageProps> = React.memo(
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    paddingHorizontal: 16,
-    paddingVertical: 18,
-    marginVertical: 10,
+    backgroundColor: 'transparent',
     alignSelf: 'center',
-    borderWidth: 3,
+    marginVertical: 4,
+  },
+  promptCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.94)',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginBottom: 8,
+    borderWidth: 2,
     borderColor: '#E0E7FF',
-    shadowColor: '#4F46E5',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
-    elevation: 6,
+    shadowColor: '#312E81',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   promptContainer: {
     flex: 1,
     marginRight: 10,
   },
   promptText: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '800',
     color: '#1E1B4B',
-    lineHeight: 26,
+    lineHeight: 24,
   },
   speakerButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: '#EEF2FF',
     borderWidth: 2,
     borderColor: '#C7D2FE',
@@ -162,17 +172,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   speakerIcon: {
-    fontSize: 20,
+    fontSize: 18,
   },
   orderLabelRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
-    paddingHorizontal: 4,
+    paddingHorizontal: 2,
   },
   orderLabelText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
     color: '#6366F1',
     letterSpacing: 0.3,
@@ -192,17 +201,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F8FAFC',
-    borderRadius: 18,
-    paddingVertical: 14,
-    paddingHorizontal: 8,
-    borderWidth: 2,
-    borderColor: '#F1F5F9',
+    backgroundColor: 'transparent',
+    paddingVertical: 6,
+    paddingHorizontal: 0,
   },
   arrowIcon: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '900',
-    color: '#A5B4FC',
-    marginHorizontal: 1,
+    color: '#4F46E5',
+    marginHorizontal: 0,
   },
 });

@@ -9,13 +9,13 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ScrollView,
   ActivityIndicator,
   AccessibilityInfo,
   useWindowDimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -36,6 +36,8 @@ import { Colors } from '../../../theme/colors';
 import { Typography } from '../../../theme/typography';
 import { submitGameProgress } from '../../../services/progressService';
 import { fetchRewardsSummary, RewardsSummaryData } from '../../../services/rewardsService';
+import { useProgressStore } from '../../../state/useProgressStore';
+import { calculateLevelProgress } from '../../../config/xpConfig';
 import { triggerHapticSuccess } from '../../../services/hapticsService';
 import { speakPraise } from '../../../services/praiseService';
 
@@ -62,8 +64,17 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
   const finalXpEarned = xpEarned && xpEarned > 0 ? xpEarned : itemsCorrect * 10;
 
   const resetSession = useVowelMatraMatchStore((s) => s.resetSession);
-  const [rewards, setRewards] = useState<RewardsSummaryData | null>(null);
-  const [isLoadingRewards, setIsLoadingRewards] = useState(true);
+  const [rewards, setRewards] = useState<RewardsSummaryData>(() => {
+    const store = useProgressStore.getState();
+    const info = calculateLevelProgress(store.totalXp);
+    return {
+      xp_total: info.totalXp,
+      level: info.currentLevel,
+      xp_earned_in_level: info.xpInCurrentLevel,
+      xp_to_next_level: info.xpToNextLevel,
+    };
+  });
+  const [isLoadingRewards, setIsLoadingRewards] = useState(false);
 
   const cardScale = useSharedValue(0.85);
   const cardOpacity = useSharedValue(0);
@@ -82,21 +93,30 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
 
   useEffect(() => {
     let isMounted = true;
+    const timeoutTimer = setTimeout(() => {
+      if (isMounted) {
+        setIsLoadingRewards(false);
+      }
+    }, 1200);
+
     triggerHapticSuccess();
     speakPraise();
 
     const loadDataAndSubmit = async () => {
       try {
-        await submitGameProgress({
+        // Fire submit in background non-blocking
+        submitGameProgress({
           game_type: 'vowel_matra_match',
           difficulty: 1,
           items_attempted: itemsCorrect,
           items_correct: itemsCorrect,
           time_taken_seconds: durationSeconds,
+        }).catch((err) => {
+          console.warn('[VowelMatraMatchSessionComplete] Non-critical progress submit error:', err);
         });
 
         const rewardsRes = await fetchRewardsSummary();
-        if (isMounted && rewardsRes.success) {
+        if (isMounted && rewardsRes?.success && rewardsRes?.data) {
           setRewards(rewardsRes.data);
         }
       } catch (err) {
@@ -117,6 +137,11 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
       cardScale.value = 1;
       buttonsOpacity.value = 1;
     }
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timeoutTimer);
+    };
   }, [itemsCorrect, durationSeconds, reduceMotion, cardOpacity, cardScale, buttonsOpacity]);
 
   const handlePlayAgain = useCallback(() => {
@@ -143,10 +168,10 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
   return (
     <View style={styles.webOuterContainer}>
       <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="light-content" backgroundColor="#1E1B4B" />
+        <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
         <CartoonBackground theme="evening" />
 
-        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.contentContainer}>
           <Text style={styles.titleText}>{t('sessionComplete.greatJob')}</Text>
 
           <Animated.View style={[styles.card, { width: containerWidth }, cardAnimStyle]}>
@@ -172,7 +197,7 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
             </View>
 
             {isLoadingRewards ? (
-              <ActivityIndicator color={Colors.primary.main} style={{ marginVertical: 12 }} />
+              <ActivityIndicator color={Colors.primary.main} style={{ marginVertical: 8 }} />
             ) : rewards ? (
               <View style={styles.rewardsRow}>
                 <Text style={styles.rewardsText}>
@@ -201,7 +226,7 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
               <Text style={styles.chooseGameButtonText}>{t('sessionComplete.chooseGame')}</Text>
             </BigTouchTarget>
           </Animated.View>
-        </ScrollView>
+        </View>
       </SafeAreaView>
     </View>
   );
@@ -213,44 +238,38 @@ const styles = StyleSheet.create({
   webOuterContainer: {
     flex: 1,
     backgroundColor: '#1E1B4B',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   safeArea: {
     flex: 1,
     width: '100%',
-    maxWidth: 480,
-    maxHeight: 920,
     backgroundColor: '#1E1B4B',
   },
-  scrollView: {
+  contentContainer: {
     flex: 1,
-    zIndex: 10,
-  },
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: 100,
-    paddingBottom: 40,
+    justifyContent: 'space-evenly',
     alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    zIndex: 10,
   },
   titleText: {
     fontFamily: Typography.fonts.bold,
-    fontSize: 32,
+    fontSize: 28,
     color: '#FFFFFF',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 8,
   },
   card: {
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 28,
-    padding: 24,
+    borderRadius: 24,
+    padding: 18,
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.25,
-    shadowRadius: 20,
-    elevation: 10,
-    marginBottom: 24,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 8,
+    marginBottom: 8,
   },
   starsRow: {
     width: '100%',
@@ -295,20 +314,22 @@ const styles = StyleSheet.create({
     color: '#92400E',
   },
   buttonsContainer: {
-    gap: 12,
+    gap: 10,
+    width: '100%',
   },
   playAgainButton: {
     width: '100%',
-    height: 56,
+    height: 52,
+    minHeight: 52,
     backgroundColor: '#10B981',
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+    shadowRadius: 6,
+    elevation: 4,
   },
   playAgainButtonText: {
     fontFamily: Typography.fonts.bold,
@@ -317,16 +338,17 @@ const styles = StyleSheet.create({
   },
   chooseGameButton: {
     width: '100%',
-    height: 56,
+    height: 48,
+    minHeight: 48,
     backgroundColor: '#3B82F6',
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#3B82F6',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+    shadowRadius: 6,
+    elevation: 4,
   },
   chooseGameButtonText: {
     fontFamily: Typography.fonts.bold,
