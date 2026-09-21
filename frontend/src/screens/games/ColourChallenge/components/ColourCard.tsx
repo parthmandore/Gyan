@@ -24,6 +24,7 @@ export interface ColourCardProps {
   onPress: () => void;
   disabled?: boolean;
   showName?: boolean;
+  compact?: boolean;
 }
 
 export const ColourCard: React.FC<ColourCardProps> = React.memo(({
@@ -33,13 +34,17 @@ export const ColourCard: React.FC<ColourCardProps> = React.memo(({
   onPress,
   disabled = false,
   showName = false,
+  compact = false,
 }) => {
-  const { width: screenWidth } = useWindowDimensions();
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
-  // 2-column grid card dimensions (responsive)
-  const cardWidth = Math.min((screenWidth - 64) / 2, 170);
-  const cardHeight = cardWidth * 0.95;
+  // Responsive card dimensions to ensure everything fits on mobile without scrolling
+  const isShortScreen = screenHeight <= 750;
+  const cardWidth = compact
+    ? Math.min((screenWidth - 64) / 4, 72)
+    : Math.min((screenWidth - 56) / 2, isShortScreen ? 135 : 155);
+  const cardHeight = compact ? cardWidth : cardWidth * (isShortScreen ? 0.76 : 0.82);
 
   const handlePressIn = () => {
     if (disabled) return;

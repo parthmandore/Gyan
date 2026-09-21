@@ -11,11 +11,11 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ScrollView,
   useWindowDimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -196,6 +196,7 @@ export const IntroScreen: React.FC = React.memo(() => {
           visible={showHowToPlay}
           title={t('colourChallenge.howToPlayTitle')}
           onDismiss={() => setShowHowToPlay(false)}
+          hideDismissButton={true}
         >
           <Text style={styles.modalContentText}>{howToPlayText}</Text>
           <BigTouchTarget

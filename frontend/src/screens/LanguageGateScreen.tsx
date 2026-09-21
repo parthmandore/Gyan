@@ -12,12 +12,12 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ScrollView,
   useWindowDimensions,
   AccessibilityInfo,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -30,7 +30,6 @@ import Animated, {
 
 import { BigTouchTarget } from '../components/BigTouchTarget';
 import { CartoonBackground } from '../components/CartoonBackground';
-import { Colors } from '../theme/colors';
 import { Typography } from '../theme/typography';
 import { AppLanguage, LearningLanguage, AppAge, useAppLanguageStore } from '../state/appLanguageStore';
 import { RootStackParamList } from '../types';

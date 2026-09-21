@@ -11,11 +11,11 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ScrollView,
   useWindowDimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -130,11 +130,7 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
       <SafeAreaView style={styles.safeArea}>
         <StatusBar barStyle="light-content" backgroundColor="#4F46E5" />
 
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
+        <View style={styles.contentContainer}>
           <View style={[styles.mainCard, { width: containerWidth }]}>
             {/* Celebrating Mascot */}
             <View style={styles.mascotWrapper}>
@@ -146,7 +142,7 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
               {[1, 2, 3].map((starIndex) => (
                 <View key={starIndex} style={styles.starWrapper}>
                   <CuteStar
-                    size={48}
+                    size={38}
                     variant="gold"
                     style={{ opacity: starIndex <= starsEarned ? 1 : 0.25 }}
                   />
@@ -219,17 +215,17 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
 
               <BigTouchTarget
                 onPress={handleBackToCatalog}
-                accessibilityLabel={t('common.moreGames', 'More Games')}
+                accessibilityLabel={t('common.catalog', 'Catalog')}
                 accessibilityRole="button"
                 style={styles.catalogButton}
               >
                 <Text style={styles.catalogButtonText}>
-                  🎮 {t('common.moreGames', 'More Games')}
+                  🏠 {t('common.catalog', 'Game Catalog')}
                 </Text>
               </BigTouchTarget>
             </View>
           </View>
-        </ScrollView>
+        </View>
       </SafeAreaView>
 
       {/* Universal Analysis Report Modal */}
@@ -250,67 +246,65 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
-    alignItems: 'center',
   },
-  scrollView: {
+  contentContainer: {
     flex: 1,
-    width: '100%',
-  },
-  scrollContent: {
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 18,
-    paddingBottom: 36,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
   },
   mainCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.82)',
-    borderRadius: 32,
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    borderRadius: 24,
     borderWidth: 2.5,
     borderColor: 'rgba(255, 255, 255, 0.95)',
-    borderBottomWidth: 6,
+    borderBottomWidth: 5,
     borderBottomColor: '#6366F1',
-    padding: 24,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
     alignItems: 'center',
     elevation: 6,
     shadowColor: '#312E81',
-    shadowOffset: { width: 0, height: 6 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
-    shadowRadius: 10,
+    shadowRadius: 8,
   },
   mascotWrapper: {
     marginVertical: 4,
   },
   starsRow: {
     flexDirection: 'row',
-    gap: 12,
-    marginVertical: 12,
+    gap: 10,
+    marginVertical: 8,
   },
   starWrapper: {
     transform: [{ scale: 1 }],
   },
   completeTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '900',
     color: '#1E1B4B',
     textAlign: 'center',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   completeDesc: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
     color: '#475569',
     textAlign: 'center',
-    marginBottom: 18,
-    lineHeight: 22,
+    marginBottom: 10,
+    lineHeight: 20,
   },
   statsCard: {
     flexDirection: 'row',
     width: '100%',
     backgroundColor: '#F8FAFC',
-    borderRadius: 20,
+    borderRadius: 16,
     borderWidth: 1.5,
     borderColor: '#E2E8F0',
-    paddingVertical: 14,
-    marginBottom: 16,
+    paddingVertical: 8,
+    marginBottom: 10,
     alignItems: 'center',
     justifyContent: 'space-around',
   },
@@ -319,42 +313,43 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statNumber: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '900',
     color: '#0F172A',
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
     color: '#64748B',
     marginTop: 2,
   },
   statDivider: {
     width: 1,
-    height: 32,
+    height: 28,
     backgroundColor: '#CBD5E1',
   },
   levelBanner: {
     backgroundColor: '#EFF6FF',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#93C5FD',
-    marginBottom: 20,
+    marginBottom: 12,
   },
   levelBannerText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '800',
     color: '#1D4ED8',
   },
   actionsContainer: {
     width: '100%',
-    gap: 10,
+    gap: 6,
   },
   viewReportButton: {
     backgroundColor: '#EFF6FF',
-    paddingVertical: 14,
+    height: 44,
+    minHeight: 44,
     borderRadius: 18,
     borderWidth: 2,
     borderColor: '#3B82F6',
@@ -367,13 +362,14 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   viewReportButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
     color: '#1D4ED8',
   },
   playAgainButton: {
     backgroundColor: '#10B981',
-    paddingVertical: 15,
+    height: 48,
+    minHeight: 48,
     borderRadius: 18,
     borderWidth: 2,
     borderColor: '#059669',
@@ -383,23 +379,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   playAgainButtonText: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '900',
     color: '#FFFFFF',
   },
   catalogButton: {
     backgroundColor: '#FFFFFF',
-    paddingVertical: 13,
+    height: 44,
+    minHeight: 44,
     borderRadius: 18,
     borderWidth: 2,
     borderColor: '#CBD5E1',
-    borderBottomWidth: 4,
+    borderBottomWidth: 3,
     borderBottomColor: '#94A3B8',
     alignItems: 'center',
     justifyContent: 'center',
   },
   catalogButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
     color: '#475569',
   },

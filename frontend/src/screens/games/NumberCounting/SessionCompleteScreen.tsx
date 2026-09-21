@@ -11,17 +11,16 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
-  ScrollView,
   useWindowDimensions,
-  TouchableOpacity,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { CartoonBackground, CloudClearanceSpacer } from '../../../components/CartoonBackground';
+import { BigTouchTarget } from '../../../components/BigTouchTarget';
 import { MascotCharacter } from '../../../components/MascotCharacter';
 import { CuteStar } from '../../../components/CuteStar';
 import { GameAnalysisReportModal, GameQuestionReportItem } from '../../../components/GameAnalysisReportModal';
@@ -112,24 +111,21 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
       <SafeAreaView style={styles.safeArea}>
         {/* Top Header */}
         <View style={[styles.header, { width: containerWidth }]}>
-          <TouchableOpacity
+          <BigTouchTarget
             onPress={handleBackToCatalog}
             style={styles.closeBtn}
             accessibilityLabel="Close"
             accessibilityRole="button"
           >
             <Text style={styles.closeBtnText}>✕</Text>
-          </TouchableOpacity>
+          </BigTouchTarget>
         </View>
 
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
+        <View style={styles.contentContainer}>
           <View style={[styles.card, { width: containerWidth }]}>
             {/* Mascot in celebrating state */}
             <View style={styles.mascotWrapper}>
-              <MascotCharacter state="celebrating" />
+              <MascotCharacter state="celebrating" style={{ width: 80, height: 80 }} />
             </View>
 
             {/* Title & Subtitle */}
@@ -146,17 +142,17 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
             {/* 3 CuteStar Badges */}
             <View style={styles.starsRow}>
               <CuteStar
-                size={46}
+                size={38}
                 variant="gold"
                 style={{ opacity: starCount < 1 ? 0.25 : 1 }}
               />
               <CuteStar
-                size={58}
+                size={46}
                 variant="gold"
-                style={{ marginTop: -10, opacity: starCount < 2 ? 0.25 : 1 }}
+                style={{ marginTop: -6, opacity: starCount < 2 ? 0.25 : 1 }}
               />
               <CuteStar
-                size={46}
+                size={38}
                 variant="gold"
                 style={{ opacity: starCount < 3 ? 0.25 : 1 }}
               />
@@ -198,42 +194,39 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
 
             {/* Action Buttons */}
             <View style={styles.actionButtons}>
-              <TouchableOpacity
+              <BigTouchTarget
                 style={styles.viewReportBtn}
                 onPress={() => setShowReportModal(true)}
-                activeOpacity={0.85}
                 accessibilityLabel="View Detailed Question Report"
                 accessibilityRole="button"
               >
                 <Text style={styles.viewReportBtnText}>📋 View Detailed Report</Text>
-              </TouchableOpacity>
+              </BigTouchTarget>
 
-              <TouchableOpacity
+              <BigTouchTarget
                 style={styles.playAgainBtn}
                 onPress={handlePlayAgain}
-                activeOpacity={0.85}
                 accessibilityLabel="Play again"
                 accessibilityRole="button"
               >
                 <Text style={styles.playAgainText}>
                   {t('common.playAgain', 'Play Again! 🔄')}
                 </Text>
-              </TouchableOpacity>
+              </BigTouchTarget>
 
-              <TouchableOpacity
+              <BigTouchTarget
                 style={styles.moreGamesBtn}
                 onPress={handleBackToCatalog}
-                activeOpacity={0.85}
                 accessibilityLabel="More games"
                 accessibilityRole="button"
               >
                 <Text style={styles.moreGamesText}>
                   {t('common.moreGames', 'More Games 🎮')}
                 </Text>
-              </TouchableOpacity>
+              </BigTouchTarget>
             </View>
           </View>
-        </ScrollView>
+        </View>
       </SafeAreaView>
 
       <GameAnalysisReportModal
@@ -266,6 +259,8 @@ const styles = StyleSheet.create({
   closeBtn: {
     width: 38,
     height: 38,
+    minWidth: 38,
+    minHeight: 38,
     borderRadius: 19,
     backgroundColor: 'rgba(255, 255, 255, 0.92)',
     justifyContent: 'center',
@@ -281,54 +276,55 @@ const styles = StyleSheet.create({
     color: '#64748B',
     fontWeight: '700',
   },
-  scrollContent: {
-    flexGrow: 1,
+  contentContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 8,
     paddingHorizontal: 16,
   },
   card: {
     backgroundColor: 'rgba(255, 255, 255, 0.96)',
-    borderRadius: 28,
-    padding: 24,
+    borderRadius: 24,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
     alignItems: 'center',
     shadowColor: '#059669',
-    shadowOffset: { width: 0, height: 10 },
+    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.16,
-    shadowRadius: 20,
-    elevation: 8,
-    borderWidth: 3,
+    shadowRadius: 12,
+    elevation: 6,
+    borderWidth: 2.5,
     borderColor: '#A7F3D0',
   },
   mascotWrapper: {
-    marginTop: -10,
-    marginBottom: 8,
+    marginTop: 0,
+    marginBottom: 2,
   },
   title: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: '900',
     color: '#064E3B',
     textAlign: 'center',
-    marginBottom: 6,
+    marginBottom: 2,
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: 13,
     color: '#047857',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: 8,
     fontWeight: '600',
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
   },
   starsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginVertical: 10,
+    marginVertical: 6,
     gap: 8,
   },
   starCenter: {
-    marginTop: -10,
+    marginTop: -6,
   },
   starDimmed: {
     opacity: 0.25,
@@ -337,14 +333,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    marginVertical: 16,
-    gap: 8,
+    marginVertical: 8,
+    gap: 6,
   },
   statBox: {
     flex: 1,
     backgroundColor: '#F0FDF4',
-    borderRadius: 16,
-    paddingVertical: 10,
+    borderRadius: 14,
+    paddingVertical: 8,
     alignItems: 'center',
     borderWidth: 1.5,
     borderColor: '#BBF7D0',
@@ -354,11 +350,11 @@ const styles = StyleSheet.create({
     borderColor: '#FDE68A',
   },
   statIcon: {
-    fontSize: 20,
+    fontSize: 18,
     marginBottom: 2,
   },
   statValue: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '800',
     color: '#1E293B',
   },
@@ -366,7 +362,7 @@ const styles = StyleSheet.create({
     color: '#D97706',
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 10,
     color: '#64748B',
     fontWeight: '600',
     marginTop: 2,
@@ -374,25 +370,27 @@ const styles = StyleSheet.create({
   levelBadge: {
     backgroundColor: '#ECFDF5',
     paddingHorizontal: 14,
-    paddingVertical: 6,
+    paddingVertical: 4,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#A7F3D0',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   levelBadgeText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
     color: '#065F46',
   },
   actionButtons: {
     width: '100%',
-    gap: 10,
+    gap: 6,
   },
   viewReportBtn: {
     backgroundColor: '#ECFDF5',
     borderRadius: 18,
-    paddingVertical: 14,
+    height: 44,
+    minHeight: 44,
+    justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
     borderColor: '#10B981',
@@ -404,40 +402,44 @@ const styles = StyleSheet.create({
   },
   viewReportBtnText: {
     color: '#065F46',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
   },
   playAgainBtn: {
     backgroundColor: '#10B981',
-    borderRadius: 18,
-    paddingVertical: 16,
+    borderRadius: 20,
+    height: 48,
+    minHeight: 48,
+    justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
     borderColor: '#059669',
     borderBottomWidth: 5,
     borderBottomColor: '#047857',
     shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowRadius: 6,
+    elevation: 3,
   },
   playAgainText: {
     color: '#FFFFFF',
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '800',
   },
   moreGamesBtn: {
     backgroundColor: '#F8FAFC',
     borderRadius: 18,
-    paddingVertical: 14,
+    height: 44,
+    minHeight: 44,
+    justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
     borderColor: '#E2E8F0',
   },
   moreGamesText: {
     color: '#475569',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
   },
 });

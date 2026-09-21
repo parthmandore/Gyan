@@ -11,11 +11,11 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ScrollView,
   useWindowDimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -23,10 +23,11 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CartoonBackground, CloudClearanceSpacer } from '../../../components/CartoonBackground';
 import { ProgressStarTrail } from '../../../components/ProgressStarTrail';
 import { CelebrationOverlay } from '../../../components/CelebrationOverlay';
-import { FriendlyModal } from '../../../components/FriendlyModal';
+import { QuitGameModal } from '../../../components/QuitGameModal';
 import { BigTouchTarget } from '../../../components/BigTouchTarget';
 import { SessionCountdownTimer } from '../../../components/SessionCountdownTimer';
 import { EducationalCorrectionModal } from '../../../components/EducationalCorrectionModal';
+import { GameHUD } from '../../../components/GameHUD';
 import { ShapeVisualTarget } from './components/ShapeVisualTarget';
 import { ShapeCard } from './components/ShapeCard';
 import { StorybookMicrophoneButton, MicButtonVisualState } from '../SpeechWordChallenge/components/StorybookMicrophoneButton';
@@ -464,12 +465,7 @@ export const GameScreen: React.FC = React.memo(() => {
     stopSpeech();
     cancelRecording();
     setShowExitModal(false);
-    if (roundIndex > 0 || itemsCorrect > 0) {
-      handleCompleteSession(itemsCorrect, false);
-    } else {
-      resetSession();
-      navigation.navigate('GameCatalog');
-    }
+    handleCompleteSession(itemsCorrect, false);
   };
 
   const containerWidth = Math.min(screenWidth - 32, 440);
@@ -503,47 +499,25 @@ export const GameScreen: React.FC = React.memo(() => {
         <StatusBar barStyle="light-content" backgroundColor="#2563EB" />
         <CloudClearanceSpacer />
 
-        {/* Top Progress & Score Bar */}
-        <View style={[styles.topBar, { width: containerWidth }]}>
-          <BigTouchTarget
-            onPress={() => setShowExitModal(true)}
-            accessibilityLabel={t('common.close')}
-            accessibilityRole="button"
-            style={styles.exitButton}
-          >
-            <Text style={styles.exitButtonText}>✕</Text>
-          </BigTouchTarget>
+        {/* Unified Responsive 2-Row GameHUD */}
+        <GameHUD
+          onQuit={() => setShowExitModal(true)}
+          currentRound={roundIndex}
+          totalRounds={rounds.length || TOTAL_SHAPE_ROUNDS}
+          score={score}
+          initialSeconds={90}
+          onExpire={handleTimeExpired}
+          isPaused={
+            isRoundLocked ||
+            showCelebration ||
+            showExitModal ||
+            showCorrectionModal
+          }
+          containerWidth={containerWidth}
+        />
 
-          {/* Continuous Session Timer (90s) */}
-          <SessionCountdownTimer
-            initialSeconds={90}
-            isPaused={
-              isRoundLocked ||
-              showCelebration ||
-              showExitModal ||
-              showCorrectionModal
-            }
-            onExpire={handleTimeExpired}
-          />
-
-          <View style={styles.progressTrailWrapper}>
-            <ProgressStarTrail
-              current={roundIndex}
-              total={rounds.length || TOTAL_SHAPE_ROUNDS}
-            />
-          </View>
-
-          <View style={styles.scorePill}>
-            <Text style={styles.scoreText}>⭐ {score} XP</Text>
-          </View>
-        </View>
-
-        {/* Main Gameplay Scroll Area */}
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
+        {/* Non-Scrolling Responsive Gameplay Content */}
+        <View style={styles.gameContentContainer}>
           {/* Instruction Cue */}
           <View style={[styles.cueCard, { width: containerWidth }]}>
             <Text style={styles.cueText}>
@@ -599,10 +573,11 @@ export const GameScreen: React.FC = React.memo(() => {
                 onPress={() => handleOptionPress(opt)}
                 disabled={isRoundLocked}
                 showName={false}
+                compact={isSpeechMode}
               />
             ))}
           </View>
-        </ScrollView>
+        </View>
 
         {/* Celebration Overlay */}
         <CelebrationOverlay
@@ -611,31 +586,14 @@ export const GameScreen: React.FC = React.memo(() => {
         />
 
         {/* Quit Confirmation Modal */}
-        <FriendlyModal
+        <QuitGameModal
           visible={showExitModal}
-          title={t('common.close')}
-          onDismiss={() => setShowExitModal(false)}
-        >
-          <Text style={styles.modalText}>{t('capitalSmallMatch.quitConfirm') || 'Do you want to leave the game?'}</Text>
-          <View style={styles.modalButtonsRow}>
-            <BigTouchTarget
-              onPress={() => setShowExitModal(false)}
-              accessibilityLabel={t('common.retry')}
-              accessibilityRole="button"
-              style={styles.cancelExitButton}
-            >
-              <Text style={styles.cancelExitText}>{t('common.gotIt')}</Text>
-            </BigTouchTarget>
-            <BigTouchTarget
-              onPress={handleExitGame}
-              accessibilityLabel={t('common.back')}
-              accessibilityRole="button"
-              style={styles.confirmExitButton}
-            >
-              <Text style={styles.confirmExitText}>Exit</Text>
-            </BigTouchTarget>
-          </View>
-        </FriendlyModal>
+          onContinue={() => setShowExitModal(false)}
+          onExit={handleExitGame}
+          gameTitle={t('shapeChallenge.title', { defaultValue: 'Shape Challenge' })}
+          currentRound={roundIndex + 1}
+          totalRounds={rounds.length || 5}
+        />
 
         {/* Educational Correction Modal */}
         <EducationalCorrectionModal
@@ -717,14 +675,12 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: '#B45309',
   },
-  scrollView: {
+  gameContentContainer: {
     flex: 1,
-    width: '100%',
-  },
-  scrollContent: {
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingBottom: 36,
+    justifyContent: 'space-evenly',
+    paddingBottom: 10,
+    width: '100%',
   },
   cueCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.85)',

@@ -11,12 +11,12 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   useWindowDimensions,
   StatusBar,
   Modal,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
@@ -25,6 +25,8 @@ import { CelebrationOverlay } from '../../../components/CelebrationOverlay';
 import { ProgressStarTrail } from '../../../components/ProgressStarTrail';
 import { SessionCountdownTimer } from '../../../components/SessionCountdownTimer';
 import { EducationalCorrectionModal } from '../../../components/EducationalCorrectionModal';
+import { QuitGameModal } from '../../../components/QuitGameModal';
+import { GameHUD } from '../../../components/GameHUD';
 import { CountingStage } from './components/CountingStage';
 import { CountingOptionCard } from './components/CountingOptionCard';
 import { useNumberCountingStore } from './store/useNumberCountingStore';
@@ -323,12 +325,7 @@ export const GameScreen: React.FC = React.memo(() => {
       clearTimeout(transitionTimerRef.current);
     }
     stopSpeech();
-    if (attempts.length > 0 || roundIndex > 0 || itemsCorrect > 0) {
-      finishSession(itemsCorrect, false);
-    } else {
-      resetGame();
-      navigation.goBack();
-    }
+    finishSession(itemsCorrect, false);
   };
 
   const handleCancelQuit = () => {
@@ -354,43 +351,24 @@ export const GameScreen: React.FC = React.memo(() => {
   const contentMaxWidth = isTablet ? 560 : 420;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#ECFDF5" />
+    <View style={styles.outerContainer}>
       <CartoonBackground theme="orchard" />
+      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+      <SafeAreaView style={styles.safeArea}>
+        <CloudClearanceSpacer />
 
-      {/* Top Header: Quit Button & Star Trail */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.quitButton}
-          onPress={() => setShowQuitModal(true)}
-          activeOpacity={0.7}
-          accessibilityLabel="Quit game"
-          accessibilityRole="button"
-        >
-          <Text style={styles.quitButtonText}>✕</Text>
-        </TouchableOpacity>
-
-        {/* Session Timer */}
-        <SessionCountdownTimer
+        {/* Unified Responsive 2-Row GameHUD */}
+        <GameHUD
+          onQuit={() => setShowQuitModal(true)}
+          currentRound={roundIndex + 1}
+          totalRounds={TOTAL_COUNTING_ROUNDS}
+          score={score}
           initialSeconds={90}
           onTimeExpired={handleTimeExpired}
           isPaused={showCorrectionModal || showCelebration || showQuitModal}
+          roundResults={roundResults}
+          containerWidth={contentMaxWidth}
         />
-
-        <View style={styles.starTrailContainer}>
-          <ProgressStarTrail
-            current={roundIndex + 1}
-            total={TOTAL_COUNTING_ROUNDS}
-            roundResults={roundResults}
-          />
-        </View>
-
-        <View style={styles.roundBadge}>
-          <Text style={styles.roundBadgeText}>
-            {roundIndex + 1}/{TOTAL_COUNTING_ROUNDS}
-          </Text>
-        </View>
-      </View>
 
       {/* Central Gameplay Area */}
       <View style={[styles.mainArea, { maxWidth: contentMaxWidth }]}>
@@ -426,48 +404,14 @@ export const GameScreen: React.FC = React.memo(() => {
       <CelebrationOverlay visible={showCelebration} />
 
       {/* Quit Confirmation Dialog */}
-      <Modal
+      <QuitGameModal
         visible={showQuitModal}
-        transparent
-        animationType="fade"
-        onRequestClose={handleCancelQuit}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalCard, { maxWidth: contentMaxWidth }]}>
-            <Text style={styles.modalTitle}>
-              {t('numberCounting.quitTitle', 'Leave Counting Game?')}
-            </Text>
-            <Text style={styles.modalBody}>
-              {t(
-                'numberCounting.quitConfirm',
-                'Are you sure you want to stop counting? Your progress in this session will not be saved.'
-              )}
-            </Text>
-
-            <View style={styles.modalButtonsRow}>
-              <TouchableOpacity
-                style={styles.modalCancelButton}
-                onPress={handleCancelQuit}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.modalCancelButtonText}>
-                  {t('common.keepPlaying', 'Keep Playing! 🌟')}
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.modalConfirmButton}
-                onPress={handleConfirmQuit}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.modalConfirmButtonText}>
-                  {t('common.exit', 'Exit')}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+        onContinue={handleCancelQuit}
+        onExit={handleConfirmQuit}
+        gameTitle={t('numberCounting.title', { defaultValue: 'Number Counting' })}
+        currentRound={roundIndex + 1}
+        totalRounds={TOTAL_COUNTING_ROUNDS}
+      />
 
       {/* Educational Correction Modal (Attempt 1 Wrong) */}
       <EducationalCorrectionModal
@@ -480,14 +424,18 @@ export const GameScreen: React.FC = React.memo(() => {
           setIsRoundLocked(false);
         }}
       />
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 });
 
 const styles = StyleSheet.create({
-  safeArea: {
+  outerContainer: {
     flex: 1,
     backgroundColor: '#ECFDF5',
+  },
+  safeArea: {
+    flex: 1,
   },
   loadingContainer: {
     flex: 1,

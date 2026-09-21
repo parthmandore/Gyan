@@ -3,6 +3,7 @@ import { runDifficultyConfigTests } from './src/screens/games/AlphabetMatching/u
 import { runRoundGeneratorTests } from './src/screens/games/CapitalSmallMatch/logic/__tests__/roundGenerator.test';
 import { runTutorialServiceTests } from './src/services/__tests__/tutorialService.test';
 import { runSpeechAnswerMatcherTests } from './src/services/__tests__/speechAnswerMatcher.test';
+import { runAccuracyEvaluatorTests } from './src/screens/games/LetterTracing/logic/__tests__/accuracyEvaluator.test';
 
 async function main() {
   console.log('=== GRID ARRANGEMENT UNIT TEST RESULTS ===');
@@ -25,12 +26,17 @@ async function main() {
   const speechMatcherResult = runSpeechAnswerMatcherTests();
   speechMatcherResult.results.forEach((r) => console.log(r));
 
+  console.log('\n=== LETTER TRACING ACCURACY EVALUATOR TEST RESULTS ===');
+  const accuracyResult = runAccuracyEvaluatorTests();
+  accuracyResult.results.forEach((r) => console.log(r));
+
   const overallPassed =
     gridResult.passed &&
     diffResult.passed &&
     roundResult.passed &&
     tutorialResult.passed &&
-    speechMatcherResult.passed;
+    speechMatcherResult.passed &&
+    accuracyResult.passed;
   console.log('\nOVERALL STATUS:', overallPassed ? 'PASSED' : 'FAILED');
   if (!overallPassed) {
     (globalThis as any).process?.exit(1);

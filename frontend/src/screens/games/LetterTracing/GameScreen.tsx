@@ -12,12 +12,12 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ScrollView,
   useWindowDimensions,
   TouchableOpacity,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -25,10 +25,11 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CartoonBackground, CloudClearanceSpacer } from '../../../components/CartoonBackground';
 import { ProgressStarTrail } from '../../../components/ProgressStarTrail';
 import { CelebrationOverlay } from '../../../components/CelebrationOverlay';
-import { FriendlyModal } from '../../../components/FriendlyModal';
+import { QuitGameModal } from '../../../components/QuitGameModal';
 import { BigTouchTarget } from '../../../components/BigTouchTarget';
 import { SessionCountdownTimer } from '../../../components/SessionCountdownTimer';
 import { EducationalCorrectionModal } from '../../../components/EducationalCorrectionModal';
+import { GameHUD } from '../../../components/GameHUD';
 import { DrawingCanvas } from './components/DrawingCanvas';
 
 import { useAppLanguageStore } from '../../../state/appLanguageStore';
@@ -258,12 +259,7 @@ export const GameScreen: React.FC = React.memo(() => {
 
   const handleExitConfirm = () => {
     setShowExitModal(false);
-    if (roundIndex > 0 || itemsCorrect > 0) {
-      finishSession(itemsCorrect, false);
-    } else {
-      resetSession();
-      navigation.goBack();
-    }
+    finishSession(itemsCorrect, false);
   };
 
   if (!currentRound) {
@@ -280,47 +276,27 @@ export const GameScreen: React.FC = React.memo(() => {
   }
 
   // Calculate dynamic canvas height to fit nicely on any device
-  const canvasHeight = Math.min(340, Math.max(260, screenHeight * 0.38));
+  const canvasHeight = Math.min(260, Math.max(180, screenHeight * 0.30));
   const containerWidth = Math.min(screenWidth - 32, 480);
 
   return (
     <View style={styles.outerContainer}>
       <CartoonBackground theme="art" />
-      <StatusBar barStyle="dark-content" backgroundColor="#ECFDF5" />
+      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
       <SafeAreaView style={styles.safeArea}>
-        {/* Top Header Bar */}
-        <View style={[styles.headerBar, { width: containerWidth }]}>
-          <BigTouchTarget
-            onPress={() => setShowExitModal(true)}
-            accessibilityLabel="Exit game"
-            style={styles.exitButton}
-          >
-            <Text style={styles.exitButtonText}>✕</Text>
-          </BigTouchTarget>
+        {/* Unified 2-Row Responsive HUD */}
+        <GameHUD
+          onQuit={() => setShowExitModal(true)}
+          currentRound={roundIndex + 1}
+          totalRounds={TOTAL_TRACING_ROUNDS}
+          score={score}
+          initialSeconds={90}
+          onTimeExpired={handleTimeExpired}
+          isPaused={showCorrectionModal || showCelebration || showExitModal}
+          containerWidth={containerWidth}
+        />
 
-          {/* Session Timer */}
-          <SessionCountdownTimer
-            initialSeconds={90}
-            onTimeExpired={handleTimeExpired}
-            isPaused={showCorrectionModal || showCelebration || showExitModal}
-          />
-
-          <View style={styles.progressWrapper}>
-            <ProgressStarTrail
-              current={roundIndex}
-              total={TOTAL_TRACING_ROUNDS}
-            />
-          </View>
-
-          <View style={styles.scorePill}>
-            <Text style={styles.scorePillText}>⭐ {score} XP</Text>
-          </View>
-        </View>
-
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
+        <View style={styles.gameContentContainer}>
           {/* Target Letter Prompt Card */}
           <View style={[styles.targetCard, { width: containerWidth }]}>
             <View style={styles.targetHeaderRow}>
@@ -411,35 +387,18 @@ export const GameScreen: React.FC = React.memo(() => {
               </Text>
             </TouchableOpacity>
           </View>
-        </ScrollView>
+        </View>
       </SafeAreaView>
 
       {/* Exit Confirmation Modal */}
-      <FriendlyModal
+      <QuitGameModal
         visible={showExitModal}
-        title="Quit Practice?"
-        onDismiss={() => setShowExitModal(false)}
-      >
-        <Text style={styles.exitModalText}>
-          Are you sure you want to leave? Your progress in this session will not be saved.
-        </Text>
-        <View style={styles.exitModalActions}>
-          <BigTouchTarget
-            onPress={() => setShowExitModal(false)}
-            accessibilityLabel="Keep Tracing"
-            style={styles.keepTracingBtn}
-          >
-            <Text style={styles.keepTracingBtnText}>Keep Tracing</Text>
-          </BigTouchTarget>
-          <BigTouchTarget
-            onPress={handleExitConfirm}
-            accessibilityLabel="Quit Game"
-            style={styles.quitGameBtn}
-          >
-            <Text style={styles.quitGameBtnText}>Quit Game</Text>
-          </BigTouchTarget>
-        </View>
-      </FriendlyModal>
+        onContinue={() => setShowExitModal(false)}
+        onExit={handleExitConfirm}
+        gameTitle={t('letterTracing.title', { defaultValue: 'Letter Tracing' })}
+        currentRound={roundIndex + 1}
+        totalRounds={TOTAL_TRACING_ROUNDS}
+      />
 
       {/* Celebration Overlay on Success */}
       <CelebrationOverlay visible={showCelebration} />
@@ -476,57 +435,19 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#065F46',
   },
-  headerBar: {
-    flexDirection: 'row',
+  gameContentContainer: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 10,
-    alignSelf: 'center',
-  },
-  exitButton: {
-    backgroundColor: '#FEE2E2',
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: '#FECACA',
-  },
-  exitButtonText: {
-    fontSize: 18,
-    fontWeight: '900',
-    color: '#DC2626',
-  },
-  progressWrapper: {
-    flex: 1,
-    alignItems: 'center',
-    marginHorizontal: 8,
-  },
-  scorePill: {
-    backgroundColor: '#FEF3C7',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    borderWidth: 1.5,
-    borderColor: '#FCD34D',
-  },
-  scorePillText: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: '#92400E',
-  },
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 24,
-    alignItems: 'center',
   },
   targetCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginBottom: 10,
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    marginBottom: 6,
     borderWidth: 2,
     borderColor: '#E2E8F0',
     shadowColor: '#000',

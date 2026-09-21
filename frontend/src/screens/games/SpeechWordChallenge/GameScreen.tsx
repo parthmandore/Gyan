@@ -13,11 +13,11 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   useWindowDimensions,
   Pressable,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -36,9 +36,10 @@ import { SpeechReportModal } from './components/SpeechReportModal';
 import { BigTouchTarget } from '../../../components/BigTouchTarget';
 import { ProgressStarTrail } from '../../../components/ProgressStarTrail';
 import { CelebrationOverlay } from '../../../components/CelebrationOverlay';
-import { FriendlyModal } from '../../../components/FriendlyModal';
+import { QuitGameModal } from '../../../components/QuitGameModal';
 import { SessionCountdownTimer } from '../../../components/SessionCountdownTimer';
 import { EducationalCorrectionModal } from '../../../components/EducationalCorrectionModal';
+import { GameHUD } from '../../../components/GameHUD';
 import { Colors } from '../../../theme/colors';
 import { Typography } from '../../../theme/typography';
 import { useAppLanguageStore } from '../../../state/appLanguageStore';
@@ -283,12 +284,7 @@ export const GameScreen: React.FC = React.memo(() => {
     cancelRecording();
     stopSpeech();
     setShowExitModal(false);
-
-    if (itemsAttempted > 0) {
-      handleSessionEnd();
-    } else {
-      navigation.navigate('GameCatalog');
-    }
+    handleSessionEnd();
   };
 
   // Handle Mic Press with strict single-submission state guard
@@ -590,54 +586,23 @@ export const GameScreen: React.FC = React.memo(() => {
         <StatusBar barStyle="light-content" backgroundColor={Colors.header.topBarNavy} />
         <CloudClearanceSpacer />
 
-        {/* 1. Top Header Row (Matching AlphabetMatching & VowelMatraMatch) */}
-        <View style={styles.topHeaderContainer}>
-          <BigTouchTarget
-            onPress={() => setShowExitModal(true)}
-            accessibilityLabel={t('game.exitGame')}
-            accessibilityHint={t('accessibility.exitGameHint')}
-            accessibilityRole="button"
-            style={styles.redExitButton}
-          >
-            <Text style={styles.redExitButtonText}>✕</Text>
-          </BigTouchTarget>
-
-          {/* Continuous Session Timer (90s) */}
-          <SessionCountdownTimer
-            initialSeconds={90}
-            isPaused={
-              roundLocked ||
-              showCelebration ||
-              showExitModal ||
-              showReportModal ||
-              showCorrectionModal
-            }
-            onExpire={handleTimeExpired}
-          />
-
-          <View
-            style={styles.starTrailPill}
-            accessibilityLabel={t('speechWordChallenge.progressLabel', {
-              current: roundIndex + 1,
-              total: ROUND_COUNT,
-            })}
-          >
-            <ProgressStarTrail
-              total={ROUND_COUNT}
-              current={roundIndex + 1}
-              roundResults={roundResults}
-            />
-          </View>
-
-          <BigTouchTarget
-            onPress={() => setShowReportModal(true)}
-            accessibilityLabel={`Accuracy ${currentAccuracy}%, tap to view report`}
-            accessibilityRole="button"
-            style={styles.accuracyPill}
-          >
-            <Text style={styles.accuracyPillText}>🎯 {currentAccuracy}%</Text>
-          </BigTouchTarget>
-        </View>
+        {/* 1. Unified 2-Row Responsive GameHUD */}
+        <GameHUD
+          onQuit={() => setShowExitModal(true)}
+          currentRound={roundIndex + 1}
+          totalRounds={ROUND_COUNT}
+          score={score}
+          roundResults={roundResults}
+          initialSeconds={90}
+          onTimeExpired={handleTimeExpired}
+          isPaused={
+            roundLocked ||
+            showCelebration ||
+            showExitModal ||
+            showReportModal ||
+            showCorrectionModal
+          }
+        />
 
         {/* 2. Main Game Content Container */}
         <View style={styles.mainContentContainer}>
@@ -755,33 +720,14 @@ export const GameScreen: React.FC = React.memo(() => {
         </View>
 
         {/* 5. Leave Game Confirmation Modal */}
-        <FriendlyModal
+        <QuitGameModal
           visible={showExitModal}
-          title={t('game.leaveGameTitle')}
-          description={t('game.leaveGameDesc')}
-          dismissText={t('game.keepPlaying')}
-          onDismiss={() => setShowExitModal(false)}
-        >
-          <View style={styles.exitModalActions}>
-            <BigTouchTarget
-              onPress={() => setShowExitModal(false)}
-              accessibilityLabel={t('game.keepPlaying')}
-              accessibilityRole="button"
-              style={styles.keepPlayingBtn}
-            >
-              <Text style={styles.keepPlayingBtnText}>{t('game.keepPlaying')}</Text>
-            </BigTouchTarget>
-
-            <BigTouchTarget
-              onPress={handleConfirmQuit}
-              accessibilityLabel={t('game.exitGame')}
-              accessibilityRole="button"
-              style={styles.quitGameBtn}
-            >
-              <Text style={styles.quitGameBtnText}>{t('game.exitGame')}</Text>
-            </BigTouchTarget>
-          </View>
-        </FriendlyModal>
+          onContinue={() => setShowExitModal(false)}
+          onExit={handleConfirmQuit}
+          gameTitle={t('speechWordChallenge.title', { defaultValue: 'Say the Word' })}
+          currentRound={roundIndex + 1}
+          totalRounds={ROUND_COUNT}
+        />
 
         {/* 6. Interactive Speech Report Modal */}
         <SpeechReportModal

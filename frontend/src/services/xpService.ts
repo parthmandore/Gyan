@@ -6,8 +6,8 @@
  * Folder: frontend/src/services
  */
 
-import { XP_RULES, XPEventType } from '../config/xpConfig';
-import { useProgressStore, GameSessionRecord, ProgressSummary } from '../state/useProgressStore';
+import { XP_RULES } from '../config/xpConfig';
+import { useProgressStore, ProgressSummary } from '../state/useProgressStore';
 
 export interface AnswerXPParams {
   sessionId: string;
@@ -87,30 +87,44 @@ export const xpService = {
     const bonusXp = isFirstTry ? XP_RULES.FIRST_TRY_BONUS : 0; // 5 if first try, 0 if retry
     const totalXpToAdd = baseXp + bonusXp;
 
-    // 3. Dispatch to store (enforcing anti-duplication)
-    const result = await useProgressStore.getState().recordXPEvent({
-      eventId,
-      sessionId,
-      eventType: isFirstTry ? 'FIRST_TRY_BONUS' : 'CORRECT_ANSWER',
-      xpAmount: totalXpToAdd,
-      metadata: {
-        gameId,
-        roundIndex,
-        attemptNum,
-        isFirstTry,
-        ...metadata,
-      },
-    });
+    try {
+      // 3. Dispatch to store (enforcing anti-duplication)
+      const result = await useProgressStore.getState().recordXPEvent({
+        eventId,
+        sessionId,
+        eventType: isFirstTry ? 'FIRST_TRY_BONUS' : 'CORRECT_ANSWER',
+        xpAmount: totalXpToAdd,
+        metadata: {
+          gameId,
+          roundIndex,
+          attemptNum,
+          isFirstTry,
+          ...metadata,
+        },
+      });
 
-    return {
-      xpEarned: result.xpAdded,
-      baseXp: result.xpAdded > 0 ? baseXp : 0,
-      bonusXp: result.xpAdded > 0 ? bonusXp : 0,
-      isFirstTry,
-      alreadyProcessed: result.alreadyProcessed,
-      newTotalXp: result.newTotalXp,
-      currentLevel: result.newLevel,
-    };
+      return {
+        xpEarned: result.xpAdded,
+        baseXp: result.xpAdded > 0 ? baseXp : 0,
+        bonusXp: result.xpAdded > 0 ? bonusXp : 0,
+        isFirstTry,
+        alreadyProcessed: result.alreadyProcessed,
+        newTotalXp: result.newTotalXp,
+        currentLevel: result.newLevel,
+      };
+    } catch (err) {
+      console.warn('[xpService] Error recording answer XP event:', err);
+      const state = useProgressStore.getState();
+      return {
+        xpEarned: totalXpToAdd,
+        baseXp,
+        bonusXp,
+        isFirstTry,
+        alreadyProcessed: false,
+        newTotalXp: state.totalXp + totalXpToAdd,
+        currentLevel: state.currentLevel,
+      };
+    }
   },
 
   /**
@@ -162,35 +176,51 @@ export const xpService = {
     // Calculate stars: 3 stars for >= 90%, 2 stars for >= 70%, 1 star otherwise
     const starsEarned = safeAccuracy >= 90 ? 3 : safeAccuracy >= 70 ? 2 : 1;
 
-    const sessionRecord = {
-      sessionId,
-      gameId,
-      category,
-      age,
-      motherTongue,
-      learningLanguage,
-      itemsAttempted: totalQuestions,
-      itemsCorrect: correctAnswers,
-      accuracy: safeAccuracy,
-      starsEarned,
-      xpEarned: totalSessionXp,
-      xpToAdd,
-      durationSeconds: Math.max(1, Math.round(durationSeconds || 0)),
-    };
+    try {
+      const sessionRecord = {
+        sessionId,
+        gameId,
+        category,
+        age,
+        motherTongue,
+        learningLanguage,
+        itemsAttempted: totalQuestions,
+        itemsCorrect: correctAnswers,
+        accuracy: safeAccuracy,
+        starsEarned,
+        xpEarned: totalSessionXp,
+        xpToAdd,
+        durationSeconds: Math.max(1, Math.round(durationSeconds || 0)),
+      };
 
-    const storeResult = await useProgressStore.getState().recordSessionCompletion(sessionRecord);
+      const storeResult = await useProgressStore.getState().recordSessionCompletion(sessionRecord);
 
-    return {
-      completionXp,
-      perfectBonusXp,
-      totalSessionXp,
-      starsEarned,
-      isPerfect,
-      alreadyRecorded: storeResult.alreadyRecorded,
-      newTotalXp: storeResult.newTotalXp,
-      newLevel: storeResult.newLevel,
-      leveledUp: storeResult.leveledUp,
-    };
+      return {
+        completionXp,
+        perfectBonusXp,
+        totalSessionXp,
+        starsEarned,
+        isPerfect,
+        alreadyRecorded: storeResult.alreadyRecorded,
+        newTotalXp: storeResult.newTotalXp,
+        newLevel: storeResult.newLevel,
+        leveledUp: storeResult.leveledUp,
+      };
+    } catch (err) {
+      console.warn('[xpService] Error recording session completion XP:', err);
+      const state = useProgressStore.getState();
+      return {
+        completionXp,
+        perfectBonusXp,
+        totalSessionXp,
+        starsEarned,
+        isPerfect,
+        alreadyRecorded: false,
+        newTotalXp: state.totalXp + xpToAdd,
+        newLevel: state.currentLevel,
+        leveledUp: false,
+      };
+    }
   },
 
   /**
@@ -215,6 +245,10 @@ export const xpService = {
    * Switches the active child profile (ensuring strict data isolation).
    */
   setActiveChild: async (childId: string): Promise<void> => {
-    await useProgressStore.getState().setActiveChild(childId);
+    try {
+      await useProgressStore.getState().setActiveChild(childId);
+    } catch (err) {
+      console.warn('[xpService] Error setting active child profile:', err);
+    }
   },
 };

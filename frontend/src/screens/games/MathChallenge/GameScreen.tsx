@@ -11,11 +11,11 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ScrollView,
   useWindowDimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -23,10 +23,11 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CartoonBackground, CloudClearanceSpacer } from '../../../components/CartoonBackground';
 import { ProgressStarTrail } from '../../../components/ProgressStarTrail';
 import { CelebrationOverlay } from '../../../components/CelebrationOverlay';
-import { FriendlyModal } from '../../../components/FriendlyModal';
+import { QuitGameModal } from '../../../components/QuitGameModal';
 import { BigTouchTarget } from '../../../components/BigTouchTarget';
 import { SessionCountdownTimer } from '../../../components/SessionCountdownTimer';
 import { EducationalCorrectionModal } from '../../../components/EducationalCorrectionModal';
+import { GameHUD } from '../../../components/GameHUD';
 import { EquationCard } from './components/EquationCard';
 import { NumberOptionCard } from './components/NumberOptionCard';
 
@@ -266,12 +267,7 @@ export const GameScreen: React.FC = React.memo(() => {
 
   const handleExitConfirm = () => {
     setShowExitModal(false);
-    if (roundIndex > 0 || itemsCorrect > 0) {
-      finishSession(itemsCorrect, false);
-    } else {
-      resetSession();
-      navigation.goBack();
-    }
+    finishSession(itemsCorrect, false);
   };
 
   if (!currentRound) {
@@ -292,46 +288,30 @@ export const GameScreen: React.FC = React.memo(() => {
   return (
     <View style={styles.outerContainer}>
       <CartoonBackground theme="math" />
-      <StatusBar barStyle="dark-content" backgroundColor="#EFF6FF" />
+      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
       <SafeAreaView style={styles.safeArea}>
         <CloudClearanceSpacer />
-        {/* Header Bar */}
-        <View style={[styles.headerBar, { width: containerWidth }]}>
-          <BigTouchTarget
-            onPress={() => setShowExitModal(true)}
-            accessibilityLabel="Exit game"
-            style={styles.exitButton}
-          >
-            <Text style={styles.exitButtonText}>✕</Text>
-          </BigTouchTarget>
 
-          {/* Session Timer */}
-          <SessionCountdownTimer
-            initialSeconds={90}
-            onTimeExpired={handleTimeExpired}
-            isPaused={showCorrectionModal || showCelebration || showExitModal}
-          />
+        {/* Unified Responsive 2-Row GameHUD */}
+        <GameHUD
+          onQuit={() => setShowExitModal(true)}
+          currentRound={roundIndex}
+          totalRounds={TOTAL_MATH_ROUNDS}
+          score={score}
+          initialSeconds={90}
+          onTimeExpired={handleTimeExpired}
+          isPaused={showCorrectionModal || showCelebration || showExitModal}
+          containerWidth={containerWidth}
+        />
 
-          <View style={styles.progressWrapper}>
-            <ProgressStarTrail
-              current={roundIndex}
-              total={TOTAL_MATH_ROUNDS}
-            />
+        {/* Non-Scrolling Responsive Gameplay Content */}
+        <View style={styles.gameContentContainer}>
+          {/* Prompt Subtitle in high-contrast card */}
+          <View style={styles.promptContainer}>
+            <Text style={styles.promptTitle}>
+              {t('mathChallenge.whatIsTheAnswer', 'What is the answer?')}
+            </Text>
           </View>
-
-          <View style={styles.scorePill}>
-            <Text style={styles.scorePillText}>⭐ {score} XP</Text>
-          </View>
-        </View>
-
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Prompt Subtitle */}
-          <Text style={styles.promptTitle}>
-            {t('mathChallenge.whatIsTheAnswer', 'What is the answer?')}
-          </Text>
 
           {/* Equation Display Card */}
           <View style={{ width: containerWidth }}>
@@ -361,35 +341,18 @@ export const GameScreen: React.FC = React.memo(() => {
               />
             ))}
           </View>
-        </ScrollView>
+        </View>
       </SafeAreaView>
 
       {/* Exit Confirmation Modal */}
-      <FriendlyModal
+      <QuitGameModal
         visible={showExitModal}
-        title="Quit Game?"
-        onDismiss={() => setShowExitModal(false)}
-      >
-        <Text style={styles.exitModalText}>
-          Are you sure you want to exit? Your progress in this session will not be saved.
-        </Text>
-        <View style={styles.exitModalActions}>
-          <BigTouchTarget
-            onPress={() => setShowExitModal(false)}
-            accessibilityLabel="Keep Playing"
-            style={styles.keepPlayingBtn}
-          >
-            <Text style={styles.keepPlayingBtnText}>Keep Playing</Text>
-          </BigTouchTarget>
-          <BigTouchTarget
-            onPress={handleExitConfirm}
-            accessibilityLabel="Quit Game"
-            style={styles.quitGameBtn}
-          >
-            <Text style={styles.quitGameBtnText}>Quit Game</Text>
-          </BigTouchTarget>
-        </View>
-      </FriendlyModal>
+        onContinue={() => setShowExitModal(false)}
+        onExit={handleExitConfirm}
+        gameTitle={t('mathChallenge.title', { defaultValue: 'Math Challenge' })}
+        currentRound={roundIndex + 1}
+        totalRounds={rounds.length || 5}
+      />
 
       {/* Celebration Overlay on Success */}
       <CelebrationOverlay visible={showCelebration} />
@@ -467,16 +430,30 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#92400E',
   },
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 24,
+  gameContentContainer: {
+    flex: 1,
     alignItems: 'center',
+    justifyContent: 'space-evenly',
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+  promptContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+    paddingHorizontal: 18,
+    paddingVertical: 6,
+    borderRadius: 18,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+    borderWidth: 1.5,
+    borderColor: '#BFDBFE',
   },
   promptTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
-    color: '#1E40AF',
-    marginBottom: 12,
+    color: '#1E3A8A',
     textAlign: 'center',
   },
   feedbackBanner: {

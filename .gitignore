@@ -47,3 +47,7 @@ Thumbs.db
 *.p8
 *.p12
 *.key
+
+# Database & Scratch
+*.db
+scratch/

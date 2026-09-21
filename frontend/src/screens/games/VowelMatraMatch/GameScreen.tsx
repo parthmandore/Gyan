@@ -10,12 +10,12 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   useWindowDimensions,
   LayoutChangeEvent,
   AccessibilityInfo,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -35,6 +35,8 @@ import { CelebrationOverlay } from '../../../components/CelebrationOverlay';
 import { ProgressStarTrail } from '../../../components/ProgressStarTrail';
 import { CartoonBackground } from '../../../components/CartoonBackground';
 import { BigTouchTarget } from '../../../components/BigTouchTarget';
+import { GameHUD } from '../../../components/GameHUD';
+import { QuitGameModal } from '../../../components/QuitGameModal';
 import { Colors } from '../../../theme/colors';
 import { Typography } from '../../../theme/typography';
 import { triggerHapticSuccess, triggerHapticWarning } from '../../../services/hapticsService';
@@ -94,6 +96,7 @@ export const GameScreen: React.FC = React.memo(() => {
   const [showRoundCelebration, setShowRoundCelebration] = useState(false);
   const [interactionLocked, setInteractionLocked] = useState(false);
   const [sessionResults, setSessionResults] = useState<Array<'correct' | 'wrong'>>([]);
+  const [showExitModal, setShowExitModal] = useState(false);
 
   const [gameAreaDimensions, setGameAreaDimensions] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
 
@@ -305,9 +308,14 @@ export const GameScreen: React.FC = React.memo(() => {
     setGameAreaDimensions({ width, height });
   }, []);
 
-  const handleExit = useCallback(() => {
-    navigation.getParent()?.goBack();
-  }, [navigation]);
+  const handleExitPress = useCallback(() => {
+    setShowExitModal(true);
+  }, []);
+
+  const handleConfirmExit = useCallback(() => {
+    setShowExitModal(false);
+    handleTimeUp();
+  }, [handleTimeUp]);
 
   if (roundPairs.length === 0) {
     return (
@@ -329,29 +337,16 @@ export const GameScreen: React.FC = React.memo(() => {
         <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
         <SafeAreaView style={styles.safe}>
-          {/* Header */}
-          <View style={styles.header}>
-            <BigTouchTarget onPress={handleExit} accessibilityLabel="Exit" style={styles.exitButton}>
-              <Text style={styles.exitIcon}>✕</Text>
-            </BigTouchTarget>
-
-            <ProgressStarTrail
-              current={sessionResults.length}
-              total={SESSION_TOTAL_PAIRS}
-              roundResults={sessionResults}
-              style={styles.starTrail}
-            />
-
-            <View style={styles.timerBadge}>
-              <Text style={styles.timerIcon}>⏱️</Text>
-              <Text style={styles.timerText}>{timeLeft}s</Text>
-            </View>
-
-            <View style={styles.scoreContainer}>
-              <Text style={styles.scoreStar}>⭐</Text>
-              <Text style={styles.scoreText}>{score}</Text>
-            </View>
-          </View>
+          {/* Unified Responsive 2-Row GameHUD */}
+          <GameHUD
+            onQuit={handleExitPress}
+            currentRound={sessionResults.length}
+            totalRounds={SESSION_TOTAL_PAIRS}
+            score={score}
+            roundResults={sessionResults}
+            initialSeconds={50}
+            timerDisabled={false}
+          />
 
           {/* Game Area */}
           <View style={styles.gameArea} onLayout={handleGameAreaLayout}>
@@ -450,6 +445,16 @@ export const GameScreen: React.FC = React.memo(() => {
 
         {/* Round Celebration */}
         <CelebrationOverlay visible={showRoundCelebration} isBigCelebration />
+
+        {/* Standardized 2-Button Exit Confirmation Modal */}
+        <QuitGameModal
+          visible={showExitModal}
+          onContinue={() => setShowExitModal(false)}
+          onExit={handleConfirmExit}
+          gameTitle={t('vowelMatraMatch.gameTitle', { defaultValue: 'Vowel & Matra Match' })}
+          currentRound={sessionResults.length + 1}
+          totalRounds={SESSION_TOTAL_PAIRS}
+        />
       </View>
     </GestureHandlerRootView>
   );

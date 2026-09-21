@@ -20,10 +20,14 @@
     "practice": "सरावाची गरज",
     "noAttemptsYet": "अद्याप कोणतेही रेकॉर्ड नाही.",
     "keepPlaying": "खेळत राहा",
+    "continuePlaying": "खेळ सुरू ठेवा",
     "exit": "बाहेर पडा",
     "leave": "सोडा",
     "leaveGame": "खेळ सोडायचा?",
-    "leaveGameConfirm": "तुम्हाला नक्की खेळ सोडायचा आहे का? तुमची प्रगती सेव्ह केली जाईल."
+    "leaveGameConfirm": "तुम्हाला नक्की खेळ सोडायचा आहे का? तुमची प्रगती सेव्ह केली जाईल.",
+    "pauseGame": "खेळ थांबवायचा?",
+    "exitConfirmExplanation": "तुम्हाला आता थांबायचे आहे का? तुमचा स्कोअर आणि अहवाल सेव्ह केला जाईल!",
+    "viewReport": "अहवाल पहा आणि बाहेर पडा"
   },
   "navigation": {
     "home": "मुख्य पृष्ठ",
@@ -279,7 +283,8 @@
     "wrongMatchGotIt": "समजले! ▶",
     "wrongMatchSpeak": "हे आहे {{left}} आणि {{right}}",
     "spokenCapital": "मोठे अक्षर {{letter}}",
-    "spokenSmall": "लहान अक्षर {{letter}}"
+    "spokenSmall": "लहान अक्षर {{letter}}",
+    "quitConfirm": "तुम्हाला नक्की खेळ सोडायचा आहे का? तुमची प्रगती सेव्ह केली जाणार नाही."
   },
   "vowelMatraMatch": {
     "gameTitle": "स्वर आणि मात्रा जुळवणी",
@@ -351,9 +356,17 @@
     "correct": "बरोबर!",
     "leaveGameTitle": "खेळ सोडायचा?",
     "leaveGameDesc": "तुम्हाला खेळ सोडायचा आहे का? तुमची सद्य प्रगती अंतिम केली जाईल.",
+    "quitTitle": "खेळ सोडायचा?",
+    "quitMessage": "तुम्हाला नक्की खेळ सोडायचा आहे का? तुमची प्रगती सेव्ह केली जाणार नाही.",
     "keepPlaying": "खेळत राहा",
+    "continuePlaying": "खेळ सुरू ठेवा",
     "exitGame": "खेळ सोडा",
     "quitGame": "खेळ सोडा",
+    "quitMotivationEarly": "तुम्ही खूप छान करत आहात! पुढे चालू ठेवा! 🌟",
+    "quitMotivationHalfway": "तुम्ही {{total}} पैकी {{done}} फेऱ्या पूर्ण केल्या आहेत! आता थांबू नका! 💪",
+    "quitMotivationAlmost": "फक्त {{remaining}} फेरी शिल्लक आहे! 🎯",
+    "quitMotivationAlmostPlural": "फक्त {{remaining}} फेऱ्या शिल्लक आहेत! 🎯",
+    "quitMotivationDefault": "प्रत्येक फेरी तुम्हाला अधिक हुशार बनवते! 🧠",
     "listenForLetter": "अक्षर ऐका!",
     "listenForNumber": "संख्या ऐका!",
     "loadingAudio": "लोड होत आहे...",

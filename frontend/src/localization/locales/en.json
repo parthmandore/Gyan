@@ -20,10 +20,14 @@
     "practice": "Needs Practice",
     "noAttemptsYet": "No matches recorded yet.",
     "keepPlaying": "Keep Playing",
+    "continuePlaying": "Continue Playing",
     "exit": "Exit",
     "leave": "Leave",
     "leaveGame": "Leave Game?",
-    "leaveGameConfirm": "Are you sure you want to leave? Your progress in this session will be saved."
+    "leaveGameConfirm": "Are you sure you want to leave? Your progress in this session will be saved.",
+    "pauseGame": "Pause Challenge?",
+    "exitConfirmExplanation": "Do you want to stop now? Your score and report will be saved!",
+    "viewReport": "View Report & Exit"
   },
   "navigation": {
     "home": "Home",
@@ -279,7 +283,8 @@
     "wrongMatchGotIt": "Got it! ▶",
     "wrongMatchSpeak": "This is {{left}} and {{right}}",
     "spokenCapital": "Capital {{letter}}",
-    "spokenSmall": "Small {{letter}}"
+    "spokenSmall": "Small {{letter}}",
+    "quitConfirm": "Are you sure you want to stop? Your progress in this session will not be saved."
   },
   "vowelMatraMatch": {
     "gameTitle": "Vowel & Matra Match",
@@ -351,9 +356,17 @@
     "correct": "Correct!",
     "leaveGameTitle": "Leave Game?",
     "leaveGameDesc": "Are you sure you want to exit? Your current progress will be finalized.",
+    "quitTitle": "Leave Game?",
+    "quitMessage": "Are you sure? Your progress in this session will not be saved.",
     "keepPlaying": "Keep Playing",
-    "exitGame": "Quit Game",
-    "quitGame": "Quit Game",
+    "continuePlaying": "Continue Playing",
+    "exitGame": "Exit Game",
+    "quitGame": "Exit Game",
+    "quitMotivationEarly": "You're doing great! Keep going! 🌟",
+    "quitMotivationHalfway": "You've completed {{done}} of {{total}} rounds! Don't give up! 💪",
+    "quitMotivationAlmost": "Almost there — just {{remaining}} more round! 🎯",
+    "quitMotivationAlmostPlural": "Almost there — just {{remaining}} more rounds! 🎯",
+    "quitMotivationDefault": "Every round makes you smarter! Keep playing! 🧠",
     "listenForLetter": "Listen for the letter!",
     "listenForNumber": "Listen for the number!",
     "loadingAudio": "Loading...",

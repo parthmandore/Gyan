@@ -11,11 +11,11 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ScrollView,
   useWindowDimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -101,11 +101,7 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
       <SafeAreaView style={styles.safeArea}>
         <StatusBar barStyle="light-content" backgroundColor="#D97706" />
 
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
+        <View style={styles.contentContainer}>
           <View style={[styles.mainCard, { width: containerWidth }]}>
             {/* Mascot */}
             <View style={styles.mascotWrapper}>
@@ -117,7 +113,7 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
               {[1, 2, 3].map((starIndex) => (
                 <View key={starIndex} style={styles.starWrapper}>
                   <CuteStar
-                    size={48}
+                    size={38}
                     variant="gold"
                     style={{ opacity: starIndex <= starsEarned ? 1 : 0.25 }}
                   />
@@ -130,19 +126,16 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
               {t('colourChallenge.sessionCompleteTitle')}
             </Text>
             <Text style={styles.completeDesc}>
-              {t('colourChallenge.sessionCompleteDesc', { correct: itemsCorrect })}
+              {t('colourChallenge.sessionCompleteDesc', {
+                defaultValue: 'Great job exploring all the colours!',
+              })}
             </Text>
 
-            {/* Stats Summary Card */}
+            {/* Stats Row */}
             <View style={styles.statsCard}>
               <View style={styles.statItem}>
-                <Text style={styles.statNumber}>⭐ +{xpEarned}</Text>
-                <Text style={styles.statLabel}>{t('common.xpEarned')}</Text>
-              </View>
-              <View style={styles.statDivider} />
-              <View style={styles.statItem}>
-                <Text style={styles.statNumber}>{itemsCorrect} / {sessionLength}</Text>
-                <Text style={styles.statLabel}>{t('common.correct')}</Text>
+                <Text style={styles.statNumber}>+{xpEarned}</Text>
+                <Text style={styles.statLabel}>{t('common.xp')}</Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statItem}>
@@ -190,7 +183,7 @@ export const SessionCompleteScreen: React.FC = React.memo(() => {
               </BigTouchTarget>
             </View>
           </View>
-        </ScrollView>
+        </View>
       </SafeAreaView>
 
       <GameAnalysisReportModal
@@ -212,60 +205,59 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
   },
-  scrollView: {
+  contentContainer: {
     flex: 1,
-    width: '100%',
-  },
-  scrollContent: {
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 20,
-    paddingBottom: 36,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
   },
   mainCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.82)',
-    borderRadius: 28,
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    borderRadius: 24,
     borderWidth: 2.5,
     borderColor: 'rgba(255, 255, 255, 0.95)',
-    borderBottomWidth: 6,
+    borderBottomWidth: 5,
     borderBottomColor: '#F59E0B',
-    padding: 24,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
     alignItems: 'center',
     elevation: 6,
   },
   mascotWrapper: {
-    marginVertical: 6,
+    marginVertical: 4,
   },
   starsRow: {
     flexDirection: 'row',
-    gap: 12,
-    marginVertical: 14,
+    gap: 10,
+    marginVertical: 8,
   },
   starWrapper: {
     transform: [{ scale: 1 }],
   },
   completeTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '900',
     color: '#1E293B',
     textAlign: 'center',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   completeDesc: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: '#475569',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   statsCard: {
     flexDirection: 'row',
     width: '100%',
     backgroundColor: '#F8FAFC',
-    borderRadius: 20,
+    borderRadius: 16,
     borderWidth: 1.5,
     borderColor: '#E2E8F0',
-    paddingVertical: 14,
-    marginBottom: 16,
+    paddingVertical: 8,
+    marginBottom: 10,
     alignItems: 'center',
     justifyContent: 'space-around',
   },
@@ -274,42 +266,43 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statNumber: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '900',
     color: '#0F172A',
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
     color: '#64748B',
     marginTop: 2,
   },
   statDivider: {
     width: 1,
-    height: 32,
+    height: 28,
     backgroundColor: '#CBD5E1',
   },
   levelBanner: {
     backgroundColor: '#EFF6FF',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#93C5FD',
-    marginBottom: 24,
+    marginBottom: 12,
   },
   levelBannerText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '800',
     color: '#1D4ED8',
   },
   actionsContainer: {
     width: '100%',
-    gap: 12,
+    gap: 6,
   },
   viewReportButton: {
     backgroundColor: '#EFF6FF',
-    paddingVertical: 14,
+    height: 44,
+    minHeight: 44,
     borderRadius: 18,
     borderWidth: 2,
     borderColor: '#3B82F6',
@@ -322,39 +315,41 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   viewReportButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
     color: '#1D4ED8',
   },
   playAgainButton: {
     backgroundColor: '#10B981',
-    paddingVertical: 16,
+    height: 48,
+    minHeight: 48,
     borderRadius: 20,
     borderWidth: 2,
     borderColor: '#059669',
-    borderBottomWidth: 6,
+    borderBottomWidth: 5,
     borderBottomColor: '#047857',
     alignItems: 'center',
     justifyContent: 'center',
   },
   playAgainButtonText: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '900',
     color: '#FFFFFF',
   },
   catalogButton: {
     backgroundColor: '#FFFFFF',
-    paddingVertical: 14,
+    height: 44,
+    minHeight: 44,
     borderRadius: 18,
     borderWidth: 2,
     borderColor: '#CBD5E1',
-    borderBottomWidth: 4,
+    borderBottomWidth: 3,
     borderBottomColor: '#94A3B8',
     alignItems: 'center',
     justifyContent: 'center',
   },
   catalogButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
     color: '#475569',
   },
