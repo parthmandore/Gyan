@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 const COLORS = {
   background: '#F1FBFB',
@@ -57,13 +58,13 @@ const COLORS = {
 
 const teacherDashboardData = {
   classroom: {
-    name: 'Sunshine Class',
-    level: 'Early learners',
-    language: 'English',
+    name: 'teacher.class.name',
+    level: 'teacher.class.level',
+    language: 'teacher.class.language',
     students: 24,
     activeToday: 18,
     completedToday: 12,
-    status: 'Class is active today',
+    status: 'teacher.class.activeToday',
   },
 
   classProgress: {
@@ -74,24 +75,24 @@ const teacherDashboardData = {
 
   activities: [
     {
-      title: 'Speech Practice',
-      description: 'Listening & pronunciation',
+      title: 'teacher.activities.speechPractice',
+      description: 'teacher.activities.listeningPronunciation',
       students: 18,
       icon: 'volume-high' as const,
       background: COLORS.lavenderLight,
       iconColor: COLORS.lavenderDark,
     },
     {
-      title: 'Letter Practice',
-      description: 'Alphabet recognition',
+      title: 'teacher.activities.letterPractice',
+      description: 'teacher.activities.alphabetRecognition',
       students: 21,
       icon: 'text' as const,
       background: COLORS.coralLight,
       iconColor: COLORS.coralDark,
     },
     {
-      title: 'Learning Games',
-      description: 'Matching & recognition',
+      title: 'teacher.activities.learningGames',
+      description: 'teacher.activities.matchingRecognition',
       students: 16,
       icon: 'game-controller' as const,
       background: COLORS.mintLight,
@@ -136,43 +137,41 @@ const teacherDashboardData = {
 
   attention: {
     count: 3,
-    message:
-      "Students haven't practised today",
-    description:
-      'Consider giving them a gentle reminder during the next learning session.',
+    message: 'teacher.attention.notPractisedToday',
+    description: 'teacher.attention.reminder',
   },
 
   recentActivity: [
     {
-      title: 'Anaya completed a lesson',
-      time: '5 minutes ago',
+      title: 'teacher.activityMessages.lessonCompleted',
+      time: 'teacher.time.fiveMinutesAgo',
       badge: '+20 XP',
       icon: 'trophy' as const,
       color: COLORS.yellowDark,
     },
     {
-      title: '8 students finished a game',
-      time: '18 minutes ago',
-      badge: 'Great!',
+      title: 'teacher.activityMessages.studentsFinishedGame',
+      time: 'teacher.time.eighteenMinutesAgo',
+      badge: 'teacher.great',
       icon: 'game-controller' as const,
       color: COLORS.lavenderDark,
     },
     {
-      title: 'Speech practice session completed',
-      time: '32 minutes ago',
-      badge: '12 min',
+      title: 'teacher.activityMessages.speechCompleted',
+      time: 'teacher.time.thirtyTwoMinutesAgo',
+      badge: 'teacher.durationTwelveMinutes',
       icon: 'volume-high' as const,
       color: COLORS.mintDark,
     },
   ],
 
-  teachingTip:
-    'Encourage students to practise pronunciation for a few minutes every day.',
+  teachingTip: 'teacher.tip',
 };
 
 const TeacherDashboardScreen: React.FC = () => {
   const navigation = useNavigation();
   const { width } = useWindowDimensions();
+  const { t } = useTranslation();
 
   const isSmallScreen = width < 380;
 
@@ -206,7 +205,7 @@ const TeacherDashboardScreen: React.FC = () => {
           ]}
           onPress={() => navigation.goBack()}
           accessibilityRole="button"
-          accessibilityLabel="Go back"
+          accessibilityLabel={t('teacher.goBack')}
         >
           <Ionicons
             name="arrow-back"
@@ -217,11 +216,11 @@ const TeacherDashboardScreen: React.FC = () => {
 
         <View style={styles.headerTextContainer}>
           <Text style={styles.headerTitle}>
-            Teacher Dashboard
+            {t('teacher.title')}
           </Text>
 
           <Text style={styles.headerSubtitle}>
-            Your classroom at a glance
+            {t('teacher.classroomAtAGlance')}
           </Text>
         </View>
 
@@ -255,15 +254,15 @@ const TeacherDashboardScreen: React.FC = () => {
 
           <View style={styles.welcomeTextContainer}>
             <Text style={styles.welcomeSmall}>
-              GOOD MORNING! ☀️
+              {t('teacher.goodMorning')}
             </Text>
 
             <Text style={styles.welcomeTitle}>
-              Your classroom is growing!
+              {t('teacher.classroomGrowing')}
             </Text>
 
             <Text style={styles.welcomeDescription}>
-              Here's how your students are doing today.
+              {t('teacher.classroomDescription')}
             </Text>
           </View>
         </View>
@@ -282,18 +281,18 @@ const TeacherDashboardScreen: React.FC = () => {
 
           <View style={styles.classInfo}>
             <Text style={styles.className}>
-              {classroom.name}
+              {t(classroom.name)}
             </Text>
 
             <Text style={styles.classDetails}>
-              {classroom.level} • {classroom.language}
+              {t(classroom.level)} • {t(classroom.language)}
             </Text>
 
             <View style={styles.classStatusRow}>
               <View style={styles.activeDot} />
 
               <Text style={styles.classStatusText}>
-                {classroom.status}
+                {t(classroom.status)}
               </Text>
             </View>
           </View>
@@ -304,7 +303,7 @@ const TeacherDashboardScreen: React.FC = () => {
             </Text>
 
             <Text style={styles.classBadgeLabel}>
-              students
+              {t('teacher.students')}
             </Text>
           </View>
 
@@ -314,11 +313,11 @@ const TeacherDashboardScreen: React.FC = () => {
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>
-            Classroom overview
+            {t('teacher.classroomOverview')}
           </Text>
 
           <Text style={styles.sectionSubtitle}>
-            Today's learning snapshot
+            {t('teacher.todaysSnapshot')}
           </Text>
         </View>
 
@@ -354,7 +353,7 @@ const TeacherDashboardScreen: React.FC = () => {
             </Text>
 
             <Text style={styles.statLabel}>
-              Students
+              {t('teacher.students')}
             </Text>
           </View>
 
@@ -386,7 +385,7 @@ const TeacherDashboardScreen: React.FC = () => {
             </Text>
 
             <Text style={styles.statLabel}>
-              Active today
+              {t('teacher.activeToday')}
             </Text>
           </View>
 
@@ -418,7 +417,7 @@ const TeacherDashboardScreen: React.FC = () => {
             </Text>
 
             <Text style={styles.statLabel}>
-              Completed
+              {t('teacher.completed')}
             </Text>
           </View>
 
@@ -431,11 +430,11 @@ const TeacherDashboardScreen: React.FC = () => {
           <View style={styles.cardHeaderRow}>
             <View>
               <Text style={styles.cardTitle}>
-                Class progress
+                {t('teacher.classProgress')}
               </Text>
 
               <Text style={styles.cardSubtitle}>
-                Average learning completion
+                {t('teacher.averageCompletion')}
               </Text>
             </View>
 
@@ -457,8 +456,8 @@ const TeacherDashboardScreen: React.FC = () => {
 
           <View style={styles.progressBottomRow}>
             <Text style={styles.progressBottomText}>
-              {classProgress.studentsOnTrack} of{' '}
-              {classProgress.totalStudents} students are on track
+              {classProgress.studentsOnTrack} {t('teacher.of')}{' '}
+              {classProgress.totalStudents} {t('teacher.studentsOnTrack')}
             </Text>
 
             <Ionicons
@@ -474,11 +473,11 @@ const TeacherDashboardScreen: React.FC = () => {
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>
-            Today's activity
+            {t('teacher.todaysActivity')}
           </Text>
 
           <Text style={styles.sectionSubtitle}>
-            What students are practising
+            {t('teacher.whatStudentsPractising')}
           </Text>
         </View>
 
@@ -506,11 +505,11 @@ const TeacherDashboardScreen: React.FC = () => {
 
                 <View style={styles.activityText}>
                   <Text style={styles.activityTitle}>
-                    {activity.title}
+                    {t(activity.title, { name: 'Anaya', count: 8 })}
                   </Text>
 
                   <Text style={styles.activityDescription}>
-                    {activity.description}
+                    {t(activity.description)}
                   </Text>
                 </View>
 
@@ -520,7 +519,7 @@ const TeacherDashboardScreen: React.FC = () => {
                   </Text>
 
                   <Text style={styles.activityValueLabel}>
-                    students
+                    {t('teacher.students')}
                   </Text>
                 </View>
 
@@ -539,11 +538,11 @@ const TeacherDashboardScreen: React.FC = () => {
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>
-            Student progress
+            {t('teacher.studentProgress')}
           </Text>
 
           <Text style={styles.sectionSubtitle}>
-            Quick view of your learners
+            {t('teacher.quickViewLearners')}
           </Text>
         </View>
 
@@ -615,10 +614,10 @@ const TeacherDashboardScreen: React.FC = () => {
             pressed && styles.pressed,
           ]}
           accessibilityRole="button"
-          accessibilityLabel="View all students"
+          accessibilityLabel={t('teacher.viewAllStudents')}
         >
           <Text style={styles.viewAllText}>
-            View All Students
+            {t('teacher.viewAllStudents')}
           </Text>
 
           <Ionicons
@@ -632,11 +631,11 @@ const TeacherDashboardScreen: React.FC = () => {
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>
-            Needs attention
+            {t('teacher.needsAttention')}
           </Text>
 
           <Text style={styles.sectionSubtitle}>
-            Students who may need extra support
+            {t('teacher.studentsNeedSupport')}
           </Text>
         </View>
 
@@ -653,11 +652,11 @@ const TeacherDashboardScreen: React.FC = () => {
           <View style={styles.attentionText}>
 
             <Text style={styles.attentionTitle}>
-              {attention.count} {attention.message}
+              {attention.count} {t(attention.message)}
             </Text>
 
             <Text style={styles.attentionDescription}>
-              {attention.description}
+              {t(attention.description)}
             </Text>
 
           </View>
@@ -668,11 +667,11 @@ const TeacherDashboardScreen: React.FC = () => {
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>
-            Recent class activity
+            {t('teacher.recentActivity')}
           </Text>
 
           <Text style={styles.sectionSubtitle}>
-            Latest classroom achievements
+            {t('teacher.latestAchievements')}
           </Text>
         </View>
 
@@ -696,17 +695,17 @@ const TeacherDashboardScreen: React.FC = () => {
                 <View style={styles.recentText}>
 
                   <Text style={styles.recentTitle}>
-                    {activity.title}
+                    {t(activity.title, { name: 'Anaya', count: 8 })}
                   </Text>
 
                   <Text style={styles.recentTime}>
-                    {activity.time}
+                    {t(activity.time)}
                   </Text>
 
                 </View>
 
                 <Text style={styles.recentBadge}>
-                  {activity.badge}
+                  {t(activity.badge)}
                 </Text>
 
               </View>
@@ -733,11 +732,11 @@ const TeacherDashboardScreen: React.FC = () => {
           <View style={styles.tipText}>
 
             <Text style={styles.tipTitle}>
-              Teaching tip
+              {t('teacher.teachingTip')}
             </Text>
 
             <Text style={styles.tipDescription}>
-              {teachingTip}
+              {t(teachingTip)}
             </Text>
 
           </View>

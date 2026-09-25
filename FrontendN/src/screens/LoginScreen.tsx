@@ -845,8 +845,10 @@ export const LoginScreen: React.FC<Props> = ({
             />
 
             <Text style={styles.securityText}>
-              Safe • Secure • For a brighter
-              learning future
+              {t(
+                'login.securityMessage',
+                'Safe • Secure • For a brighter learning future',
+              )}
             </Text>
           </View>
         </View>
@@ -854,7 +856,7 @@ export const LoginScreen: React.FC<Props> = ({
         {/* FOOTER */}
 
         <Text style={styles.footerText}>
-          Gyan • Learn • Play • Grow
+          {t('login.footer', 'Gyan • Learn • Play • Grow')}
         </Text>
       </View>
     </KeyboardAvoidingView>

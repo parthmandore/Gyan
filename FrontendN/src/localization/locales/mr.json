@@ -13,12 +13,10 @@
     "continue": "पुढे जा",
     "select": "निवडा"
   },
-
   "navigation": {
     "home": "मुख्य पृष्ठ",
     "games": "खेळ"
   },
-
   "languageGate": {
     "title": "शिकण्याची भाषा निवडा",
     "subtitle": "तुम्हाला आज जी भाषा शिकायची आहे ती निवडा!",
@@ -30,7 +28,6 @@
     "marathiSub": "शिका मराठी मुळाक्षरे आणि संख्या",
     "accessibilityHint": "ॲपची शिकण्याची भाषा {{language}} वर सेट करते आणि उपलब्ध खेळ उघडते"
   },
-
   "roleSelection": {
     "title": "ज्ञानमध्ये आपले स्वागत आहे",
     "subtitle": "पुढे जाण्यासाठी आपली भूमिका निवडा",
@@ -42,15 +39,14 @@
     "teacherDescription": "आपल्या विद्यार्थ्यांना मार्गदर्शन आणि मदत करा",
     "continue": "पुढे जा",
     "whoAreYou": "तुम्ही कोण आहात?",
-"safeTitle": "सुरक्षित आणि वैयक्तिक",
-"safeDescription": "तुमच्या भूमिकेनुसार Gyan चा योग्य अनुभव दाखवला जाईल.",
-"footerHint": "तुम्ही नंतर तुमची भूमिका बदलू शकता.",
-"studentTag": "शिकणे आणि खेळ",
-"parentTag": "प्रगती डॅशबोर्ड",
-"teacherTag": "वर्ग डॅशबोर्ड",
-"back": "भाषा निवडीवर परत जा"
+    "safeTitle": "सुरक्षित आणि वैयक्तिक",
+    "safeDescription": "तुमच्या भूमिकेनुसार Gyan चा योग्य अनुभव दाखवला जाईल.",
+    "footerHint": "तुम्ही नंतर तुमची भूमिका बदलू शकता.",
+    "studentTag": "शिकणे आणि खेळ",
+    "parentTag": "प्रगती डॅशबोर्ड",
+    "teacherTag": "वर्ग डॅशबोर्ड",
+    "back": "भाषा निवडीवर परत जा"
   },
-
   "login": {
     "title": "ज्ञानमध्ये आपले स्वागत आहे",
     "subtitle": "आपला शिकण्याचा प्रवास सुरू करूया",
@@ -68,9 +64,10 @@
     "parentLogin": "पालक लॉगिन",
     "teacherLogin": "शिक्षक लॉगिन",
     "invalidCredentials": "ईमेल किंवा पासवर्ड चुकीचा आहे",
-    "requiredFields": "कृपया सर्व आवश्यक माहिती भरा"
+    "requiredFields": "कृपया सर्व आवश्यक माहिती भरा",
+    "securityMessage": "सुरक्षित • सुरक्षित • उज्ज्वल शिकण्याच्या भविष्यासाठी",
+    "footer": "Gyan • शिका • खेळा • प्रगती करा"
   },
-
   "home": {
     "greeting": "नमस्कार, {{name}}!",
     "welcomeBack": "पुन्हा स्वागत आहे!",
@@ -89,39 +86,132 @@
     "speak": "बोला",
     "goalComplete": "ध्येय पूर्ण झाले!",
     "keepGoing": "असेच पुढे चला!",
-    "profile": "प्रोफाइल"
+    "profile": "प्रोफाइल",
+    "speakAndListen": "बोला आणि ऐका",
+    "playAndMatch": "खेळा आणि जुळवा",
+    "yourRewards": "तुमची बक्षिसे"
   },
-
   "parent": {
     "title": "पालक डॅशबोर्ड",
-    "welcome": "स्वागत आहे, {{name}}!",
-    "children": "माझी मुले",
-    "progress": "शिकण्याची प्रगती",
-    "viewDetails": "तपशील पहा",
-    "recentActivity": "अलीकडील क्रियाकलाप",
-    "streak": "शिकण्याची मालिका",
-    "xpEarned": "मिळवलेले XP",
+    "subtitle": "तुमचे मूल कसे शिकत आहे ते पहा",
+    "back": "भूमिका निवडीवर परत जा",
+    "goodMorning": "शुभ सकाळ! ☀️",
+    "learningJourney": "तुमच्या मुलाचा शिकण्याचा प्रवास",
+    "encouragement": "त्यांना प्रोत्साहन देत राहा — प्रत्येक छोटे पाऊल महत्त्वाचे आहे!",
     "level": "पातळी",
-    "noChildren": "अद्याप कोणतेही मूल जोडलेले नाही",
-    "childDetails": "मुलाचे तपशील",
-    "backToDashboard": "डॅशबोर्डवर परत जा"
+    "learner": "शिकणारा",
+    "dayLearningStreak": "दिवसांची सलग शिकण्याची मालिका",
+    "viewProfile": "{{name}} चे प्रोफाइल पहा",
+    "view": "पहा",
+    "learningOverview": "शिकण्याचा आढावा",
+    "thisWeekProgress": "या आठवड्याची प्रगती",
+    "xpEarned": "मिळवलेले XP",
+    "lessons": "धडे",
+    "learning": "शिकणे",
+    "weeklyProgress": "साप्ताहिक प्रगती",
+    "greatWork": "या आठवड्यात खूप छान काम! 🌟",
+    "of": "पैकी",
+    "activitiesCompleted": "क्रियाकलाप पूर्ण",
+    "learningActivity": "शिकण्याची क्रियाकलाप",
+    "practising": "तुमचे मूल कशाचा सराव करत आहे",
+    "activities": {
+      "speechPractice": "बोलण्याचा सराव",
+      "listeningPronunciation": "ऐकणे आणि उच्चार",
+      "learningGames": "शैक्षणिक खेळ",
+      "lettersMatching": "अक्षरे आणि जुळवणी",
+      "letterPractice": "अक्षरांचा सराव",
+      "alphabetRecognition": "वर्णमाला ओळख",
+      "alphabetMatching": "वर्णमाला जुळवणी"
+    },
+    "labels": {
+      "thisWeek": "या आठवड्यात",
+      "completed": "पूर्ण केले",
+      "accuracy": "अचूकता"
+    },
+    "skillsDevelopment": "कौशल्य विकास",
+    "currentStrengths": "सध्याची शिकण्याची कौशल्ये",
+    "skills": {
+      "alphabet": "वर्णमाला",
+      "vocabulary": "शब्दसंग्रह",
+      "pronunciation": "उच्चार"
+    },
+    "recentActivity": "अलीकडील क्रियाकलाप",
+    "latestSessions": "अलीकडील शिकण्याची सत्रे",
+    "times": {
+      "todayTenMinutes": "आज • 10 मिनिटे",
+      "yesterdayFifteenMinutes": "काल • 15 मिनिटे",
+      "yesterdayEightMinutes": "काल • 8 मिनिटे"
+    },
+    "keepEncouraging": "प्रोत्साहन देत राहा!",
+    "encouragementDescription": "तुमचे थोडेसे प्रोत्साहन शिकणे आणखी आनंददायक बनवू शकते."
   },
-
   "teacher": {
     "title": "शिक्षक डॅशबोर्ड",
     "welcome": "स्वागत आहे, {{name}}!",
-    "students": "माझे विद्यार्थी",
-    "studentProgress": "विद्यार्थ्याची प्रगती",
-    "viewDetails": "तपशील पहा",
-    "recentActivity": "अलीकडील क्रियाकलाप",
+    "goBack": "मागे जा",
+    "classroomAtAGlance": "तुमच्या वर्गाची एक झलक",
+    "goodMorning": "शुभ सकाळ! ☀️",
+    "classroomGrowing": "तुमचा वर्ग प्रगती करत आहे!",
+    "classroomDescription": "आज तुमचे विद्यार्थी कसे शिकत आहेत ते पहा.",
+    "students": "विद्यार्थी",
+    "classroomOverview": "वर्गाचा आढावा",
+    "todaysSnapshot": "आजच्या शिकण्याचा आढावा",
+    "activeToday": "आज सक्रिय",
+    "completed": "पूर्ण केले",
     "classProgress": "वर्गाची प्रगती",
+    "averageCompletion": "सरासरी शिकण्याची पूर्णता",
+    "of": "पैकी",
+    "studentsOnTrack": "विद्यार्थी योग्य प्रगती करत आहेत",
+    "todaysActivity": "आजची क्रियाकलाप",
+    "whatStudentsPractising": "विद्यार्थी कशाचा सराव करत आहेत",
+    "studentProgress": "विद्यार्थ्यांची प्रगती",
+    "quickViewLearners": "तुमच्या विद्यार्थ्यांचा झटपट आढावा",
+    "viewAllStudents": "सर्व विद्यार्थी पहा",
+    "needsAttention": "लक्ष देण्याची गरज",
+    "studentsNeedSupport": "ज्या विद्यार्थ्यांना अतिरिक्त मदतीची गरज असू शकते",
+    "recentActivity": "अलीकडील वर्गातील क्रियाकलाप",
+    "latestAchievements": "वर्गातील अलीकडील कामगिरी",
+    "teachingTip": "अध्यापन टिप",
+    "class": {
+      "name": "सनशाईन वर्ग",
+      "level": "प्राथमिक विद्यार्थी",
+      "language": "इंग्रजी",
+      "activeToday": "वर्ग आज सक्रिय आहे"
+    },
+    "activities": {
+      "speechPractice": "बोलण्याचा सराव",
+      "listeningPronunciation": "ऐकणे आणि उच्चार",
+      "letterPractice": "अक्षरांचा सराव",
+      "alphabetRecognition": "वर्णमाला ओळख",
+      "learningGames": "शैक्षणिक खेळ",
+      "matchingRecognition": "जुळवणी आणि ओळख"
+    },
+    "attention": {
+      "notPractisedToday": "विद्यार्थ्यांनी आज सराव केलेला नाही",
+      "reminder": "पुढील शिकण्याच्या सत्रात त्यांना प्रेमाने आठवण करून द्या."
+    },
+    "activityMessages": {
+      "lessonCompleted": "{{name}} ने एक धडा पूर्ण केला",
+      "studentsFinishedGame": "{{count}} विद्यार्थ्यांनी एक खेळ पूर्ण केला",
+      "speechCompleted": "बोलण्याचा सराव सत्र पूर्ण झाले"
+    },
+    "time": {
+      "fiveMinutesAgo": "5 मिनिटांपूर्वी",
+      "eighteenMinutesAgo": "18 मिनिटांपूर्वी",
+      "thirtyTwoMinutesAgo": "32 मिनिटांपूर्वी"
+    },
+    "xp": "+20 XP",
+    "great": "खूप छान!",
+    "durationTwelveMinutes": "12 मिनिटे",
+    "tip": "विद्यार्थ्यांना दररोज काही मिनिटे उच्चाराचा सराव करण्यास प्रोत्साहित करा.",
+    "viewDetails": "तपशील पहा",
+    "recentActivityOld": "अलीकडील क्रियाकलाप",
     "xpEarned": "मिळवलेले XP",
     "level": "पातळी",
     "noStudents": "कोणताही विद्यार्थी उपलब्ध नाही",
     "studentDetails": "विद्यार्थ्याचे तपशील",
     "backToDashboard": "डॅशबोर्डवर परत जा"
   },
-
   "games": {
     "catalogTitle": "शैक्षणिक खेळ",
     "catalogSubtitle": "खेळण्यासाठी एक खेळ निवडा!",
@@ -148,7 +238,6 @@
       "description": "चित्र पहा आणि माइकवर स्पष्टपणे शब्द बोला!"
     }
   },
-
   "alphabetMatching": {
     "modeSelectionTitle": "अक्षर जुळवणी",
     "modeSelectionSubtitle": "तुम्हाला कसे खेळायचे आहे ते निवडा!",
@@ -169,7 +258,6 @@
     "howToPlayBtn": "❓ कसे खेळायचे",
     "gotItBtn": "समजले! ▶"
   },
-
   "capitalSmallMatch": {
     "gameTitle": "मोठी व लहान अक्षरे जुळवणी",
     "tapCapitalPrompt": "जुळवणी सुरू करण्यासाठी मोठ्या अक्षरावर टॅप करा",
@@ -193,7 +281,6 @@
     "wrongMatchGotIt": "समजले! ▶",
     "wrongMatchSpeak": "हे आहे {{left}} आणि {{right}}"
   },
-
   "vowelMatraMatch": {
     "gameTitle": "स्वर आणि मात्रा जुळवणी",
     "vowelColumnLabel": "स्वर",
@@ -211,14 +298,12 @@
     "wrongMatchBadge": "चला एकत्र शिकूया!",
     "wrongMatchSpeak": "हे आहे {{left}} आणि {{right}}"
   },
-
   "badge": {
     "quick_learner": "जलद शिकणारा",
     "reading_streak_7": "7-दिवस वाचनाची लय",
     "first_session": "पहिले सत्र",
     "perfect_round": "परिपूर्ण फेरी"
   },
-
   "sessionComplete": {
     "title": "सत्र पूर्ण!",
     "greatJob": "अभिनंदन!",
@@ -241,7 +326,6 @@
     "nextLevel": "पुढची पातळी",
     "home": "घर"
   },
-
   "accessibility": {
     "correctCelebration": "बरोबर उत्तराचा आनंद",
     "replayLetterSound": "अक्षराचा आवाज पुन्हा ऐका",
@@ -263,7 +347,6 @@
     "gotItContinue": "समजले, पुढील फेरीवर जा",
     "timerLabel": "टाइमर: {{seconds}} सेकंद बाकी"
   },
-
   "game": {
     "correct": "बरोबर!",
     "leaveGameTitle": "खेळ सोडायचा?",
@@ -283,7 +366,6 @@
     "greatJob": "खूप छान!",
     "finishedGame": "तुम्ही आजचा खेळ पूर्ण केला!"
   },
-
   "speechWordChallenge": {
     "sayTheWord": "शब्द बोला.",
     "tapMicPrompt": "माइक दाबा आणि शब्द बोला.",
