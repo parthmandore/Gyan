@@ -2,6 +2,7 @@ const {
   SUPPORTED_LANGUAGES,
   getSpeechConfig,
   synthesizeSpeech,
+  transcribeSpeech,
 } = require("../services/speechService");
 
 // --------------------------------------------------
@@ -17,9 +18,7 @@ const getSpeechConfigController = async (
       req.query.lang || "en";
 
     // Validate language
-    if (
-      !SUPPORTED_LANGUAGES[language]
-    ) {
+    if (!SUPPORTED_LANGUAGES[language]) {
       return res.status(400).json({
         success: false,
 
@@ -28,7 +27,6 @@ const getSpeechConfigController = async (
       });
     }
 
-    // getSpeechConfig is now async
     const config =
       await getSpeechConfig(language);
 
@@ -64,12 +62,8 @@ const synthesizeSpeechController =
         language,
       } = req.body;
 
-      // Use request language first,
-      // then user's saved language,
-      // then English.
       const selectedLanguage =
         language ||
-        req.user?.language ||
         "en";
 
       // Validate language
@@ -86,7 +80,6 @@ const synthesizeSpeechController =
         });
       }
 
-      // Generate speech through GAN TTS
       const result =
         await synthesizeSpeech({
           text,
@@ -116,6 +109,78 @@ const synthesizeSpeechController =
   };
 
 // --------------------------------------------------
+// TRANSCRIBE SPEECH USING WHISPER
+// --------------------------------------------------
+
+const transcribeSpeechController =
+  async (req, res) => {
+    try {
+      // Multer will place the uploaded
+      // audio file in req.file.
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+
+          message:
+            "Audio file is required",
+        });
+      }
+
+      const language =
+        req.body.language ||
+        "en";
+
+      // Validate language
+      if (
+        !SUPPORTED_LANGUAGES[
+          language
+        ]
+      ) {
+        return res.status(400).json({
+          success: false,
+
+          message:
+            "Unsupported language. Use en, hi or mr",
+        });
+      }
+
+      const result =
+        await transcribeSpeech({
+          audioBuffer:
+            req.file.buffer,
+
+          filename:
+            req.file.originalname ||
+            "speech.wav",
+
+          mimeType:
+            req.file.mimetype ||
+            "audio/wav",
+
+          language,
+        });
+
+      return res.status(200).json({
+        success: true,
+
+        data: result,
+      });
+    } catch (error) {
+      console.error(
+        "Speech transcription error:",
+        error
+      );
+
+      return res.status(400).json({
+        success: false,
+
+        message:
+          error.message,
+      });
+    }
+  };
+
+// --------------------------------------------------
 // EXPORTS
 // --------------------------------------------------
 
@@ -123,4 +188,6 @@ module.exports = {
   getSpeechConfigController,
 
   synthesizeSpeechController,
+
+  transcribeSpeechController,
 };

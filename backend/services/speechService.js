@@ -27,11 +27,11 @@ const SUPPORTED_LANGUAGES = {
 };
 
 // --------------------------------------------------
-// TTS-GAN CONFIGURATION
+// FASTAPI WHISPER CONFIGURATION
 // --------------------------------------------------
 
-const TTS_GAN_BASE_URL =
-  process.env.TTS_GAN_BASE_URL ||
+const WHISPER_BASE_URL =
+  process.env.WHISPER_BASE_URL ||
   "http://localhost:8000";
 
 // --------------------------------------------------
@@ -47,37 +47,46 @@ const getSpeechConfig = async (language = "en") => {
     );
   }
 
-  // Check actual GAN service status
-  const health = await checkTTSGanHealth();
+  const whisperHealth =
+    await checkWhisperHealth();
 
   return {
     language: config.code,
 
     languageName: config.name,
 
+    // TTS will be connected to the
+    // multilingual TTS API later.
     tts: {
       language: config.ttsLanguage,
 
-      enabled: health.connected,
+      enabled: true,
 
-      provider: "tts-gan",
+      provider: "multilingual-tts",
 
-      endpoint: "/tts",
+      endpoint: "/synthesize",
     },
 
+    // Speech-to-Text
     recognition: {
       language:
         config.recognitionLanguage,
 
-      enabled: true,
+      enabled:
+        whisperHealth.connected,
+
+      provider: "openai-whisper",
+
+      endpoint: "/speech/transcribe",
     },
 
     ai: {
-      enabled: health.connected,
+      enabled:
+        whisperHealth.connected,
 
-      provider: "tts-gan",
+      provider: "openai-whisper",
 
-      status: health.status,
+      status: whisperHealth.status,
     },
   };
 };
@@ -112,7 +121,6 @@ const validateSpeechText = (text) => {
     };
   }
 
-  // Maximum text length
   if (cleanedText.length > 500) {
     return {
       valid: false,
@@ -146,87 +154,25 @@ const validateLanguage = (language) => {
 };
 
 // --------------------------------------------------
-// CALL TTS-GAN FASTAPI SERVICE
+// WHISPER STT - TRANSCRIBE AUDIO
 // --------------------------------------------------
 
-const callTTSGan = async ({
-  text,
+const transcribeSpeech = async ({
+  audioBuffer,
+  filename = "speech.wav",
+  mimeType = "audio/wav",
   language,
 }) => {
-  const endpoint =
-    `${TTS_GAN_BASE_URL}/tts`;
-
-  try {
-    const response = await fetch(
-      endpoint,
-      {
-        method: "POST",
-
-        headers: {
-          "Content-Type":
-            "application/json",
-        },
-
-        body: JSON.stringify({
-          text,
-          language,
-        }),
-      }
-    );
-
-    let data;
-
-    try {
-      data = await response.json();
-    } catch (jsonError) {
-      throw new Error(
-        "TTS-GAN returned an invalid response"
-      );
-    }
-
-    if (!response.ok) {
-      throw new Error(
-        data?.detail ||
-          data?.message ||
-          `TTS-GAN request failed with status ${response.status}`
-      );
-    }
-
-    if (!data?.success) {
-      throw new Error(
-        data?.message ||
-          "TTS-GAN synthesis failed"
-      );
-    }
-
-    return data;
-  } catch (error) {
-    console.error(
-      "TTS-GAN connection error:",
-      error.message
-    );
-
+  // Validate audio
+  if (!audioBuffer) {
     throw new Error(
-      `Unable to connect to TTS-GAN service: ${error.message}`
+      "Audio file is required"
     );
   }
-};
 
-// --------------------------------------------------
-// SPEECH SYNTHESIS
-// --------------------------------------------------
-
-const synthesizeSpeech = async ({
-  text,
-  language,
-}) => {
-  // Validate text
-  const validation =
-    validateSpeechText(text);
-
-  if (!validation.valid) {
+  if (!Buffer.isBuffer(audioBuffer)) {
     throw new Error(
-      validation.message
+      "Invalid audio file"
     );
   }
 
@@ -240,79 +186,100 @@ const synthesizeSpeech = async ({
     );
   }
 
-  const config =
-    SUPPORTED_LANGUAGES[language];
+  const endpoint =
+    `${WHISPER_BASE_URL}/speech/transcribe`;
 
-  // Call GAN TTS service
-  const ttsResponse =
-    await callTTSGan({
-      text: validation.text,
-      language: config.code,
-    });
+  try {
+    const formData = new FormData();
 
-  // ------------------------------------------------
-  // BUILD AUDIO URL
-  // ------------------------------------------------
+    const audioBlob = new Blob(
+      [audioBuffer],
+      {
+        type: mimeType,
+      }
+    );
 
-  let audioUrl =
-    ttsResponse.audio_url ||
-    null;
+    formData.append(
+      "file",
+      audioBlob,
+      filename
+    );
 
-  /*
-   * FastAPI may return:
-   *
-   * /audio/uuid.wav
-   *
-   * Convert it to:
-   *
-   * http://localhost:8000/audio/uuid.wav
-   */
+    formData.append(
+      "language",
+      language
+    );
 
-  if (
-    audioUrl &&
-    audioUrl.startsWith("/")
-  ) {
-    audioUrl =
-      `${TTS_GAN_BASE_URL}${audioUrl}`;
+    const response = await fetch(
+      endpoint,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    let data;
+
+    try {
+      data = await response.json();
+    } catch (error) {
+      throw new Error(
+        "Whisper FastAPI returned an invalid response"
+      );
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        data?.detail ||
+          data?.message ||
+          `Whisper request failed with status ${response.status}`
+      );
+    }
+
+    if (!data?.success) {
+      throw new Error(
+        data?.message ||
+          "Whisper transcription failed"
+      );
+    }
+
+    // Keep the same field names used by
+    // the existing FastAPI/frontend contract.
+    return {
+      success: true,
+
+      recognized_text:
+        data.recognized_text || "",
+
+      language_used:
+        data.language_used ||
+        language,
+
+      is_empty:
+        data.is_empty ?? false,
+
+      provider: "openai-whisper",
+    };
+  } catch (error) {
+    console.error(
+      "Whisper FastAPI connection error:",
+      error.message
+    );
+
+    throw new Error(
+      `Unable to connect to Whisper FastAPI service: ${error.message}`
+    );
   }
-
-  // ------------------------------------------------
-  // RETURN RESULT
-  // ------------------------------------------------
-
-  return {
-    text: validation.text,
-
-    language: config.code,
-
-    languageName: config.name,
-
-    audioFile:
-      ttsResponse.audio_file ||
-      null,
-
-    audioUrl,
-
-    provider: "tts-gan",
-
-    status: audioUrl
-      ? "success"
-      : "failed",
-
-    message: audioUrl
-      ? "Speech synthesized successfully"
-      : "TTS-GAN did not return an audio URL",
-  };
 };
 
 // --------------------------------------------------
-// HEALTH CHECK FOR TTS-GAN
+// WHISPER HEALTH CHECK
 // --------------------------------------------------
 
-const checkTTSGanHealth = async () => {
+const checkWhisperHealth = async () => {
   try {
     const response = await fetch(
-      `${TTS_GAN_BASE_URL}/health`
+      `${WHISPER_BASE_URL}/health`
     );
 
     if (!response.ok) {
@@ -345,6 +312,41 @@ const checkTTSGanHealth = async () => {
 };
 
 // --------------------------------------------------
+// TEMPORARY TTS
+// --------------------------------------------------
+// GAN TTS has been removed.
+// This will be replaced with the selected
+// multilingual TTS API.
+// --------------------------------------------------
+
+const synthesizeSpeech = async ({
+  text,
+  language,
+}) => {
+  const validation =
+    validateSpeechText(text);
+
+  if (!validation.valid) {
+    throw new Error(
+      validation.message
+    );
+  }
+
+  const languageValidation =
+    validateLanguage(language);
+
+  if (!languageValidation.valid) {
+    throw new Error(
+      languageValidation.message
+    );
+  }
+
+  throw new Error(
+    "Multilingual TTS API is not configured yet"
+  );
+};
+
+// --------------------------------------------------
 // EXPORTS
 // --------------------------------------------------
 
@@ -355,7 +357,11 @@ module.exports = {
 
   validateSpeechText,
 
-  synthesizeSpeech,
+  validateLanguage,
 
-  checkTTSGanHealth,
+  transcribeSpeech,
+
+  checkWhisperHealth,
+
+  synthesizeSpeech,
 };
