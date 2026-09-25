@@ -53,10 +53,10 @@ const register = async (req, res) => {
 
     // Validate student age
     if (role === "student") {
-      if (!age || age < 6 || age > 10) {
+      if (!age || age < 5 || age > 10) {
         return res.status(400).json({
           success: false,
-          message: "Student age must be between 6 and 10",
+          message: "Student age must be between 5 and 10",
         });
       }
     }

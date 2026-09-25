@@ -5,17 +5,24 @@ const {
   getAlphabetMatchingContent,
   getCapitalSmallMatchContent,
   getVowelMatraMatchContent,
+  getSpeechWordChallengeContent,
   getGameConfig,
 } = require("../controllers/gameController");
 
-const gameRouter = express.Router();
-const gameConfigRouter = express.Router();
+const gameRouter =
+  express.Router();
+
+const gameConfigRouter =
+  express.Router();
 
 // --------------------------------------------------
 // GAME CATALOG
 // --------------------------------------------------
 
-gameRouter.get("/", getGames);
+gameRouter.get(
+  "/",
+  getGames
+);
 
 // --------------------------------------------------
 // GAME CONTENT
@@ -34,6 +41,11 @@ gameRouter.get(
 gameRouter.get(
   "/vowel_matra_match/content",
   getVowelMatraMatchContent
+);
+
+gameRouter.get(
+  "/speech_word_challenge/content",
+  getSpeechWordChallengeContent
 );
 
 // --------------------------------------------------

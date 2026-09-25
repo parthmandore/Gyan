@@ -16,21 +16,25 @@ const getSpeechConfigController = async (
     const language =
       req.query.lang || "en";
 
+    // Validate language
     if (
       !SUPPORTED_LANGUAGES[language]
     ) {
       return res.status(400).json({
         success: false,
+
         message:
           "Unsupported language. Use en, hi or mr",
       });
     }
 
+    // getSpeechConfig is now async
     const config =
-      getSpeechConfig(language);
+      await getSpeechConfig(language);
 
     return res.status(200).json({
       success: true,
+
       data: config,
     });
   } catch (error) {
@@ -41,6 +45,7 @@ const getSpeechConfigController = async (
 
     return res.status(500).json({
       success: false,
+
       message:
         "Server error while fetching speech configuration",
     });
@@ -59,11 +64,15 @@ const synthesizeSpeechController =
         language,
       } = req.body;
 
+      // Use request language first,
+      // then user's saved language,
+      // then English.
       const selectedLanguage =
         language ||
         req.user?.language ||
         "en";
 
+      // Validate language
       if (
         !SUPPORTED_LANGUAGES[
           selectedLanguage
@@ -71,20 +80,24 @@ const synthesizeSpeechController =
       ) {
         return res.status(400).json({
           success: false,
+
           message:
             "Unsupported language. Use en, hi or mr",
         });
       }
 
+      // Generate speech through GAN TTS
       const result =
         await synthesizeSpeech({
           text,
+
           language:
             selectedLanguage,
         });
 
       return res.status(200).json({
         success: true,
+
         data: result,
       });
     } catch (error) {
@@ -95,12 +108,19 @@ const synthesizeSpeechController =
 
       return res.status(400).json({
         success: false,
-        message: error.message,
+
+        message:
+          error.message,
       });
     }
   };
 
+// --------------------------------------------------
+// EXPORTS
+// --------------------------------------------------
+
 module.exports = {
   getSpeechConfigController,
+
   synthesizeSpeechController,
 };

@@ -122,17 +122,18 @@ const getUserAchievements = async (userId) => {
     await checkAchievements(userId);
 
   const earned = achievements
-    .filter((achievement) =>
-      earnedBadgeIds.includes(
-        achievement.badge_id
-      )
+  .filter((achievement) =>
+    earnedBadgeIds.includes(
+      achievement.badge_id
     )
-    .map((achievement) => ({
-      badge_id: achievement.badge_id,
-      earned_at: achievement.updatedAt
-        ? achievement.updatedAt.toISOString()
-        : new Date().toISOString(),
-    }));
+  )
+  .map((achievement) => ({
+  badge_id: achievement.badge_id,
+  description_key: achievement.description_key,
+  earned_at: achievement.updatedAt
+    ? achievement.updatedAt.toISOString()
+    : new Date().toISOString(),
+}));
 
   const available = achievements
     .filter(

@@ -31,6 +31,9 @@ const teacherRoutes =
 const speechRoutes =
   require("./routes/speechRoutes");
 
+const speechChallengeRoutes =
+  require("./routes/speechChallengeRoutes");
+
 const app = express();
 
 // --------------------------------------------------
@@ -146,6 +149,15 @@ app.use(
 app.use(
   "/api/speech",
   speechRoutes
+);
+
+// --------------------------------------------------
+// SPEECH WORD CHALLENGE
+// --------------------------------------------------
+
+app.use(
+  "/api/speech-challenge",
+  speechChallengeRoutes
 );
 
 // --------------------------------------------------
