@@ -1,4 +1,5 @@
 import { NavigatorScreenParams } from '@react-navigation/native';
+
 import { GamesStackParamList } from '../navigation/GamesNavigator';
 
 export interface AppState {
@@ -8,13 +9,29 @@ export interface AppState {
   setInitialized: (val: boolean) => void;
 }
 
+export type UserRole =
+  | 'student'
+  | 'parent'
+  | 'teacher';
+
 export type RootStackParamList = {
   LanguageGate: undefined;
+
   RoleSelection: undefined;
+
+  Login: {
+    role: UserRole;
+  };
+
   Home: undefined;
+
   GameCatalog: undefined;
+
   SpeechSynthesis: undefined;
+
   ParentDashboard: undefined;
+
   TeacherDashboard: undefined;
+
   Games: NavigatorScreenParams<GamesStackParamList>;
 };

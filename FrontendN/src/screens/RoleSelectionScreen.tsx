@@ -5,6 +5,7 @@
  */
 
 import React from 'react';
+
 import {
   Pressable,
   ScrollView,
@@ -12,10 +13,13 @@ import {
   Text,
   View,
 } from 'react-native';
+
 import {
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
+
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 import { RootStackParamList } from '../types';
 
@@ -27,20 +31,28 @@ type Props = NativeStackScreenProps<
 export const RoleSelectionScreen: React.FC<Props> = ({
   navigation,
 }) => {
+  const { t } = useTranslation();
+
   const handleBack = () => {
     navigation.replace('LanguageGate');
   };
 
   const handleStudent = () => {
-    navigation.navigate('Home');
+    navigation.navigate('Login', {
+      role: 'student',
+    });
   };
 
   const handleParent = () => {
-    navigation.navigate('ParentDashboard');
+    navigation.navigate('Login', {
+      role: 'parent',
+    });
   };
 
   const handleTeacher = () => {
-    navigation.navigate('TeacherDashboard');
+    navigation.navigate('Login', {
+      role: 'teacher',
+    });
   };
 
   return (
@@ -50,7 +62,6 @@ export const RoleSelectionScreen: React.FC<Props> = ({
         showsVerticalScrollIndicator={false}
       >
         {/* TOP BAR */}
-
         <View style={styles.topBar}>
           <Pressable
             style={({ pressed }) => [
@@ -59,7 +70,7 @@ export const RoleSelectionScreen: React.FC<Props> = ({
             ]}
             onPress={handleBack}
             accessibilityRole="button"
-            accessibilityLabel="Go back to language selection"
+            accessibilityLabel={t('roleSelection.back')}
           >
             <Ionicons
               name="arrow-back"
@@ -69,14 +80,13 @@ export const RoleSelectionScreen: React.FC<Props> = ({
           </Pressable>
 
           <Text style={styles.topBarTitle}>
-            Choose Role
+            {t('roleSelection.title')}
           </Text>
 
           <View style={styles.topBarSpacer} />
         </View>
 
         {/* HEADER */}
-
         <View style={styles.header}>
           <View style={styles.logoCircle}>
             <Text style={styles.logoEmoji}>
@@ -85,20 +95,19 @@ export const RoleSelectionScreen: React.FC<Props> = ({
           </View>
 
           <Text style={styles.brandName}>
-            LingoBloom
+            Gyan
           </Text>
 
           <Text style={styles.title}>
-            Who are you?
+            {t('roleSelection.whoAreYou')}
           </Text>
 
           <Text style={styles.subtitle}>
-            Choose your role to continue your learning journey.
+            {t('roleSelection.subtitle')}
           </Text>
         </View>
 
         {/* STUDENT */}
-
         <Pressable
           style={({ pressed }) => [
             styles.roleCard,
@@ -107,7 +116,7 @@ export const RoleSelectionScreen: React.FC<Props> = ({
           ]}
           onPress={handleStudent}
           accessibilityRole="button"
-          accessibilityLabel="Continue as Student"
+          accessibilityLabel={t('roleSelection.student')}
         >
           <View
             style={[
@@ -122,11 +131,11 @@ export const RoleSelectionScreen: React.FC<Props> = ({
 
           <View style={styles.roleContent}>
             <Text style={styles.roleTitle}>
-              Student
+              {t('roleSelection.student')}
             </Text>
 
             <Text style={styles.roleDescription}>
-              Learn, practise, play and grow your skills.
+              {t('roleSelection.studentDescription')}
             </Text>
 
             <View style={styles.roleTag}>
@@ -137,7 +146,7 @@ export const RoleSelectionScreen: React.FC<Props> = ({
               />
 
               <Text style={styles.roleTagText}>
-                Learning & Games
+                {t('roleSelection.studentTag')}
               </Text>
             </View>
           </View>
@@ -152,7 +161,6 @@ export const RoleSelectionScreen: React.FC<Props> = ({
         </Pressable>
 
         {/* PARENT */}
-
         <Pressable
           style={({ pressed }) => [
             styles.roleCard,
@@ -161,7 +169,7 @@ export const RoleSelectionScreen: React.FC<Props> = ({
           ]}
           onPress={handleParent}
           accessibilityRole="button"
-          accessibilityLabel="Continue as Parent"
+          accessibilityLabel={t('roleSelection.parent')}
         >
           <View
             style={[
@@ -176,12 +184,11 @@ export const RoleSelectionScreen: React.FC<Props> = ({
 
           <View style={styles.roleContent}>
             <Text style={styles.roleTitle}>
-              Parent
+              {t('roleSelection.parent')}
             </Text>
 
             <Text style={styles.roleDescription}>
-              Track your child's progress and celebrate
-              their learning.
+              {t('roleSelection.parentDescription')}
             </Text>
 
             <View
@@ -202,7 +209,7 @@ export const RoleSelectionScreen: React.FC<Props> = ({
                   styles.parentTagText,
                 ]}
               >
-                Progress Dashboard
+                {t('roleSelection.parentTag')}
               </Text>
             </View>
           </View>
@@ -217,7 +224,6 @@ export const RoleSelectionScreen: React.FC<Props> = ({
         </Pressable>
 
         {/* TEACHER */}
-
         <Pressable
           style={({ pressed }) => [
             styles.roleCard,
@@ -226,7 +232,7 @@ export const RoleSelectionScreen: React.FC<Props> = ({
           ]}
           onPress={handleTeacher}
           accessibilityRole="button"
-          accessibilityLabel="Continue as Teacher"
+          accessibilityLabel={t('roleSelection.teacher')}
         >
           <View
             style={[
@@ -241,12 +247,11 @@ export const RoleSelectionScreen: React.FC<Props> = ({
 
           <View style={styles.roleContent}>
             <Text style={styles.roleTitle}>
-              Teacher
+              {t('roleSelection.teacher')}
             </Text>
 
             <Text style={styles.roleDescription}>
-              Manage your classroom and monitor student
-              progress.
+              {t('roleSelection.teacherDescription')}
             </Text>
 
             <View
@@ -267,7 +272,7 @@ export const RoleSelectionScreen: React.FC<Props> = ({
                   styles.teacherTagText,
                 ]}
               >
-                Classroom Dashboard
+                {t('roleSelection.teacherTag')}
               </Text>
             </View>
           </View>
@@ -282,7 +287,6 @@ export const RoleSelectionScreen: React.FC<Props> = ({
         </Pressable>
 
         {/* SECURITY / PRIVACY */}
-
         <View style={styles.footerCard}>
           <View style={styles.footerIcon}>
             <Ionicons
@@ -294,18 +298,17 @@ export const RoleSelectionScreen: React.FC<Props> = ({
 
           <View style={styles.footerContent}>
             <Text style={styles.footerTitle}>
-              Safe & personalized
+              {t('roleSelection.safeTitle')}
             </Text>
 
             <Text style={styles.footerText}>
-              Your role helps us show you the right
-              LingoBloom experience.
+              {t('roleSelection.safeDescription')}
             </Text>
           </View>
         </View>
 
         <Text style={styles.footerHint}>
-          You can change your role later.
+          {t('roleSelection.footerHint')}
         </Text>
       </ScrollView>
     </View>
@@ -324,8 +327,6 @@ const styles = StyleSheet.create({
     paddingTop: 18,
     paddingBottom: 35,
   },
-
-  /* TOP BAR */
 
   topBar: {
     minHeight: 48,
@@ -354,8 +355,6 @@ const styles = StyleSheet.create({
   topBarSpacer: {
     width: 44,
   },
-
-  /* HEADER */
 
   header: {
     alignItems: 'center',
@@ -391,6 +390,7 @@ const styles = StyleSheet.create({
     fontSize: 30,
     fontWeight: '800',
     color: '#173B5E',
+    textAlign: 'center',
   },
 
   subtitle: {
@@ -401,8 +401,6 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     color: '#527087',
   },
-
-  /* ROLE CARD */
 
   roleCard: {
     minHeight: 128,
@@ -521,8 +519,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#F0EDFF',
   },
-
-  /* FOOTER */
 
   footerCard: {
     marginTop: 8,

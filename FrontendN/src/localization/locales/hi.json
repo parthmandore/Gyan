@@ -5,12 +5,20 @@
     "error": "एक त्रुटि हुई",
     "back": "वापस",
     "next": "आगे",
-    "retry": "पुनः प्रयास करें"
+    "retry": "पुनः प्रयास करें",
+    "save": "सहेजें",
+    "cancel": "रद्द करें",
+    "close": "बंद करें",
+    "done": "हो गया",
+    "continue": "जारी रखें",
+    "select": "चुनें"
   },
+
   "navigation": {
     "home": "मुख्य पृष्ठ",
     "games": "खेल"
   },
+
   "languageGate": {
     "title": "सीखने की भाषा चुनें",
     "subtitle": "वह भाषा चुनें जिसे आप आज सीखना चाहते हैं!",
@@ -22,6 +30,100 @@
     "marathiSub": "शिका मराठी मुळाक्षरे आणि संख्या",
     "accessibilityHint": "ऐप की सीखने की भाषा {{language}} पर सेट करता है और उपलब्ध खेल खोलता है"
   },
+
+  "roleSelection": {
+    "title": "ज्ञान में आपका स्वागत है",
+    "subtitle": "जारी रखने के लिए अपनी भूमिका चुनें",
+    "student": "विद्यार्थी",
+    "studentDescription": "सीखें, खेलें और आगे बढ़ें",
+    "parent": "अभिभावक",
+    "parentDescription": "अपने बच्चे की सीखने की प्रगति देखें",
+    "teacher": "शिक्षक",
+    "teacherDescription": "अपने विद्यार्थियों का मार्गदर्शन और सहायता करें",
+    "continue": "जारी रखें",
+    "whoAreYou": "आप कौन हैं?",
+"safeTitle": "सुरक्षित और व्यक्तिगत",
+"safeDescription": "आपकी भूमिका के अनुसार Gyan का सही अनुभव दिखाया जाएगा।",
+"footerHint": "आप बाद में अपनी भूमिका बदल सकते हैं।",
+"studentTag": "सीखना और खेल",
+"parentTag": "प्रगति डैशबोर्ड",
+"teacherTag": "कक्षा डैशबोर्ड",
+"back": "भाषा चयन पर वापस जाएँ"
+  },
+
+ "login": {
+  "title": "Gyan में आपका स्वागत है",
+  "subtitle": "अपनी सीखने की यात्रा शुरू करें",
+  "appLanguage": "ऐप की भाषा",
+  "learningLanguage": "सीखने की भाषा",
+  "email": "ईमेल",
+  "password": "पासवर्ड",
+  "emailPlaceholder": "अपना ईमेल दर्ज करें",
+  "passwordPlaceholder": "अपना पासवर्ड दर्ज करें",
+  "login": "लॉगिन",
+  "loggingIn": "लॉगिन हो रहा है...",
+  "selectLanguage": "भाषा चुनें",
+  "selectLearningLanguage": "आप क्या सीखना चाहते हैं?",
+  "studentLogin": "विद्यार्थी लॉगिन",
+  "parentLogin": "अभिभावक लॉगिन",
+  "teacherLogin": "शिक्षक लॉगिन",
+  "invalidCredentials": "ईमेल या पासवर्ड गलत है",
+  "requiredFields": "कृपया सभी आवश्यक फ़ील्ड भरें",
+  "securityMessage": "सुरक्षित • सुरक्षित • बेहतर सीखने के भविष्य के लिए",
+  "footer": "Gyan • सीखें • खेलें • आगे बढ़ें"
+},
+
+  "home": {
+    "greeting": "नमस्ते, {{name}}!",
+    "welcomeBack": "वापसी पर स्वागत है!",
+    "level": "स्तर {{level}}",
+    "xp": "{{xp}} XP",
+    "streak": "{{days}} दिनों की लगातार सीख",
+    "todaysAdventure": "आज का रोमांच",
+    "continueLearning": "सीखना जारी रखें",
+    "dailyGoal": "आज का लक्ष्य",
+    "rewards": "आपके पुरस्कार",
+    "basics": "मूल बातें",
+    "words": "शब्द",
+    "progress": "प्रगति",
+    "learning": "सीखना",
+    "play": "खेलें",
+    "speak": "बोलें",
+    "goalComplete": "लक्ष्य पूरा हुआ!",
+    "keepGoing": "ऐसे ही आगे बढ़ते रहें!",
+    "profile": "प्रोफ़ाइल"
+  },
+
+  "parent": {
+    "title": "अभिभावक डैशबोर्ड",
+    "welcome": "स्वागत है, {{name}}!",
+    "children": "मेरे बच्चे",
+    "progress": "सीखने की प्रगति",
+    "viewDetails": "विवरण देखें",
+    "recentActivity": "हाल की गतिविधि",
+    "streak": "सीखने की लगातार अवधि",
+    "xpEarned": "अर्जित XP",
+    "level": "स्तर",
+    "noChildren": "अभी तक कोई बच्चा नहीं जोड़ा गया है",
+    "childDetails": "बच्चे का विवरण",
+    "backToDashboard": "डैशबोर्ड पर वापस जाएं"
+  },
+
+  "teacher": {
+    "title": "शिक्षक डैशबोर्ड",
+    "welcome": "स्वागत है, {{name}}!",
+    "students": "मेरे विद्यार्थी",
+    "studentProgress": "विद्यार्थी की प्रगति",
+    "viewDetails": "विवरण देखें",
+    "recentActivity": "हाल की गतिविधि",
+    "classProgress": "कक्षा की प्रगति",
+    "xpEarned": "अर्जित XP",
+    "level": "स्तर",
+    "noStudents": "कोई विद्यार्थी उपलब्ध नहीं है",
+    "studentDetails": "विद्यार्थी का विवरण",
+    "backToDashboard": "डैशबोर्ड पर वापस जाएं"
+  },
+
   "games": {
     "catalogTitle": "शैक्षणिक खेल",
     "catalogSubtitle": "खेलने के लिए एक खेल चुनें!",
@@ -48,6 +150,7 @@
       "description": "चित्र देखें और माइक में साफ-साफ शब्द बोलें!"
     }
   },
+
   "alphabetMatching": {
     "modeSelectionTitle": "अक्षर मिलान",
     "modeSelectionSubtitle": "चुनें कि आप कैसे खेलना चाहते हैं!",
@@ -68,6 +171,7 @@
     "howToPlayBtn": "❓ कैसे खेलें",
     "gotItBtn": "समझ गया! ▶"
   },
+
   "capitalSmallMatch": {
     "gameTitle": "बड़े और छोटे अक्षर मिलान",
     "tapCapitalPrompt": "मिलान शुरू करने के लिए बड़े अक्षर पर टैप करें",
@@ -91,6 +195,7 @@
     "wrongMatchGotIt": "समझ गया! ▶",
     "wrongMatchSpeak": "यह है {{left}} और {{right}}"
   },
+
   "vowelMatraMatch": {
     "gameTitle": "स्वर और मात्रा मिलान",
     "vowelColumnLabel": "स्वर",
@@ -108,12 +213,14 @@
     "wrongMatchBadge": "आओ साथ सीखें!",
     "wrongMatchSpeak": "यह है {{left}} और {{right}}"
   },
+
   "badge": {
     "quick_learner": "तेज़ सीखने वाला",
     "reading_streak_7": "7-दिन पढ़ने की लय",
     "first_session": "पहला सत्र",
     "perfect_round": "सही उत्तर"
   },
+
   "sessionComplete": {
     "title": "सत्र पूर्ण!",
     "greatJob": "बहुत अच्छा!",
@@ -129,13 +236,14 @@
     "score": "स्कोर",
     "correct": "{{correct}} / {{total}} सही",
     "totalXpLevel": "कुल XP: ⭐ {{xp}} | स्तर: {{level}}",
-    "amazingWork": "शानदार! \uD83C\uDF1F",
-    "greatEffort": "बहुत अच्छा! जारी रखो! \uD83D\uDCAA",
+    "amazingWork": "शानदार! 🌟",
+    "greatEffort": "बहुत अच्छा! जारी रखो! 💪",
     "level": "स्तर {{level}}",
     "xpToNextLevel": "अगले स्तर तक {{xp}} XP",
     "nextLevel": "अगला स्तर",
     "home": "घर"
   },
+
   "accessibility": {
     "correctCelebration": "सही उत्तर का जश्न",
     "replayLetterSound": "अक्षर की ध्वनि फिर से सुनें",
@@ -157,6 +265,7 @@
     "gotItContinue": "समझ गया, अगले राउंड पर जाएं",
     "timerLabel": "टाइमर: {{seconds}} सेकंड शेष"
   },
+
   "game": {
     "correct": "सही!",
     "leaveGameTitle": "खेल छोड़ें?",
@@ -176,6 +285,7 @@
     "greatJob": "शाबाश!",
     "finishedGame": "आपने आज का खेल पूरा कर लिया!"
   },
+
   "speechWordChallenge": {
     "sayTheWord": "शब्द बोलो।",
     "tapMicPrompt": "माइक दबाएं और शब्द बोलें।",

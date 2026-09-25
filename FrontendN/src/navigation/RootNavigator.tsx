@@ -1,11 +1,12 @@
 /**
  * Purpose: Root stack navigator managing Language Gate,
- * Role Selection, Student, Parent, Teacher and Games.
+ * Role Selection, Login, Student, Parent, Teacher and Games.
  * Module: Navigation
  * Folder: frontend/src/navigation
  */
 
 import React, { useEffect, useState } from 'react';
+
 import {
   View,
   ActivityIndicator,
@@ -18,6 +19,7 @@ import { RootStackParamList } from '../types';
 
 import { LanguageGateScreen } from '../screens/LanguageGateScreen';
 import { RoleSelectionScreen } from '../screens/RoleSelectionScreen';
+import { LoginScreen } from '../screens/LoginScreen';
 
 import { HomeScreen } from '../screens/HomeScreen';
 import { GameCatalogScreen } from '../screens/GameCatalogScreen';
@@ -35,24 +37,27 @@ const Stack =
 
 export const RootNavigator: React.FC = () => {
   const [initialRoute, setInitialRoute] =
-    useState<keyof RootStackParamList | null>(null);
+    useState<keyof RootStackParamList | null>(
+      null,
+    );
 
   const initLanguage =
-    useAppLanguageStore((state) => state.initLanguage);
+    useAppLanguageStore(
+      (state) => state.initLanguage,
+    );
 
   useEffect(() => {
     let isMounted = true;
 
     const checkPersistence = async () => {
-      const persistedLanguage = await initLanguage();
+      const persistedLanguage =
+        await initLanguage();
 
       if (!isMounted) return;
 
       if (persistedLanguage) {
-        // Returning user
         setInitialRoute('RoleSelection');
       } else {
-        // First time user
         setInitialRoute('LanguageGate');
       }
     };
@@ -82,19 +87,21 @@ export const RootNavigator: React.FC = () => {
         headerShown: false,
       }}
     >
-      {/* First Launch */}
       <Stack.Screen
         name="LanguageGate"
         component={LanguageGateScreen}
       />
 
-      {/* Role Selection */}
       <Stack.Screen
         name="RoleSelection"
         component={RoleSelectionScreen}
       />
 
-      {/* Student Flow */}
+      <Stack.Screen
+        name="Login"
+        component={LoginScreen}
+      />
+
       <Stack.Screen
         name="Home"
         component={HomeScreen}
@@ -110,19 +117,16 @@ export const RootNavigator: React.FC = () => {
         component={SpeechSynthesisScreen}
       />
 
-      {/* Parent */}
       <Stack.Screen
         name="ParentDashboard"
         component={ParentDashboardScreen}
       />
 
-      {/* Teacher */}
       <Stack.Screen
         name="TeacherDashboard"
         component={TeacherDashboardScreen}
       />
 
-      {/* Games */}
       <Stack.Screen
         name="Games"
         component={GamesNavigator}

@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 
 import type { RootStackParamList } from '../types';
 
@@ -16,6 +17,7 @@ const HOME_ART = require('../../assets/gyan-home-exact.png');
 
 export const HomeScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { t } = useTranslation();
 
   return (
     <View style={styles.container}>
@@ -24,6 +26,7 @@ export const HomeScreen: React.FC = () => {
         source={HOME_ART}
         style={styles.homeArtwork}
         resizeMode="stretch"
+        accessibilityIgnoresInvertColors
       />
 
       {/* Softens the artwork so the dashboard content stands out */}
@@ -41,56 +44,80 @@ export const HomeScreen: React.FC = () => {
           style={styles.profileButton}
           onPress={() => navigation.navigate('RoleSelection')}
           accessibilityRole="button"
-          accessibilityLabel="Open profile"
+          accessibilityLabel={t(
+            'home.profile',
+            'Open profile',
+          )}
         />
 
         <Pressable
           style={styles.speakButton}
           onPress={() => navigation.navigate('SpeechSynthesis')}
           accessibilityRole="button"
-          accessibilityLabel="Open Speak and Listen"
+          accessibilityLabel={t(
+            'home.speakAndListen',
+            'Open Speak and Listen',
+          )}
         />
 
         <Pressable
           style={styles.playButton}
           onPress={() => navigation.navigate('GameCatalog')}
           accessibilityRole="button"
-          accessibilityLabel="Open Play and Match"
+          accessibilityLabel={t(
+            'home.playAndMatch',
+            'Open Play and Match',
+          )}
         />
 
         <Pressable
           style={styles.continueButton}
           onPress={() => navigation.navigate('GameCatalog')}
           accessibilityRole="button"
-          accessibilityLabel="Continue Learning"
+          accessibilityLabel={t(
+            'home.continueLearning',
+            'Continue Learning',
+          )}
         />
 
         <Pressable
           style={styles.goalButton}
           onPress={() => navigation.navigate('GameCatalog')}
           accessibilityRole="button"
-          accessibilityLabel="Daily Goal"
+          accessibilityLabel={t(
+            'home.dailyGoal',
+            'Daily Goal',
+          )}
         />
 
         <Pressable
           style={styles.rewardsButton}
           onPress={() => navigation.navigate('GameCatalog')}
           accessibilityRole="button"
-          accessibilityLabel="Your Rewards"
+          accessibilityLabel={t(
+            'home.yourRewards',
+            'Your Rewards',
+          )}
         />
 
         <Pressable
           style={styles.basicsButton}
           onPress={() => navigation.navigate('GameCatalog')}
           accessibilityRole="button"
-          accessibilityLabel="Basics"
+          accessibilityLabel={t(
+            'home.basics',
+            'Basics',
+          )}
         />
 
         <Pressable
           style={styles.wordsButton}
           onPress={() => navigation.navigate('GameCatalog')}
           accessibilityRole="button"
-          accessibilityLabel="Words"
+          accessibilityLabel={t(
+            'home.words',
+            'Words',
+          )}
         />
       </View>
     </View>

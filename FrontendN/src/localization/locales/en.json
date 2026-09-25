@@ -5,12 +5,20 @@
     "error": "An error occurred",
     "back": "Back",
     "next": "Next",
-    "retry": "Retry"
+    "retry": "Retry",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "done": "Done",
+    "continue": "Continue",
+    "select": "Select"
   },
+
   "navigation": {
     "home": "Home",
     "games": "Games"
   },
+
   "languageGate": {
     "title": "Choose Learning Language",
     "subtitle": "Select the language you want to learn today!",
@@ -22,6 +30,145 @@
     "marathiSub": "शिका मराठी मुळाक्षरे आणि संख्या",
     "accessibilityHint": "Sets application learning language to {{language}} and opens available games"
   },
+
+  "roleSelection": {
+    "title": "Welcome to Gyan",
+    "subtitle": "Choose your role to continue",
+    "student": "Student",
+    "studentDescription": "Learn, play and grow",
+    "parent": "Parent",
+    "parentDescription": "Track your child's learning",
+    "teacher": "Teacher",
+    "teacherDescription": "Manage and support your students",
+    "continue": "Continue",
+    "whoAreYou": "Who are you?",
+    "safeTitle": "Safe & personalized",
+    "safeDescription": "Your role helps us show you the right Gyan experience.",
+"footerHint": "You can change your role later.",
+"studentTag": "Learning & Games",
+"parentTag": "Progress Dashboard",
+"teacherTag": "Classroom Dashboard",
+"back": "Go back to language selection"
+  },
+
+  "login": {
+    "title": "Welcome to Gyan",
+    "subtitle": "Let's get started with your learning journey",
+    "appLanguage": "App Language",
+    "learningLanguage": "Language to Learn",
+    "email": "Email",
+    "password": "Password",
+    "emailPlaceholder": "Enter your email",
+    "passwordPlaceholder": "Enter your password",
+    "login": "Login",
+    "loggingIn": "Logging in...",
+    "selectLanguage": "Select a language",
+    "selectLearningLanguage": "What would you like to learn?",
+    "studentLogin": "Student Login",
+    "parentLogin": "Parent Login",
+    "teacherLogin": "Teacher Login",
+    "invalidCredentials": "Invalid email or password",
+    "requiredFields": "Please fill in all required fields"
+  },
+
+  "home": {
+    "greeting": "Hello, {{name}}!",
+    "welcomeBack": "Welcome back!",
+    "level": "Level {{level}}",
+    "xp": "{{xp}} XP",
+    "streak": "{{days}} day streak",
+    "todaysAdventure": "Today's Adventure",
+    "continueLearning": "Continue Learning",
+    "dailyGoal": "Daily Goal",
+    "rewards": "Your Rewards",
+    "basics": "Basics",
+    "words": "Words",
+    "progress": "Progress",
+    "learning": "Learning",
+    "play": "Play",
+    "speak": "Speak",
+    "goalComplete": "Goal Complete!",
+    "keepGoing": "Keep going!",
+    "profile": "Profile"
+  },
+
+  "parent": {
+  "title": "Parent Dashboard",
+  "subtitle": "See how your child is learning",
+  "back": "Go back to role selection",
+  "goodMorning": "GOOD MORNING! ☀️",
+  "learningJourney": "Your child's learning journey",
+  "encouragement": "Keep encouraging them — every small step counts!",
+  "level": "Level",
+  "learner": "learner",
+  "dayLearningStreak": "day learning streak",
+  "viewProfile": "View {{name}}'s profile",
+  "view": "View",
+  "learningOverview": "Learning overview",
+  "thisWeekProgress": "This week's progress",
+  "xpEarned": "XP earned",
+  "lessons": "Lessons",
+  "learning": "Learning",
+  "weeklyProgress": "Weekly progress",
+  "greatWork": "Great work this week! 🌟",
+  "of": "of",
+  "activitiesCompleted": "activities completed",
+  "learningActivity": "Learning activity",
+  "practising": "What your child has been practising",
+
+  "activities": {
+    "speechPractice": "Speech Practice",
+    "listeningPronunciation": "Listening & pronunciation",
+    "learningGames": "Learning Games",
+    "lettersMatching": "Letters & matching",
+    "letterPractice": "Letter Practice",
+    "alphabetRecognition": "Alphabet recognition",
+    "alphabetMatching": "Alphabet Matching"
+  },
+
+  "labels": {
+    "thisWeek": "This week",
+    "completed": "Completed",
+    "accuracy": "Accuracy"
+  },
+
+  "skillsDevelopment": "Skills development",
+  "currentStrengths": "Current learning strengths",
+
+  "skills": {
+    "alphabet": "Alphabet",
+    "vocabulary": "Vocabulary",
+    "pronunciation": "Pronunciation"
+  },
+
+  "recentActivity": "Recent activity",
+  "latestSessions": "Latest learning sessions",
+
+  "times": {
+    "todayTenMinutes": "Today • 10 minutes",
+    "yesterdayFifteenMinutes": "Yesterday • 15 minutes",
+    "yesterdayEightMinutes": "Yesterday • 8 minutes"
+  },
+
+  "keepEncouraging": "Keep encouraging!",
+  "encouragementDescription": "A little encouragement from you can make learning even more enjoyable."
+},
+
+  "teacher": {
+    "title": "Teacher Dashboard",
+    "welcome": "Welcome, {{name}}!",
+    "students": "My Students",
+    "studentProgress": "Student Progress",
+    "viewDetails": "View Details",
+    "recentActivity": "Recent Activity",
+    "classProgress": "Class Progress",
+    "xpEarned": "XP Earned",
+    "level": "Level",
+    "noStudents": "No students available",
+    "studentDetails": "Student Details",
+    "backToDashboard": "Back to Dashboard"
+  },
+
   "games": {
     "catalogTitle": "Learning Games",
     "catalogSubtitle": "Select a game to start playing!",
@@ -48,6 +195,7 @@
       "description": "Look at the picture and speak the word aloud into the microphone!"
     }
   },
+
   "alphabetMatching": {
     "modeSelectionTitle": "Alphabet Matching",
     "modeSelectionSubtitle": "Choose how you want to play!",
@@ -68,6 +216,7 @@
     "howToPlayBtn": "❓ How to Play",
     "gotItBtn": "Got It! ▶"
   },
+
   "capitalSmallMatch": {
     "gameTitle": "Capital & Small Letter Match",
     "tapCapitalPrompt": "Tap a capital letter to start matching",
@@ -91,6 +240,7 @@
     "wrongMatchGotIt": "Got it! ▶",
     "wrongMatchSpeak": "This is {{left}} and {{right}}"
   },
+
   "vowelMatraMatch": {
     "gameTitle": "Vowel & Matra Match",
     "vowelColumnLabel": "Vowel",
@@ -108,12 +258,14 @@
     "wrongMatchBadge": "Let's Learn Together!",
     "wrongMatchSpeak": "This is {{left}} and {{right}}"
   },
+
   "badge": {
     "quick_learner": "Quick Learner",
     "reading_streak_7": "7-Day Reading Streak",
     "first_session": "First Session",
     "perfect_round": "Perfect Round"
   },
+
   "sessionComplete": {
     "title": "Session Complete!",
     "greatJob": "Great job!",
@@ -129,13 +281,14 @@
     "score": "Score",
     "correct": "{{correct}} / {{total}} Correct",
     "totalXpLevel": "Total XP: ⭐ {{xp}} | Level: {{level}}",
-    "amazingWork": "Amazing Work! \uD83C\uDF1F",
-    "greatEffort": "Great Effort! Keep Going! \uD83D\uDCAA",
+    "amazingWork": "Amazing Work! 🌟",
+    "greatEffort": "Great Effort! Keep Going! 💪",
     "level": "Level {{level}}",
     "xpToNextLevel": "{{xp}} XP to next level",
     "nextLevel": "Next Level",
     "home": "Home"
   },
+
   "accessibility": {
     "correctCelebration": "Correct answer celebration",
     "replayLetterSound": "Replay the letter sound",
@@ -157,6 +310,7 @@
     "gotItContinue": "Got it, continue to next round",
     "timerLabel": "Timer: {{seconds}} seconds remaining"
   },
+
   "game": {
     "correct": "Correct!",
     "leaveGameTitle": "Leave Game?",
@@ -176,6 +330,7 @@
     "greatJob": "Great Job!",
     "finishedGame": "You finished today's game!"
   },
+
   "speechWordChallenge": {
     "sayTheWord": "Say the word.",
     "tapMicPrompt": "Tap the microphone and say the word.",

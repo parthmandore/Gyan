@@ -1,9 +1,3 @@
-/**
- * Purpose: Parent Dashboard — child progress, learning activity and insights.
- * Module: Screens
- * Folder: FrontendN/src/screens
- */
-
 import React from 'react';
 import {
   Pressable,
@@ -14,7 +8,13 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
+
+import type { RootStackParamList } from '../types';
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const COLORS = {
   background: '#F1FBFB',
@@ -39,9 +39,6 @@ const COLORS = {
   yellow: '#FFD45C',
   yellowLight: '#FFF4C7',
   yellowDark: '#A85B00',
-
-  blue: '#4D8DFF',
-  blueLight: '#EAF1FF',
 
   green: '#2F9E67',
   greenLight: '#E8F8EF',
@@ -75,28 +72,28 @@ const parentDashboardData = {
 
   activities: [
     {
-      title: 'Speech Practice',
-      description: 'Listening & pronunciation',
+      titleKey: 'speechPractice',
+      descriptionKey: 'listeningPronunciation',
       value: '12 min',
-      label: 'this week',
+      labelKey: 'thisWeek',
       icon: 'volume-high' as const,
       background: COLORS.lavenderLight,
       iconColor: COLORS.lavenderDark,
     },
     {
-      title: 'Learning Games',
-      description: 'Letters & matching',
+      titleKey: 'learningGames',
+      descriptionKey: 'lettersMatching',
       value: '8',
-      label: 'completed',
+      labelKey: 'completed',
       icon: 'game-controller' as const,
       background: COLORS.coralLight,
       iconColor: COLORS.coralDark,
     },
     {
-      title: 'Letter Practice',
-      description: 'Alphabet recognition',
+      titleKey: 'letterPractice',
+      descriptionKey: 'alphabetRecognition',
       value: '86%',
-      label: 'accuracy',
+      labelKey: 'accuracy',
       icon: 'text' as const,
       background: COLORS.mintLight,
       iconColor: COLORS.mintDark,
@@ -105,17 +102,17 @@ const parentDashboardData = {
 
   skills: [
     {
-      name: 'Alphabet',
+      nameKey: 'alphabet',
       percentage: 80,
       color: COLORS.lavender,
     },
     {
-      name: 'Vocabulary',
+      nameKey: 'vocabulary',
       percentage: 65,
       color: COLORS.coral,
     },
     {
-      name: 'Pronunciation',
+      nameKey: 'pronunciation',
       percentage: 72,
       color: COLORS.mint,
     },
@@ -123,26 +120,27 @@ const parentDashboardData = {
 
   recentActivity: [
     {
-      title: 'Alphabet Matching',
-      time: 'Today • 10 minutes ago',
+      titleKey: 'alphabetMatching',
+      timeKey: 'todayTenMinutes',
       xp: '+20 XP',
     },
     {
-      title: 'Speech Practice',
-      time: 'Yesterday • 15 minutes',
+      titleKey: 'speechPractice',
+      timeKey: 'yesterdayFifteenMinutes',
       xp: '+15 XP',
     },
     {
-      title: 'Letter Practice',
-      time: 'Yesterday • 8 minutes',
+      titleKey: 'letterPractice',
+      timeKey: 'yesterdayEightMinutes',
       xp: '+10 XP',
     },
   ],
 };
 
 const ParentDashboardScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp>();
   const { width } = useWindowDimensions();
+  const { t } = useTranslation();
 
   const isSmallScreen = width < 380;
 
@@ -155,14 +153,13 @@ const ParentDashboardScreen: React.FC = () => {
     recentActivity,
   } = parentDashboardData;
 
- const handleBack = () => {
-  navigation.replace('RoleSelection');
-};
+  const handleBack = () => {
+    navigation.replace('RoleSelection');
+  };
 
   return (
     <View style={styles.container}>
       {/* HEADER */}
-
       <View
         style={[
           styles.header,
@@ -172,16 +169,17 @@ const ParentDashboardScreen: React.FC = () => {
         ]}
       >
         <Pressable
-       style={({ pressed }) => [
-    styles.backButton,
-    pressed && styles.pressed,
-  ]}
-  onPress={() => {
-    handleBack();
-  }}
-  accessibilityRole="button"
-  accessibilityLabel="Go back to role selection"
->
+          style={({ pressed }) => [
+            styles.backButton,
+            pressed && styles.pressed,
+          ]}
+          onPress={handleBack}
+          accessibilityRole="button"
+          accessibilityLabel={t(
+            'parent.back',
+            'Go back to role selection',
+          )}
+        >
           <Ionicons
             name="arrow-back"
             size={23}
@@ -191,11 +189,14 @@ const ParentDashboardScreen: React.FC = () => {
 
         <View style={styles.headerTextContainer}>
           <Text style={styles.headerTitle}>
-            Parent Dashboard
+            {t('parent.title', 'Parent Dashboard')}
           </Text>
 
           <Text style={styles.headerSubtitle}>
-            See how your child is learning
+            {t(
+              'parent.subtitle',
+              'See how your child is learning',
+            )}
           </Text>
         </View>
 
@@ -218,31 +219,33 @@ const ParentDashboardScreen: React.FC = () => {
         ]}
       >
         {/* WELCOME CARD */}
-
         <View style={styles.welcomeCard}>
           <View style={styles.welcomeIcon}>
-            <Text style={styles.welcomeEmoji}>
-              🌱
-            </Text>
+            <Text style={styles.welcomeEmoji}>🌱</Text>
           </View>
 
           <View style={styles.welcomeTextContainer}>
             <Text style={styles.welcomeSmall}>
-              GOOD MORNING! ☀️
+              {t('parent.goodMorning', 'GOOD MORNING! ☀️')}
             </Text>
 
             <Text style={styles.welcomeTitle}>
-              Your child's learning journey
+              {t(
+                'parent.learningJourney',
+                "Your child's learning journey",
+              )}
             </Text>
 
             <Text style={styles.welcomeDescription}>
-              Keep encouraging them — every small step counts!
+              {t(
+                'parent.encouragement',
+                'Keep encouraging them — every small step counts!',
+              )}
             </Text>
           </View>
         </View>
 
         {/* CHILD PROFILE */}
-
         <View style={styles.childCard}>
           <View style={styles.childAvatar}>
             <Text style={styles.childAvatarText}>
@@ -256,7 +259,9 @@ const ParentDashboardScreen: React.FC = () => {
             </Text>
 
             <Text style={styles.childDetails}>
-              Level {child.level} • {child.language} learner
+              {t('parent.level', 'Level')} {child.level} •{' '}
+              {child.language}{' '}
+              {t('parent.learner', 'learner')}
             </Text>
 
             <View style={styles.streakRow}>
@@ -267,7 +272,11 @@ const ParentDashboardScreen: React.FC = () => {
               />
 
               <Text style={styles.streakText}>
-                {child.streak} day learning streak
+                {child.streak}{' '}
+                {t(
+                  'parent.dayLearningStreak',
+                  'day learning streak',
+                )}
               </Text>
             </View>
           </View>
@@ -278,28 +287,32 @@ const ParentDashboardScreen: React.FC = () => {
               pressed && styles.pressed,
             ]}
             accessibilityRole="button"
-            accessibilityLabel={`View ${child.name}'s profile`}
+            accessibilityLabel={t(
+              'parent.viewProfile',
+              `View ${child.name}'s profile`,
+            )}
           >
             <Text style={styles.viewButtonText}>
-              View
+              {t('parent.view', 'View')}
             </Text>
           </Pressable>
         </View>
 
         {/* LEARNING OVERVIEW */}
-
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>
-            Learning overview
+            {t('parent.learningOverview', 'Learning overview')}
           </Text>
 
           <Text style={styles.sectionSubtitle}>
-            This week's progress
+            {t(
+              'parent.thisWeekProgress',
+              "This week's progress",
+            )}
           </Text>
         </View>
 
         {/* STAT CARDS */}
-
         <View style={styles.statsRow}>
           <View
             style={[
@@ -329,7 +342,7 @@ const ParentDashboardScreen: React.FC = () => {
             </Text>
 
             <Text style={styles.statLabel}>
-              XP earned
+              {t('parent.xpEarned', 'XP earned')}
             </Text>
           </View>
 
@@ -361,7 +374,7 @@ const ParentDashboardScreen: React.FC = () => {
             </Text>
 
             <Text style={styles.statLabel}>
-              Lessons
+              {t('parent.lessons', 'Lessons')}
             </Text>
           </View>
 
@@ -393,22 +406,24 @@ const ParentDashboardScreen: React.FC = () => {
             </Text>
 
             <Text style={styles.statLabel}>
-              Learning
+              {t('parent.learning', 'Learning')}
             </Text>
           </View>
         </View>
 
         {/* WEEKLY PROGRESS */}
-
         <View style={styles.progressCard}>
           <View style={styles.cardHeaderRow}>
             <View>
               <Text style={styles.cardTitle}>
-                Weekly progress
+                {t('parent.weeklyProgress', 'Weekly progress')}
               </Text>
 
               <Text style={styles.cardSubtitle}>
-                Great work this week! 🌟
+                {t(
+                  'parent.greatWork',
+                  'Great work this week! 🌟',
+                )}
               </Text>
             </View>
 
@@ -430,8 +445,12 @@ const ParentDashboardScreen: React.FC = () => {
 
           <View style={styles.progressBottomRow}>
             <Text style={styles.progressBottomText}>
-              {weeklyProgress.completed} of{' '}
-              {weeklyProgress.total} activities completed
+              {weeklyProgress.completed} {t('parent.of', 'of')}{' '}
+              {weeklyProgress.total}{' '}
+              {t(
+                'parent.activitiesCompleted',
+                'activities completed',
+              )}
             </Text>
 
             <Ionicons
@@ -443,20 +462,22 @@ const ParentDashboardScreen: React.FC = () => {
         </View>
 
         {/* LEARNING ACTIVITY */}
-
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>
-            Learning activity
+            {t('parent.learningActivity', 'Learning activity')}
           </Text>
 
           <Text style={styles.sectionSubtitle}>
-            What your child has been practising
+            {t(
+              'parent.practising',
+              'What your child has been practising',
+            )}
           </Text>
         </View>
 
         <View style={styles.activityCard}>
           {activities.map((activity, index) => (
-            <React.Fragment key={activity.title}>
+            <React.Fragment key={activity.titleKey}>
               <View style={styles.activityRow}>
                 <View
                   style={[
@@ -475,11 +496,17 @@ const ParentDashboardScreen: React.FC = () => {
 
                 <View style={styles.activityText}>
                   <Text style={styles.activityTitle}>
-                    {activity.title}
+                    {t(
+                      `parent.activities.${activity.titleKey}`,
+                      activity.titleKey,
+                    )}
                   </Text>
 
                   <Text style={styles.activityDescription}>
-                    {activity.description}
+                    {t(
+                      `parent.activities.${activity.descriptionKey}`,
+                      activity.descriptionKey,
+                    )}
                   </Text>
                 </View>
 
@@ -489,7 +516,10 @@ const ParentDashboardScreen: React.FC = () => {
                   </Text>
 
                   <Text style={styles.activityValueLabel}>
-                    {activity.label}
+                    {t(
+                      `parent.labels.${activity.labelKey}`,
+                      activity.labelKey,
+                    )}
                   </Text>
                 </View>
               </View>
@@ -502,21 +532,26 @@ const ParentDashboardScreen: React.FC = () => {
         </View>
 
         {/* SKILLS DEVELOPMENT */}
-
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>
-            Skills development
+            {t(
+              'parent.skillsDevelopment',
+              'Skills development',
+            )}
           </Text>
 
           <Text style={styles.sectionSubtitle}>
-            Current learning strengths
+            {t(
+              'parent.currentStrengths',
+              'Current learning strengths',
+            )}
           </Text>
         </View>
 
         <View style={styles.skillsCard}>
           {skills.map((skill) => (
             <View
-              key={skill.name}
+              key={skill.nameKey}
               style={styles.skillRow}
             >
               <View style={styles.skillLabelRow}>
@@ -530,7 +565,10 @@ const ParentDashboardScreen: React.FC = () => {
                 />
 
                 <Text style={styles.skillName}>
-                  {skill.name}
+                  {t(
+                    `parent.skills.${skill.nameKey}`,
+                    skill.nameKey,
+                  )}
                 </Text>
 
                 <Text style={styles.skillPercentage}>
@@ -554,21 +592,23 @@ const ParentDashboardScreen: React.FC = () => {
         </View>
 
         {/* RECENT ACTIVITY */}
-
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>
-            Recent activity
+            {t('parent.recentActivity', 'Recent activity')}
           </Text>
 
           <Text style={styles.sectionSubtitle}>
-            Latest learning sessions
+            {t(
+              'parent.latestSessions',
+              'Latest learning sessions',
+            )}
           </Text>
         </View>
 
         <View style={styles.recentCard}>
           {recentActivity.map((activity, index) => (
             <React.Fragment
-              key={`${activity.title}-${index}`}
+              key={`${activity.titleKey}-${index}`}
             >
               <View style={styles.recentRow}>
                 <View style={styles.completedIcon}>
@@ -581,11 +621,17 @@ const ParentDashboardScreen: React.FC = () => {
 
                 <View style={styles.recentText}>
                   <Text style={styles.recentTitle}>
-                    {activity.title}
+                    {t(
+                      `parent.activities.${activity.titleKey}`,
+                      activity.titleKey,
+                    )}
                   </Text>
 
                   <Text style={styles.recentTime}>
-                    {activity.time}
+                    {t(
+                      `parent.times.${activity.timeKey}`,
+                      activity.timeKey,
+                    )}
                   </Text>
                 </View>
 
@@ -602,7 +648,6 @@ const ParentDashboardScreen: React.FC = () => {
         </View>
 
         {/* ENCOURAGEMENT */}
-
         <View style={styles.encouragementCard}>
           <View style={styles.encouragementIcon}>
             <Text style={styles.encouragementEmoji}>
@@ -612,12 +657,17 @@ const ParentDashboardScreen: React.FC = () => {
 
           <View style={styles.encouragementText}>
             <Text style={styles.encouragementTitle}>
-              Keep encouraging!
+              {t(
+                'parent.keepEncouraging',
+                'Keep encouraging!',
+              )}
             </Text>
 
             <Text style={styles.encouragementDescription}>
-              A little encouragement from you can make learning
-              even more enjoyable.
+              {t(
+                'parent.encouragementDescription',
+                'A little encouragement from you can make learning even more enjoyable.',
+              )}
             </Text>
           </View>
         </View>
@@ -1000,10 +1050,6 @@ const styles = StyleSheet.create({
 
   skillRow: {
     marginBottom: 17,
-  },
-
-  skillRowLast: {
-    marginBottom: 0,
   },
 
   skillLabelRow: {
