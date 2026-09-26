@@ -166,6 +166,12 @@ app.use(
 
 const PORT =
   process.env.PORT || 3000;
+app.get("/health", (req, res) => {
+    res.json({
+        success: true,
+        message: "Gyan backend is running"
+    });
+});
 
 app.listen(PORT, () => {
   console.log(
