@@ -27,7 +27,10 @@ const getDefaultSTTUrl = (): string => {
 
   return 'http://localhost:8000';
 };
-
+console.log(
+  'GYAN API URL:',
+  process.env.EXPO_PUBLIC_API_URL,
+);
 export const API_CONFIG = {
   MAIN_API_URL: getDefaultMainApiUrl(),
   STT_BASE_URL: getDefaultSTTUrl(),

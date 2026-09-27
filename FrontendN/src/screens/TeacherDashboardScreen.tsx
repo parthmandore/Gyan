@@ -13,6 +13,7 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -174,6 +175,7 @@ const TeacherDashboardScreen: React.FC = () => {
   const { t } = useTranslation();
 
   const isSmallScreen = width < 380;
+  const horizontalPadding = isSmallScreen ? 16 : 20;
 
   const {
     classroom,
@@ -186,571 +188,585 @@ const TeacherDashboardScreen: React.FC = () => {
   } = teacherDashboardData;
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView
+      style={styles.safeArea}
+      edges={['top', 'left', 'right']}
+    >
+      <View style={styles.container}>
 
-      {/* HEADER */}
+        {/* HEADER */}
 
-      <View
-        style={[
-          styles.header,
-          {
-            paddingHorizontal: isSmallScreen ? 16 : 20,
-          },
-        ]}
-      >
-        <Pressable
-          style={({ pressed }) => [
-            styles.backButton,
-            pressed && styles.pressed,
+        <View
+          style={[
+            styles.header,
+            {
+              paddingHorizontal: horizontalPadding,
+            },
           ]}
-          onPress={() => navigation.goBack()}
-          accessibilityRole="button"
-          accessibilityLabel={t('teacher.goBack')}
         >
-          <Ionicons
-            name="arrow-back"
-            size={23}
-            color={COLORS.navy}
-          />
-        </Pressable>
-
-        <View style={styles.headerTextContainer}>
-          <Text style={styles.headerTitle}>
-            {t('teacher.title')}
-          </Text>
-
-          <Text style={styles.headerSubtitle}>
-            {t('teacher.classroomAtAGlance')}
-          </Text>
-        </View>
-
-        <View style={styles.teacherIcon}>
-          <Ionicons
-            name="school"
-            size={22}
-            color={COLORS.lavenderDark}
-          />
-        </View>
-      </View>
-
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={[
-          styles.content,
-          {
-            paddingHorizontal: isSmallScreen ? 16 : 20,
-          },
-        ]}
-      >
-
-        {/* WELCOME CARD */}
-
-        <View style={styles.welcomeCard}>
-          <View style={styles.welcomeIcon}>
-            <Text style={styles.welcomeEmoji}>
-              👩‍🏫
-            </Text>
-          </View>
-
-          <View style={styles.welcomeTextContainer}>
-            <Text style={styles.welcomeSmall}>
-              {t('teacher.goodMorning')}
-            </Text>
-
-            <Text style={styles.welcomeTitle}>
-              {t('teacher.classroomGrowing')}
-            </Text>
-
-            <Text style={styles.welcomeDescription}>
-              {t('teacher.classroomDescription')}
-            </Text>
-          </View>
-        </View>
-
-        {/* CLASS PROFILE */}
-
-        <View style={styles.classCard}>
-
-          <View style={styles.classIcon}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.backButton,
+              pressed && styles.pressed,
+            ]}
+            onPress={() => navigation.goBack()}
+            accessibilityRole="button"
+            accessibilityLabel={t('teacher.goBack')}
+          >
             <Ionicons
-              name="people"
-              size={27}
+              name="arrow-back"
+              size={23}
+              color={COLORS.navy}
+            />
+          </Pressable>
+
+          <View style={styles.headerTextContainer}>
+            <Text
+              style={styles.headerTitle}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.85}
+            >
+              {t('teacher.title')}
+            </Text>
+
+            <Text
+              style={styles.headerSubtitle}
+              numberOfLines={1}
+            >
+              {t('teacher.classroomAtAGlance')}
+            </Text>
+          </View>
+
+          <View style={styles.teacherIcon}>
+            <Ionicons
+              name="school"
+              size={22}
               color={COLORS.lavenderDark}
             />
           </View>
+        </View>
 
-          <View style={styles.classInfo}>
-            <Text style={styles.className}>
-              {t(classroom.name)}
-            </Text>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={[
+            styles.content,
+            {
+              paddingHorizontal: horizontalPadding,
+            },
+          ]}
+        >
 
-            <Text style={styles.classDetails}>
-              {t(classroom.level)} • {t(classroom.language)}
-            </Text>
+          {/* WELCOME CARD */}
 
-            <View style={styles.classStatusRow}>
-              <View style={styles.activeDot} />
+          <View style={styles.welcomeCard}>
+            <View style={styles.welcomeIcon}>
+              <Text style={styles.welcomeEmoji}>
+                👩‍🏫
+              </Text>
+            </View>
 
-              <Text style={styles.classStatusText}>
-                {t(classroom.status)}
+            <View style={styles.welcomeTextContainer}>
+              <Text style={styles.welcomeSmall}>
+                {t('teacher.goodMorning')}
+              </Text>
+
+              <Text style={styles.welcomeTitle}>
+                {t('teacher.classroomGrowing')}
+              </Text>
+
+              <Text style={styles.welcomeDescription}>
+                {t('teacher.classroomDescription')}
               </Text>
             </View>
           </View>
 
-          <View style={styles.classBadge}>
-            <Text style={styles.classBadgeText}>
-              {classroom.students}
-            </Text>
+          {/* CLASS PROFILE */}
 
-            <Text style={styles.classBadgeLabel}>
-              {t('teacher.students')}
-            </Text>
-          </View>
-
-        </View>
-
-        {/* CLASSROOM OVERVIEW */}
-
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>
-            {t('teacher.classroomOverview')}
-          </Text>
-
-          <Text style={styles.sectionSubtitle}>
-            {t('teacher.todaysSnapshot')}
-          </Text>
-        </View>
-
-        {/* STAT CARDS */}
-
-        <View style={styles.statsRow}>
-
-          <View
-            style={[
-              styles.statCard,
-              {
-                backgroundColor: COLORS.lavenderLight,
-              },
-            ]}
-          >
-            <View
-              style={[
-                styles.statIcon,
-                {
-                  backgroundColor: '#E2DCFF',
-                },
-              ]}
-            >
+          <View style={styles.classCard}>
+            <View style={styles.classIcon}>
               <Ionicons
                 name="people"
-                size={21}
+                size={27}
                 color={COLORS.lavenderDark}
               />
             </View>
 
-            <Text style={styles.statValue}>
-              {classroom.students}
+            <View style={styles.classInfo}>
+              <Text
+                style={styles.className}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.8}
+              >
+                {t(classroom.name)}
+              </Text>
+
+              <Text
+                style={styles.classDetails}
+                numberOfLines={1}
+              >
+                {t(classroom.level)} • {t(classroom.language)}
+              </Text>
+
+              <View style={styles.classStatusRow}>
+                <View style={styles.activeDot} />
+
+                <Text style={styles.classStatusText}>
+                  {t(classroom.status)}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.classBadge}>
+              <Text style={styles.classBadgeText}>
+                {classroom.students}
+              </Text>
+
+              <Text style={styles.classBadgeLabel}>
+                {t('teacher.students')}
+              </Text>
+            </View>
+          </View>
+
+          {/* CLASSROOM OVERVIEW */}
+
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>
+              {t('teacher.classroomOverview')}
             </Text>
 
-            <Text style={styles.statLabel}>
-              {t('teacher.students')}
+            <Text style={styles.sectionSubtitle}>
+              {t('teacher.todaysSnapshot')}
             </Text>
           </View>
 
-          <View
-            style={[
-              styles.statCard,
-              {
-                backgroundColor: COLORS.mintLight,
-              },
-            ]}
-          >
+          {/* STAT CARDS */}
+
+          <View style={styles.statsRow}>
             <View
               style={[
-                styles.statIcon,
+                styles.statCard,
                 {
-                  backgroundColor: '#D3F2E5',
+                  backgroundColor: COLORS.lavenderLight,
                 },
               ]}
             >
-              <Ionicons
-                name="pulse"
-                size={21}
-                color={COLORS.mintDark}
-              />
-            </View>
-
-            <Text style={styles.statValue}>
-              {classroom.activeToday}
-            </Text>
-
-            <Text style={styles.statLabel}>
-              {t('teacher.activeToday')}
-            </Text>
-          </View>
-
-          <View
-            style={[
-              styles.statCard,
-              {
-                backgroundColor: COLORS.yellowLight,
-              },
-            ]}
-          >
-            <View
-              style={[
-                styles.statIcon,
-                {
-                  backgroundColor: '#FFEBA4',
-                },
-              ]}
-            >
-              <Ionicons
-                name="trophy"
-                size={21}
-                color={COLORS.yellowDark}
-              />
-            </View>
-
-            <Text style={styles.statValue}>
-              {classroom.completedToday}
-            </Text>
-
-            <Text style={styles.statLabel}>
-              {t('teacher.completed')}
-            </Text>
-          </View>
-
-        </View>
-
-        {/* CLASS PROGRESS */}
-
-        <View style={styles.progressCard}>
-
-          <View style={styles.cardHeaderRow}>
-            <View>
-              <Text style={styles.cardTitle}>
-                {t('teacher.classProgress')}
-              </Text>
-
-              <Text style={styles.cardSubtitle}>
-                {t('teacher.averageCompletion')}
-              </Text>
-            </View>
-
-            <Text style={styles.progressPercentage}>
-              {classProgress.percentage}%
-            </Text>
-          </View>
-
-          <View style={styles.progressTrack}>
-            <View
-              style={[
-                styles.progressFill,
-                {
-                  width: `${classProgress.percentage}%`,
-                },
-              ]}
-            />
-          </View>
-
-          <View style={styles.progressBottomRow}>
-            <Text style={styles.progressBottomText}>
-              {classProgress.studentsOnTrack} {t('teacher.of')}{' '}
-              {classProgress.totalStudents} {t('teacher.studentsOnTrack')}
-            </Text>
-
-            <Ionicons
-              name="trending-up"
-              size={17}
-              color={COLORS.green}
-            />
-          </View>
-
-        </View>
-
-        {/* TODAY'S ACTIVITY */}
-
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>
-            {t('teacher.todaysActivity')}
-          </Text>
-
-          <Text style={styles.sectionSubtitle}>
-            {t('teacher.whatStudentsPractising')}
-          </Text>
-        </View>
-
-        <View style={styles.activityCard}>
-
-          {activities.map((activity, index) => (
-            <React.Fragment key={activity.title}>
-
-              <View style={styles.activityRow}>
-
-                <View
-                  style={[
-                    styles.activityIcon,
-                    {
-                      backgroundColor: activity.background,
-                    },
-                  ]}
-                >
-                  <Ionicons
-                    name={activity.icon}
-                    size={21}
-                    color={activity.iconColor}
-                  />
-                </View>
-
-                <View style={styles.activityText}>
-                  <Text style={styles.activityTitle}>
-                    {t(activity.title, { name: 'Anaya', count: 8 })}
-                  </Text>
-
-                  <Text style={styles.activityDescription}>
-                    {t(activity.description)}
-                  </Text>
-                </View>
-
-                <View style={styles.activityValue}>
-                  <Text style={styles.activityValueNumber}>
-                    {activity.students}
-                  </Text>
-
-                  <Text style={styles.activityValueLabel}>
-                    {t('teacher.students')}
-                  </Text>
-                </View>
-
+              <View
+                style={[
+                  styles.statIcon,
+                  {
+                    backgroundColor: '#E2DCFF',
+                  },
+                ]}
+              >
+                <Ionicons
+                  name="people"
+                  size={21}
+                  color={COLORS.lavenderDark}
+                />
               </View>
 
-              {index < activities.length - 1 && (
-                <View style={styles.divider} />
-              )}
+              <Text style={styles.statValue}>
+                {classroom.students}
+              </Text>
 
-            </React.Fragment>
-          ))}
+              <Text style={styles.statLabel}>
+                {t('teacher.students')}
+              </Text>
+            </View>
 
-        </View>
+            <View
+              style={[
+                styles.statCard,
+                {
+                  backgroundColor: COLORS.mintLight,
+                },
+              ]}
+            >
+              <View
+                style={[
+                  styles.statIcon,
+                  {
+                    backgroundColor: '#D3F2E5',
+                  },
+                ]}
+              >
+                <Ionicons
+                  name="pulse"
+                  size={21}
+                  color={COLORS.mintDark}
+                />
+              </View>
 
-        {/* STUDENT PROGRESS */}
+              <Text style={styles.statValue}>
+                {classroom.activeToday}
+              </Text>
 
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>
-            {t('teacher.studentProgress')}
-          </Text>
+              <Text style={styles.statLabel}>
+                {t('teacher.activeToday')}
+              </Text>
+            </View>
 
-          <Text style={styles.sectionSubtitle}>
-            {t('teacher.quickViewLearners')}
-          </Text>
-        </View>
+            <View
+              style={[
+                styles.statCard,
+                {
+                  backgroundColor: COLORS.yellowLight,
+                },
+              ]}
+            >
+              <View
+                style={[
+                  styles.statIcon,
+                  {
+                    backgroundColor: '#FFEBA4',
+                  },
+                ]}
+              >
+                <Ionicons
+                  name="trophy"
+                  size={21}
+                  color={COLORS.yellowDark}
+                />
+              </View>
 
-        <View style={styles.studentsCard}>
+              <Text style={styles.statValue}>
+                {classroom.completedToday}
+              </Text>
 
-          {students.map((student, index) => (
-            <React.Fragment key={student.name}>
+              <Text style={styles.statLabel}>
+                {t('teacher.completed')}
+              </Text>
+            </View>
+          </View>
 
-              <View style={styles.studentRow}>
+          {/* CLASS PROGRESS */}
 
-                <View
-                  style={[
-                    styles.studentAvatar,
-                    {
-                      backgroundColor: student.background,
-                    },
-                  ]}
-                >
-                  <Text
+          <View style={styles.progressCard}>
+            <View style={styles.cardHeaderRow}>
+              <View style={styles.cardHeaderText}>
+                <Text style={styles.cardTitle}>
+                  {t('teacher.classProgress')}
+                </Text>
+
+                <Text style={styles.cardSubtitle}>
+                  {t('teacher.averageCompletion')}
+                </Text>
+              </View>
+
+              <Text style={styles.progressPercentage}>
+                {classProgress.percentage}%
+              </Text>
+            </View>
+
+            <View style={styles.progressTrack}>
+              <View
+                style={[
+                  styles.progressFill,
+                  {
+                    width: `${classProgress.percentage}%`,
+                  },
+                ]}
+              />
+            </View>
+
+            <View style={styles.progressBottomRow}>
+              <Text style={styles.progressBottomText}>
+                {classProgress.studentsOnTrack}{' '}
+                {t('teacher.of')}{' '}
+                {classProgress.totalStudents}{' '}
+                {t('teacher.studentsOnTrack')}
+              </Text>
+
+              <Ionicons
+                name="trending-up"
+                size={17}
+                color={COLORS.green}
+              />
+            </View>
+          </View>
+
+          {/* TODAY'S ACTIVITY */}
+
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>
+              {t('teacher.todaysActivity')}
+            </Text>
+
+            <Text style={styles.sectionSubtitle}>
+              {t('teacher.whatStudentsPractising')}
+            </Text>
+          </View>
+
+          <View style={styles.activityCard}>
+            {activities.map((activity, index) => (
+              <React.Fragment key={activity.title}>
+                <View style={styles.activityRow}>
+                  <View
                     style={[
-                      styles.studentAvatarText,
+                      styles.activityIcon,
                       {
-                        color: student.textColor,
+                        backgroundColor: activity.background,
                       },
                     ]}
                   >
-                    {student.initial}
-                  </Text>
-                </View>
-
-                <View style={styles.studentInfo}>
-
-                  <Text style={styles.studentName}>
-                    {student.name}
-                  </Text>
-
-                  <View style={styles.studentProgressTrack}>
-                    <View
-                      style={[
-                        styles.studentProgressFill,
-                        {
-                          width: `${student.percentage}%`,
-                          backgroundColor: student.progressColor,
-                        },
-                      ]}
+                    <Ionicons
+                      name={activity.icon}
+                      size={21}
+                      color={activity.iconColor}
                     />
                   </View>
 
+                  <View style={styles.activityText}>
+                    <Text
+                      style={styles.activityTitle}
+                      numberOfLines={2}
+                    >
+                      {t(activity.title, {
+                        name: 'Anaya',
+                        count: 8,
+                      })}
+                    </Text>
+
+                    <Text
+                      style={styles.activityDescription}
+                      numberOfLines={2}
+                    >
+                      {t(activity.description)}
+                    </Text>
+                  </View>
+
+                  <View style={styles.activityValue}>
+                    <Text style={styles.activityValueNumber}>
+                      {activity.students}
+                    </Text>
+
+                    <Text style={styles.activityValueLabel}>
+                      {t('teacher.students')}
+                    </Text>
+                  </View>
                 </View>
 
-                <Text style={styles.studentPercentage}>
-                  {student.percentage}%
-                </Text>
+                {index < activities.length - 1 && (
+                  <View style={styles.divider} />
+                )}
+              </React.Fragment>
+            ))}
+          </View>
 
-              </View>
+          {/* STUDENT PROGRESS */}
 
-              {index < students.length - 1 && (
-                <View style={styles.divider} />
-              )}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>
+              {t('teacher.studentProgress')}
+            </Text>
 
-            </React.Fragment>
-          ))}
+            <Text style={styles.sectionSubtitle}>
+              {t('teacher.quickViewLearners')}
+            </Text>
+          </View>
 
-        </View>
+          <View style={styles.studentsCard}>
+            {students.map((student, index) => (
+              <React.Fragment key={student.name}>
+                <View style={styles.studentRow}>
+                  <View
+                    style={[
+                      styles.studentAvatar,
+                      {
+                        backgroundColor: student.background,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.studentAvatarText,
+                        {
+                          color: student.textColor,
+                        },
+                      ]}
+                    >
+                      {student.initial}
+                    </Text>
+                  </View>
 
-        <Pressable
-          style={({ pressed }) => [
-            styles.viewAllButton,
-            pressed && styles.pressed,
-          ]}
-          accessibilityRole="button"
-          accessibilityLabel={t('teacher.viewAllStudents')}
-        >
-          <Text style={styles.viewAllText}>
-            {t('teacher.viewAllStudents')}
-          </Text>
+                  <View style={styles.studentInfo}>
+                    <Text style={styles.studentName}>
+                      {student.name}
+                    </Text>
 
-          <Ionicons
-            name="arrow-forward"
-            size={18}
-            color={COLORS.lavenderDark}
-          />
-        </Pressable>
+                    <View style={styles.studentProgressTrack}>
+                      <View
+                        style={[
+                          styles.studentProgressFill,
+                          {
+                            width: `${student.percentage}%`,
+                            backgroundColor:
+                              student.progressColor,
+                          },
+                        ]}
+                      />
+                    </View>
+                  </View>
 
-        {/* NEEDS ATTENTION */}
+                  <Text style={styles.studentPercentage}>
+                    {student.percentage}%
+                  </Text>
+                </View>
 
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>
-            {t('teacher.needsAttention')}
-          </Text>
+                {index < students.length - 1 && (
+                  <View style={styles.divider} />
+                )}
+              </React.Fragment>
+            ))}
+          </View>
 
-          <Text style={styles.sectionSubtitle}>
-            {t('teacher.studentsNeedSupport')}
-          </Text>
-        </View>
+          <Pressable
+            style={({ pressed }) => [
+              styles.viewAllButton,
+              pressed && styles.pressed,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel={t(
+              'teacher.viewAllStudents',
+            )}
+          >
+            <Text style={styles.viewAllText}>
+              {t('teacher.viewAllStudents')}
+            </Text>
 
-        <View style={styles.attentionCard}>
-
-          <View style={styles.attentionIcon}>
             <Ionicons
-              name="alert-circle"
-              size={22}
-              color={COLORS.red}
+              name="arrow-forward"
+              size={18}
+              color={COLORS.lavenderDark}
             />
-          </View>
+          </Pressable>
 
-          <View style={styles.attentionText}>
+          {/* NEEDS ATTENTION */}
 
-            <Text style={styles.attentionTitle}>
-              {attention.count} {t(attention.message)}
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>
+              {t('teacher.needsAttention')}
             </Text>
 
-            <Text style={styles.attentionDescription}>
-              {t(attention.description)}
+            <Text style={styles.sectionSubtitle}>
+              {t('teacher.studentsNeedSupport')}
             </Text>
-
           </View>
 
-        </View>
+          <View style={styles.attentionCard}>
+            <View style={styles.attentionIcon}>
+              <Ionicons
+                name="alert-circle"
+                size={22}
+                color={COLORS.red}
+              />
+            </View>
 
-        {/* RECENT CLASS ACTIVITY */}
+            <View style={styles.attentionText}>
+              <Text style={styles.attentionTitle}>
+                {attention.count}{' '}
+                {t(attention.message)}
+              </Text>
 
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>
-            {t('teacher.recentActivity')}
-          </Text>
+              <Text style={styles.attentionDescription}>
+                {t(attention.description)}
+              </Text>
+            </View>
+          </View>
 
-          <Text style={styles.sectionSubtitle}>
-            {t('teacher.latestAchievements')}
-          </Text>
-        </View>
+          {/* RECENT CLASS ACTIVITY */}
 
-        <View style={styles.recentCard}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>
+              {t('teacher.recentActivity')}
+            </Text>
 
-          {recentActivity.map((activity, index) => (
-            <React.Fragment
-              key={`${activity.title}-${index}`}
-            >
+            <Text style={styles.sectionSubtitle}>
+              {t('teacher.latestAchievements')}
+            </Text>
+          </View>
 
-              <View style={styles.recentRow}>
+          <View style={styles.recentCard}>
+            {recentActivity.map((activity, index) => (
+              <React.Fragment
+                key={`${activity.title}-${index}`}
+              >
+                <View style={styles.recentRow}>
+                  <View style={styles.completedIcon}>
+                    <Ionicons
+                      name={activity.icon}
+                      size={16}
+                      color={activity.color}
+                    />
+                  </View>
 
-                <View style={styles.completedIcon}>
-                  <Ionicons
-                    name={activity.icon}
-                    size={16}
-                    color={activity.color}
-                  />
+                  <View style={styles.recentText}>
+                    <Text
+                      style={styles.recentTitle}
+                      numberOfLines={2}
+                    >
+                      {t(activity.title, {
+                        name: 'Anaya',
+                        count: 8,
+                      })}
+                    </Text>
+
+                    <Text style={styles.recentTime}>
+                      {t(activity.time)}
+                    </Text>
+                  </View>
+
+                  <Text
+                    style={styles.recentBadge}
+                    numberOfLines={1}
+                  >
+                    {t(activity.badge)}
+                  </Text>
                 </View>
 
-                <View style={styles.recentText}>
-
-                  <Text style={styles.recentTitle}>
-                    {t(activity.title, { name: 'Anaya', count: 8 })}
-                  </Text>
-
-                  <Text style={styles.recentTime}>
-                    {t(activity.time)}
-                  </Text>
-
-                </View>
-
-                <Text style={styles.recentBadge}>
-                  {t(activity.badge)}
-                </Text>
-
-              </View>
-
-              {index < recentActivity.length - 1 && (
-                <View style={styles.divider} />
-              )}
-
-            </React.Fragment>
-          ))}
-
-        </View>
-
-        {/* TEACHER TIP */}
-
-        <View style={styles.tipCard}>
-
-          <View style={styles.tipIcon}>
-            <Text style={styles.tipEmoji}>
-              💡
-            </Text>
+                {index < recentActivity.length - 1 && (
+                  <View style={styles.divider} />
+                )}
+              </React.Fragment>
+            ))}
           </View>
 
-          <View style={styles.tipText}>
+          {/* TEACHER TIP */}
 
-            <Text style={styles.tipTitle}>
-              {t('teacher.teachingTip')}
-            </Text>
+          <View style={styles.tipCard}>
+            <View style={styles.tipIcon}>
+              <Text style={styles.tipEmoji}>
+                💡
+              </Text>
+            </View>
 
-            <Text style={styles.tipDescription}>
-              {t(teachingTip)}
-            </Text>
+            <View style={styles.tipText}>
+              <Text style={styles.tipTitle}>
+                {t('teacher.teachingTip')}
+              </Text>
 
+              <Text style={styles.tipDescription}>
+                {t(teachingTip)}
+              </Text>
+            </View>
           </View>
 
-        </View>
+          <View style={styles.bottomSpace} />
 
-        <View style={styles.bottomSpace} />
-
-      </ScrollView>
-    </View>
+        </ScrollView>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+  },
+
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
@@ -758,7 +774,6 @@ const styles = StyleSheet.create({
 
   header: {
     minHeight: 82,
-    paddingHorizontal: 20,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.white,
@@ -777,7 +792,9 @@ const styles = StyleSheet.create({
 
   headerTextContainer: {
     flex: 1,
+    minWidth: 0,
     marginLeft: 13,
+    marginRight: 10,
   },
 
   headerTitle: {
@@ -805,7 +822,7 @@ const styles = StyleSheet.create({
 
   content: {
     paddingTop: 18,
-    paddingBottom: 40,
+    paddingBottom: 50,
   },
 
   welcomeCard: {
@@ -840,6 +857,7 @@ const styles = StyleSheet.create({
 
   welcomeTextContainer: {
     flex: 1,
+    minWidth: 0,
     marginLeft: 14,
   },
 
@@ -887,7 +905,9 @@ const styles = StyleSheet.create({
 
   classInfo: {
     flex: 1,
+    minWidth: 0,
     marginLeft: 13,
+    marginRight: 8,
   },
 
   className: {
@@ -967,6 +987,7 @@ const styles = StyleSheet.create({
 
   statCard: {
     flex: 1,
+    minWidth: 0,
     minHeight: 126,
     padding: 13,
     borderRadius: 20,
@@ -1017,6 +1038,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
 
+  cardHeaderText: {
+    flex: 1,
+    minWidth: 0,
+    marginRight: 12,
+  },
+
   cardTitle: {
     fontSize: 17,
     fontWeight: '800',
@@ -1057,6 +1084,8 @@ const styles = StyleSheet.create({
   },
 
   progressBottomText: {
+    flex: 1,
+    marginRight: 8,
     fontSize: 12,
     color: COLORS.muted,
   },
@@ -1085,7 +1114,9 @@ const styles = StyleSheet.create({
 
   activityText: {
     flex: 1,
+    minWidth: 0,
     marginLeft: 12,
+    marginRight: 8,
   },
 
   activityTitle: {
@@ -1101,6 +1132,7 @@ const styles = StyleSheet.create({
   },
 
   activityValue: {
+    minWidth: 48,
     alignItems: 'flex-end',
   },
 
@@ -1150,6 +1182,7 @@ const styles = StyleSheet.create({
 
   studentInfo: {
     flex: 1,
+    minWidth: 0,
     marginLeft: 11,
   },
 
@@ -1217,6 +1250,7 @@ const styles = StyleSheet.create({
 
   attentionText: {
     flex: 1,
+    minWidth: 0,
     marginLeft: 11,
   },
 
@@ -1258,7 +1292,9 @@ const styles = StyleSheet.create({
 
   recentText: {
     flex: 1,
+    minWidth: 0,
     marginLeft: 11,
+    marginRight: 8,
   },
 
   recentTitle: {
@@ -1274,6 +1310,7 @@ const styles = StyleSheet.create({
   },
 
   recentBadge: {
+    maxWidth: 75,
     fontSize: 11,
     fontWeight: '800',
     color: COLORS.lavenderDark,
@@ -1305,6 +1342,7 @@ const styles = StyleSheet.create({
 
   tipText: {
     flex: 1,
+    minWidth: 0,
     marginLeft: 11,
   },
 

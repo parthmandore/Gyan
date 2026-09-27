@@ -11,10 +11,12 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { RootStackParamList } from '../types';
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+type NavigationProp =
+  NativeStackNavigationProp<RootStackParamList>;
 
 const COLORS = {
   background: '#F1FBFB',
@@ -141,6 +143,7 @@ const ParentDashboardScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const { width } = useWindowDimensions();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   const isSmallScreen = width < 380;
 
@@ -165,6 +168,8 @@ const ParentDashboardScreen: React.FC = () => {
           styles.header,
           {
             paddingHorizontal: isSmallScreen ? 16 : 20,
+            paddingTop: insets.top,
+            minHeight: 82 + insets.top,
           },
         ]}
       >
@@ -188,11 +193,19 @@ const ParentDashboardScreen: React.FC = () => {
         </Pressable>
 
         <View style={styles.headerTextContainer}>
-          <Text style={styles.headerTitle}>
+          <Text
+            style={styles.headerTitle}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.85}
+          >
             {t('parent.title', 'Parent Dashboard')}
           </Text>
 
-          <Text style={styles.headerSubtitle}>
+          <Text
+            style={styles.headerSubtitle}
+            numberOfLines={1}
+          >
             {t(
               'parent.subtitle',
               'See how your child is learning',
@@ -215,6 +228,7 @@ const ParentDashboardScreen: React.FC = () => {
           styles.content,
           {
             paddingHorizontal: isSmallScreen ? 16 : 20,
+            paddingBottom: 40 + insets.bottom,
           },
         ]}
       >
@@ -414,9 +428,12 @@ const ParentDashboardScreen: React.FC = () => {
         {/* WEEKLY PROGRESS */}
         <View style={styles.progressCard}>
           <View style={styles.cardHeaderRow}>
-            <View>
+            <View style={styles.cardHeaderText}>
               <Text style={styles.cardTitle}>
-                {t('parent.weeklyProgress', 'Weekly progress')}
+                {t(
+                  'parent.weeklyProgress',
+                  'Weekly progress',
+                )}
               </Text>
 
               <Text style={styles.cardSubtitle}>
@@ -464,7 +481,10 @@ const ParentDashboardScreen: React.FC = () => {
         {/* LEARNING ACTIVITY */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>
-            {t('parent.learningActivity', 'Learning activity')}
+            {t(
+              'parent.learningActivity',
+              'Learning activity',
+            )}
           </Text>
 
           <Text style={styles.sectionSubtitle}>
@@ -594,7 +614,10 @@ const ParentDashboardScreen: React.FC = () => {
         {/* RECENT ACTIVITY */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>
-            {t('parent.recentActivity', 'Recent activity')}
+            {t(
+              'parent.recentActivity',
+              'Recent activity',
+            )}
           </Text>
 
           <Text style={styles.sectionSubtitle}>
@@ -701,23 +724,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.background,
+    flexShrink: 0,
   },
 
   headerTextContainer: {
     flex: 1,
+    minWidth: 0,
     marginLeft: 13,
+    marginRight: 10,
   },
 
   headerTitle: {
     fontSize: 22,
     fontWeight: '800',
     color: COLORS.navy,
+    flexShrink: 1,
   },
 
   headerSubtitle: {
     marginTop: 2,
     fontSize: 13,
     color: COLORS.muted,
+    flexShrink: 1,
   },
 
   profileButton: {
@@ -729,6 +757,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.lavenderLight,
     borderWidth: 1,
     borderColor: '#C9C1FF',
+    flexShrink: 0,
   },
 
   content: {
@@ -759,6 +788,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.white,
+    flexShrink: 0,
   },
 
   welcomeEmoji: {
@@ -767,6 +797,7 @@ const styles = StyleSheet.create({
 
   welcomeTextContainer: {
     flex: 1,
+    minWidth: 0,
     marginLeft: 14,
   },
 
@@ -812,6 +843,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.yellowLight,
     borderWidth: 2,
     borderColor: COLORS.yellow,
+    flexShrink: 0,
   },
 
   childAvatarText: {
@@ -822,6 +854,7 @@ const styles = StyleSheet.create({
 
   childInfo: {
     flex: 1,
+    minWidth: 0,
     marginLeft: 13,
   },
 
@@ -855,6 +888,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 14,
     backgroundColor: COLORS.lavenderLight,
+    flexShrink: 0,
   },
 
   viewButtonText: {
@@ -936,6 +970,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
 
+  cardHeaderText: {
+    flex: 1,
+    minWidth: 0,
+    marginRight: 12,
+  },
+
   cardTitle: {
     fontSize: 17,
     fontWeight: '800',
@@ -952,6 +992,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '800',
     color: COLORS.lavenderDark,
+    flexShrink: 0,
   },
 
   progressTrack: {
@@ -976,8 +1017,10 @@ const styles = StyleSheet.create({
   },
 
   progressBottomText: {
+    flex: 1,
     fontSize: 12,
     color: COLORS.muted,
+    marginRight: 10,
   },
 
   activityCard: {
@@ -1000,11 +1043,14 @@ const styles = StyleSheet.create({
     borderRadius: 23,
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
   },
 
   activityText: {
     flex: 1,
+    minWidth: 0,
     marginLeft: 12,
+    marginRight: 8,
   },
 
   activityTitle: {
@@ -1021,6 +1067,7 @@ const styles = StyleSheet.create({
 
   activityValue: {
     alignItems: 'flex-end',
+    flexShrink: 0,
   },
 
   activityValueNumber: {
@@ -1061,10 +1108,12 @@ const styles = StyleSheet.create({
     width: 9,
     height: 9,
     borderRadius: 5,
+    flexShrink: 0,
   },
 
   skillName: {
     flex: 1,
+    minWidth: 0,
     marginLeft: 8,
     fontSize: 13,
     fontWeight: '700',
@@ -1075,6 +1124,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '800',
     color: COLORS.muted,
+    flexShrink: 0,
   },
 
   skillTrack: {
@@ -1111,11 +1161,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.greenLight,
+    flexShrink: 0,
   },
 
   recentText: {
     flex: 1,
+    minWidth: 0,
     marginLeft: 11,
+    marginRight: 8,
   },
 
   recentTitle: {
@@ -1134,6 +1187,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '800',
     color: COLORS.green,
+    flexShrink: 0,
   },
 
   encouragementCard: {
@@ -1154,6 +1208,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.white,
+    flexShrink: 0,
   },
 
   encouragementEmoji: {
@@ -1162,6 +1217,7 @@ const styles = StyleSheet.create({
 
   encouragementText: {
     flex: 1,
+    minWidth: 0,
     marginLeft: 11,
   },
 

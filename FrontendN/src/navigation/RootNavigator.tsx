@@ -1,6 +1,7 @@
 /**
- * Purpose: Root stack navigator managing Language Gate,
- * Role Selection, Login, Student, Parent, Teacher and Games.
+ * Purpose: Root stack navigator managing Splash,
+ * Language Gate, Role Selection, Login, Student,
+ * Parent, Teacher and Games.
  * Module: Navigation
  * Folder: frontend/src/navigation
  */
@@ -17,6 +18,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '../types';
 
+import { SplashScreen } from '../screens/SplashScreen';
 import { LanguageGateScreen } from '../screens/LanguageGateScreen';
 import { RoleSelectionScreen } from '../screens/RoleSelectionScreen';
 import { LoginScreen } from '../screens/LoginScreen';
@@ -82,11 +84,16 @@ export const RootNavigator: React.FC = () => {
 
   return (
     <Stack.Navigator
-      initialRouteName={initialRoute}
+      initialRouteName="Splash"
       screenOptions={{
         headerShown: false,
       }}
     >
+      <Stack.Screen
+        name="Splash"
+        component={SplashScreen}
+      />
+
       <Stack.Screen
         name="LanguageGate"
         component={LanguageGateScreen}

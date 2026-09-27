@@ -20,6 +20,7 @@ import {
 
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { RootStackParamList } from '../types';
 
@@ -32,6 +33,7 @@ export const RoleSelectionScreen: React.FC<Props> = ({
   navigation,
 }) => {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   const handleBack = () => {
     navigation.replace('LanguageGate');
@@ -58,10 +60,21 @@ export const RoleSelectionScreen: React.FC<Props> = ({
   return (
     <View style={styles.container}>
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          {
+            paddingTop: insets.top + 6,
+            paddingBottom: Math.max(
+              insets.bottom + 20,
+              30,
+            ),
+          },
+        ]}
         showsVerticalScrollIndicator={false}
+        bounces={false}
       >
         {/* TOP BAR */}
+
         <View style={styles.topBar}>
           <Pressable
             style={({ pressed }) => [
@@ -70,7 +83,9 @@ export const RoleSelectionScreen: React.FC<Props> = ({
             ]}
             onPress={handleBack}
             accessibilityRole="button"
-            accessibilityLabel={t('roleSelection.back')}
+            accessibilityLabel={t(
+              'roleSelection.back',
+            )}
           >
             <Ionicons
               name="arrow-back"
@@ -87,6 +102,7 @@ export const RoleSelectionScreen: React.FC<Props> = ({
         </View>
 
         {/* HEADER */}
+
         <View style={styles.header}>
           <View style={styles.logoCircle}>
             <Text style={styles.logoEmoji}>
@@ -108,6 +124,7 @@ export const RoleSelectionScreen: React.FC<Props> = ({
         </View>
 
         {/* STUDENT */}
+
         <Pressable
           style={({ pressed }) => [
             styles.roleCard,
@@ -116,7 +133,9 @@ export const RoleSelectionScreen: React.FC<Props> = ({
           ]}
           onPress={handleStudent}
           accessibilityRole="button"
-          accessibilityLabel={t('roleSelection.student')}
+          accessibilityLabel={t(
+            'roleSelection.student',
+          )}
         >
           <View
             style={[
@@ -135,7 +154,9 @@ export const RoleSelectionScreen: React.FC<Props> = ({
             </Text>
 
             <Text style={styles.roleDescription}>
-              {t('roleSelection.studentDescription')}
+              {t(
+                'roleSelection.studentDescription',
+              )}
             </Text>
 
             <View style={styles.roleTag}>
@@ -146,7 +167,9 @@ export const RoleSelectionScreen: React.FC<Props> = ({
               />
 
               <Text style={styles.roleTagText}>
-                {t('roleSelection.studentTag')}
+                {t(
+                  'roleSelection.studentTag',
+                )}
               </Text>
             </View>
           </View>
@@ -161,6 +184,7 @@ export const RoleSelectionScreen: React.FC<Props> = ({
         </Pressable>
 
         {/* PARENT */}
+
         <Pressable
           style={({ pressed }) => [
             styles.roleCard,
@@ -169,7 +193,9 @@ export const RoleSelectionScreen: React.FC<Props> = ({
           ]}
           onPress={handleParent}
           accessibilityRole="button"
-          accessibilityLabel={t('roleSelection.parent')}
+          accessibilityLabel={t(
+            'roleSelection.parent',
+          )}
         >
           <View
             style={[
@@ -188,7 +214,9 @@ export const RoleSelectionScreen: React.FC<Props> = ({
             </Text>
 
             <Text style={styles.roleDescription}>
-              {t('roleSelection.parentDescription')}
+              {t(
+                'roleSelection.parentDescription',
+              )}
             </Text>
 
             <View
@@ -209,7 +237,9 @@ export const RoleSelectionScreen: React.FC<Props> = ({
                   styles.parentTagText,
                 ]}
               >
-                {t('roleSelection.parentTag')}
+                {t(
+                  'roleSelection.parentTag',
+                )}
               </Text>
             </View>
           </View>
@@ -224,6 +254,7 @@ export const RoleSelectionScreen: React.FC<Props> = ({
         </Pressable>
 
         {/* TEACHER */}
+
         <Pressable
           style={({ pressed }) => [
             styles.roleCard,
@@ -232,7 +263,9 @@ export const RoleSelectionScreen: React.FC<Props> = ({
           ]}
           onPress={handleTeacher}
           accessibilityRole="button"
-          accessibilityLabel={t('roleSelection.teacher')}
+          accessibilityLabel={t(
+            'roleSelection.teacher',
+          )}
         >
           <View
             style={[
@@ -251,7 +284,9 @@ export const RoleSelectionScreen: React.FC<Props> = ({
             </Text>
 
             <Text style={styles.roleDescription}>
-              {t('roleSelection.teacherDescription')}
+              {t(
+                'roleSelection.teacherDescription',
+              )}
             </Text>
 
             <View
@@ -272,7 +307,9 @@ export const RoleSelectionScreen: React.FC<Props> = ({
                   styles.teacherTagText,
                 ]}
               >
-                {t('roleSelection.teacherTag')}
+                {t(
+                  'roleSelection.teacherTag',
+                )}
               </Text>
             </View>
           </View>
@@ -287,6 +324,7 @@ export const RoleSelectionScreen: React.FC<Props> = ({
         </Pressable>
 
         {/* SECURITY / PRIVACY */}
+
         <View style={styles.footerCard}>
           <View style={styles.footerIcon}>
             <Ionicons
@@ -298,17 +336,23 @@ export const RoleSelectionScreen: React.FC<Props> = ({
 
           <View style={styles.footerContent}>
             <Text style={styles.footerTitle}>
-              {t('roleSelection.safeTitle')}
+              {t(
+                'roleSelection.safeTitle',
+              )}
             </Text>
 
             <Text style={styles.footerText}>
-              {t('roleSelection.safeDescription')}
+              {t(
+                'roleSelection.safeDescription',
+              )}
             </Text>
           </View>
         </View>
 
         <Text style={styles.footerHint}>
-          {t('roleSelection.footerHint')}
+          {t(
+            'roleSelection.footerHint',
+          )}
         </Text>
       </ScrollView>
     </View>
@@ -324,12 +368,12 @@ const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
     paddingHorizontal: 20,
-    paddingTop: 18,
-    paddingBottom: 35,
   },
 
+  /* ---------------- TOP BAR ---------------- */
+
   topBar: {
-    minHeight: 48,
+    height: 44,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -344,6 +388,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFDFC',
     borderWidth: 1.5,
     borderColor: '#DCE8EC',
+    shadowColor: '#173B5E',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
   },
 
   topBarTitle: {
@@ -356,10 +408,12 @@ const styles = StyleSheet.create({
     width: 44,
   },
 
+  /* ---------------- HEADER ---------------- */
+
   header: {
     alignItems: 'center',
-    marginTop: 12,
-    marginBottom: 27,
+    marginTop: 7,
+    marginBottom: 20,
   },
 
   logoCircle: {
@@ -378,7 +432,7 @@ const styles = StyleSheet.create({
   },
 
   brandName: {
-    marginTop: 12,
+    marginTop: 9,
     fontSize: 15,
     fontWeight: '800',
     letterSpacing: 0.5,
@@ -386,8 +440,9 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    marginTop: 15,
+    marginTop: 9,
     fontSize: 30,
+    lineHeight: 35,
     fontWeight: '800',
     color: '#173B5E',
     textAlign: 'center',
@@ -395,16 +450,18 @@ const styles = StyleSheet.create({
 
   subtitle: {
     maxWidth: 320,
-    marginTop: 7,
+    marginTop: 4,
     textAlign: 'center',
     fontSize: 14,
-    lineHeight: 21,
+    lineHeight: 20,
     color: '#527087',
   },
 
+  /* ---------------- ROLE CARDS ---------------- */
+
   roleCard: {
     minHeight: 128,
-    marginBottom: 15,
+    marginBottom: 13,
     padding: 15,
     borderRadius: 24,
     flexDirection: 'row',
@@ -520,8 +577,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0EDFF',
   },
 
+  /* ---------------- FOOTER ---------------- */
+
   footerCard: {
-    marginTop: 8,
+    marginTop: 5,
     padding: 14,
     borderRadius: 20,
     flexDirection: 'row',
@@ -559,7 +618,7 @@ const styles = StyleSheet.create({
   },
 
   footerHint: {
-    marginTop: 13,
+    marginTop: 10,
     textAlign: 'center',
     fontSize: 10,
     color: '#7C94A5',

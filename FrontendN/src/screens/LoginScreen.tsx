@@ -1,5 +1,5 @@
 /**
- * Purpose: Gyan authentication screen with app and learning language selection.
+ * Purpose: Gyan role-based authentication screen.
  * Module: Screens
  * Folder: frontend/src/screens
  */
@@ -59,15 +59,46 @@ const LANGUAGES: {
   },
 ];
 
+/*
+ * Gyan is designed for children between 5 and 10 years old.
+ */
+const AGE_OPTIONS = [
+  '5–6',
+  '7–8',
+  '9–10',
+];
+
+const ROLE_CONFIG = {
+  student: {
+    emoji: '👧',
+    color: '#8878F4',
+    lightColor: '#F0EDFF',
+    title: 'Ready to learn?',
+    subtitle: 'Your learning adventure starts here',
+  },
+
+  parent: {
+    emoji: '👨‍👩‍👧',
+    color: '#35B88A',
+    lightColor: '#E8F8F1',
+    title: 'Welcome back!',
+    subtitle: "Let's support their learning journey",
+  },
+
+  teacher: {
+    emoji: '👩‍🏫',
+    color: '#5B8DEF',
+    lightColor: '#EDF3FF',
+    title: 'Welcome, teacher!',
+    subtitle: "Let's make learning meaningful",
+  },
+} as const;
+
 const COPY = {
   en: {
     student: 'Student',
     parent: 'Parent',
     teacher: 'Teacher',
-
-    welcome: 'Welcome to Gyan!',
-    subtitle: 'Learn • Play • Grow',
-    journey: "Let's start your learning journey",
 
     appLanguage: 'App Language',
     appLanguageHint:
@@ -76,6 +107,9 @@ const COPY = {
     learningLanguage: 'Language to Learn',
     learningLanguageHint:
       'Choose the language you want to learn.',
+
+    age: 'Your Age',
+    ageHint: 'Choose your age group.',
 
     loginTitle: 'Login to continue',
     loginHint:
@@ -89,6 +123,24 @@ const COPY = {
 
     login: 'Login',
     loggingIn: 'Logging in...',
+
+    forgotPassword: 'Forgot password?',
+    newToGyan: 'New to Gyan?',
+    createAccount: 'Create account',
+
+    learnPlayGrow: 'Learn • Play • Grow',
+
+    studentTitle: 'Ready to learn?',
+    studentSubtitle:
+      'Your learning adventure starts here',
+
+    parentTitle: 'Welcome back!',
+    parentSubtitle:
+      "Let's support their learning journey",
+
+    teacherTitle: 'Welcome, teacher!',
+    teacherSubtitle:
+      "Let's make learning meaningful",
 
     required:
       'Please enter your email and password.',
@@ -107,16 +159,18 @@ const COPY = {
 
     learningRequired:
       'Please select a language to learn.',
+
+    ageRequired:
+      'Please select your age group.',
+
+    safeFooter:
+      'Safe • Secure • Made for learning',
   },
 
   hi: {
     student: 'विद्यार्थी',
     parent: 'अभिभावक',
     teacher: 'शिक्षक',
-
-    welcome: 'Gyan में आपका स्वागत है!',
-    subtitle: 'सीखें • खेलें • आगे बढ़ें',
-    journey: 'आइए सीखने की यात्रा शुरू करें',
 
     appLanguage: 'ऐप की भाषा',
     appLanguageHint:
@@ -126,7 +180,11 @@ const COPY = {
     learningLanguageHint:
       'वह भाषा चुनें जिसे आप सीखना चाहते हैं।',
 
-    loginTitle: 'जारी रखने के लिए लॉगिन करें',
+    age: 'आपकी उम्र',
+    ageHint: 'अपना आयु वर्ग चुनें।',
+
+    loginTitle:
+      'जारी रखने के लिए लॉगिन करें',
     loginHint:
       'अपने Gyan अकाउंट की जानकारी दर्ज करें।',
 
@@ -138,6 +196,24 @@ const COPY = {
 
     login: 'लॉगिन',
     loggingIn: 'लॉगिन हो रहा है...',
+
+    forgotPassword: 'पासवर्ड भूल गए?',
+    newToGyan: 'Gyan पर नए हैं?',
+    createAccount: 'अकाउंट बनाएं',
+
+    learnPlayGrow: 'सीखें • खेलें • बढ़ें',
+
+    studentTitle: 'सीखने के लिए तैयार?',
+    studentSubtitle:
+      'आपका सीखने का सफर यहाँ से शुरू होता है',
+
+    parentTitle: 'वापसी पर स्वागत है!',
+    parentSubtitle:
+      'बच्चे की सीखने की यात्रा में साथ दें',
+
+    teacherTitle: 'स्वागत है, शिक्षक!',
+    teacherSubtitle:
+      'सीखने को और भी बेहतर बनाएं',
 
     required:
       'कृपया अपना ईमेल और पासवर्ड दर्ज करें।',
@@ -156,16 +232,18 @@ const COPY = {
 
     learningRequired:
       'कृपया सीखने के लिए एक भाषा चुनें।',
+
+    ageRequired:
+      'कृपया अपनी आयु चुनें।',
+
+    safeFooter:
+      'सुरक्षित • सुरक्षित अनुभव • सीखने के लिए बनाया गया',
   },
 
   mr: {
     student: 'विद्यार्थी',
     parent: 'पालक',
     teacher: 'शिक्षक',
-
-    welcome: 'Gyan मध्ये तुमचे स्वागत आहे!',
-    subtitle: 'शिका • खेळा • प्रगती करा',
-    journey: 'चला तुमची शिकण्याची यात्रा सुरू करूया',
 
     appLanguage: 'अॅपची भाषा',
     appLanguageHint:
@@ -175,7 +253,11 @@ const COPY = {
     learningLanguageHint:
       'तुम्हाला शिकायची भाषा निवडा.',
 
-    loginTitle: 'पुढे जाण्यासाठी लॉगिन करा',
+    age: 'तुमचे वय',
+    ageHint: 'तुमचा वयोगट निवडा.',
+
+    loginTitle:
+      'पुढे जाण्यासाठी लॉगिन करा',
     loginHint:
       'तुमच्या Gyan अकाउंटची माहिती भरा.',
 
@@ -187,6 +269,24 @@ const COPY = {
 
     login: 'लॉगिन',
     loggingIn: 'लॉगिन होत आहे...',
+
+    forgotPassword: 'पासवर्ड विसरलात?',
+    newToGyan: 'Gyan वर नवीन आहात?',
+    createAccount: 'अकाउंट तयार करा',
+
+    learnPlayGrow: 'शिका • खेळा • वाढा',
+
+    studentTitle: 'शिकण्यासाठी तयार?',
+    studentSubtitle:
+      'तुमचा शिकण्याचा प्रवास इथून सुरू होतो',
+
+    parentTitle: 'पुन्हा स्वागत आहे!',
+    parentSubtitle:
+      'तुमच्या मुलाच्या शिकण्याच्या प्रवासाला साथ द्या',
+
+    teacherTitle: 'स्वागत आहे, शिक्षक!',
+    teacherSubtitle:
+      'शिकणे अधिक अर्थपूर्ण बनवूया',
 
     required:
       'कृपया ईमेल आणि पासवर्ड लिहा.',
@@ -205,6 +305,12 @@ const COPY = {
 
     learningRequired:
       'कृपया शिकण्यासाठी एक भाषा निवडा.',
+
+    ageRequired:
+      'कृपया तुमचे वय निवडा.',
+
+    safeFooter:
+      'सुरक्षित • सुरक्षित अनुभव • शिकण्यासाठी तयार केलेले',
   },
 } as const;
 
@@ -223,10 +329,9 @@ export const LoginScreen: React.FC<Props> = ({
 
   const role = route.params.role;
 
-  const selectedLanguage =
-    useAppLanguageStore(
-      (state) => state.selectedLanguage,
-    );
+  const selectedLanguage = useAppLanguageStore(
+    (state) => state.selectedLanguage,
+  );
 
   const selectedLearningLanguage =
     useAppLanguageStore(
@@ -244,17 +349,15 @@ export const LoginScreen: React.FC<Props> = ({
     );
 
   const [email, setEmail] = useState('');
-  const [password, setPassword] =
-    useState('');
-
+  const [password, setPassword] = useState('');
+  const [age, setAge] = useState('');
   const [showPassword, setShowPassword] =
     useState(false);
 
   const [isLoading, setIsLoading] =
     useState(false);
 
-  const [error, setError] =
-    useState('');
+  const [error, setError] = useState('');
 
   const currentLanguage: AppLanguage =
     selectedLanguage || 'en';
@@ -269,9 +372,31 @@ export const LoginScreen: React.FC<Props> = ({
     [currentLanguage],
   );
 
-  const roleLabel = t(`roleSelection.${ROLE_LABEL_KEY[role]}`, {
-    defaultValue: copy[ROLE_LABEL_KEY[role]],
-  });
+  const roleLabel = t(
+    `roleSelection.${ROLE_LABEL_KEY[role]}`,
+    {
+      defaultValue:
+        copy[ROLE_LABEL_KEY[role]],
+    },
+  );
+
+  const roleConfig = ROLE_CONFIG[role];
+
+  const isStudent = role === 'student';
+
+  const roleTitle =
+    role === 'student'
+      ? copy.studentTitle
+      : role === 'parent'
+        ? copy.parentTitle
+        : copy.teacherTitle;
+
+  const roleSubtitle =
+    role === 'student'
+      ? copy.studentSubtitle
+      : role === 'parent'
+        ? copy.parentSubtitle
+        : copy.teacherSubtitle;
 
   const handleLanguageChange = async (
     language: AppLanguage,
@@ -309,8 +434,16 @@ export const LoginScreen: React.FC<Props> = ({
       return;
     }
 
-    if (!currentLearningLanguage) {
+    if (
+      isStudent &&
+      !currentLearningLanguage
+    ) {
       setError(copy.learningRequired);
+      return;
+    }
+
+    if (isStudent && !age) {
+      setError(copy.ageRequired);
       return;
     }
 
@@ -392,7 +525,7 @@ export const LoginScreen: React.FC<Props> = ({
         style={[
           styles.screen,
           {
-            paddingTop: insets.top + 6,
+            paddingTop: insets.top + 5,
             paddingBottom: Math.max(
               insets.bottom,
               5,
@@ -400,29 +533,27 @@ export const LoginScreen: React.FC<Props> = ({
           },
         ]}
       >
-        {/* DECORATIVE LEAVES */}
+        {/* BACKGROUND DECORATION */}
 
         <View
+          pointerEvents="none"
           style={[
-            styles.leafDecoration,
-            styles.leafLeft,
+            styles.backgroundCircle,
+            styles.backgroundCircleOne,
+            {
+              backgroundColor:
+                roleConfig.lightColor,
+            },
           ]}
-        >
-          <View style={styles.leafStem} />
-          <View style={styles.leafOne} />
-          <View style={styles.leafTwo} />
-        </View>
+        />
 
         <View
+          pointerEvents="none"
           style={[
-            styles.leafDecoration,
-            styles.leafRight,
+            styles.backgroundCircle,
+            styles.backgroundCircleTwo,
           ]}
-        >
-          <View style={styles.leafStem} />
-          <View style={styles.leafOne} />
-          <View style={styles.leafTwo} />
-        </View>
+        />
 
         {/* TOP BAR */}
 
@@ -443,27 +574,54 @@ export const LoginScreen: React.FC<Props> = ({
             />
           </Pressable>
 
-          <View style={styles.roleBadge}>
-            <Ionicons
-              name="person"
-              size={13}
-              color="#6655D8"
-            />
+          <View
+            style={[
+              styles.roleBadge,
+              {
+                backgroundColor:
+                  roleConfig.lightColor,
+              },
+            ]}
+          >
+            <Text style={styles.roleEmojiSmall}>
+              {roleConfig.emoji}
+            </Text>
 
             <Text
-              style={styles.roleBadgeText}
+              style={[
+                styles.roleBadgeText,
+                {
+                  color: roleConfig.color,
+                },
+              ]}
             >
               {roleLabel}
             </Text>
           </View>
         </View>
 
-        {/* BRANDING */}
+        {/* HERO */}
 
-        <View style={styles.header}>
-          <View style={styles.logoCircle}>
-            <Text style={styles.logoLeaf}>
-              🌱
+        <View
+          style={[
+            styles.hero,
+            !isStudent &&
+              styles.nonStudentHero,
+          ]}
+        >
+          <View
+            style={[
+              styles.heroEmojiCircle,
+              {
+                backgroundColor:
+                  roleConfig.lightColor,
+                borderColor:
+                  roleConfig.color,
+              },
+            ]}
+          >
+            <Text style={styles.heroEmoji}>
+              {roleConfig.emoji}
             </Text>
           </View>
 
@@ -471,164 +629,118 @@ export const LoginScreen: React.FC<Props> = ({
             Gyan
           </Text>
 
-          <Text style={styles.title}>
-            {copy.welcome}
+          <Text style={styles.heroTitle}>
+            {roleTitle}
           </Text>
 
-          <Text style={styles.subtitle}>
-            {copy.subtitle}
+          <Text style={styles.heroSubtitle}>
+            {roleSubtitle}
           </Text>
 
-          <View style={styles.journeyPill}>
-            <Text style={styles.journeyIcon}>
+          <View
+            style={[
+              styles.funPill,
+              {
+                backgroundColor:
+                  roleConfig.lightColor,
+              },
+            ]}
+          >
+            <Text style={styles.funSparkle}>
               ✨
             </Text>
 
-            <Text style={styles.journeyText}>
-              {copy.journey}
+            <Text
+              style={[
+                styles.funText,
+                {
+                  color: roleConfig.color,
+                },
+              ]}
+            >
+              {copy.learnPlayGrow}
             </Text>
           </View>
         </View>
 
-        {/* APP LANGUAGE CARD */}
+        {/* MAIN CONTENT */}
 
-        <View style={styles.card}>
-          <View style={styles.sectionHeader}>
-            <View style={styles.sectionIcon}>
-              <Ionicons
-                name="globe-outline"
-                size={19}
-                color="#21A873"
-              />
-            </View>
+        <View
+          style={[
+            styles.content,
+            isStudent
+              ? styles.studentContent
+              : styles.nonStudentContent,
+          ]}
+        >
+          {/* APP LANGUAGE */}
 
-            <View style={styles.sectionHeaderText}>
-              <Text
-                style={styles.sectionTitle}
+          <View style={styles.card}>
+            <View style={styles.sectionHeader}>
+              <View
+                style={[
+                  styles.sectionIcon,
+                  {
+                    backgroundColor:
+                      roleConfig.lightColor,
+                  },
+                ]}
               >
-                {copy.appLanguage}
-              </Text>
+                <Ionicons
+                  name="globe-outline"
+                  size={18}
+                  color={roleConfig.color}
+                />
+              </View>
 
-              <Text
-                style={styles.sectionHint}
+              <View
+                style={styles.sectionHeaderText}
               >
-                {copy.appLanguageHint}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.languageRow}>
-            {LANGUAGES.map((language) => {
-              const selected =
-                currentLanguage ===
-                language.code;
-
-              return (
-                <Pressable
-                  key={language.code}
-                  style={[
-                    styles.languageCard,
-                    selected &&
-                      styles.languageCardSelected,
-                  ]}
-                  onPress={() =>
-                    handleLanguageChange(
-                      language.code,
-                    )
-                  }
+                <Text
+                  style={styles.sectionTitle}
                 >
-                  <Text
-                    style={[
-                      styles.languageNative,
-                      selected &&
-                        styles.selectedText,
-                    ]}
-                  >
-                    {language.native}
-                  </Text>
+                  {copy.appLanguage}
+                </Text>
 
-                  <Text
-                    style={[
-                      styles.languageName,
-                      selected &&
-                        styles.selectedSubText,
-                    ]}
-                  >
-                    {language.name}
-                  </Text>
-
-                  {selected && (
-                    <View
-                      style={
-                        styles.checkCircle
-                      }
-                    >
-                      <Ionicons
-                        name="checkmark"
-                        size={11}
-                        color="#FFFFFF"
-                      />
-                    </View>
-                  )}
-                </Pressable>
-              );
-            })}
-          </View>
-        </View>
-
-        {/* LEARNING LANGUAGE CARD */}
-
-        <View style={styles.card}>
-          <View style={styles.sectionHeader}>
-            <View style={styles.sectionIcon}>
-              <Ionicons
-                name="book-outline"
-                size={19}
-                color="#21A873"
-              />
-            </View>
-
-            <View style={styles.sectionHeaderText}>
-              <Text
-                style={styles.sectionTitle}
-              >
-                {copy.learningLanguage}
-              </Text>
-
-              <Text
-                style={styles.sectionHint}
-              >
-                {copy.learningLanguageHint}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.learningRow}>
-            {LANGUAGES.map((language) => {
-              const selected =
-                currentLearningLanguage ===
-                language.code;
-
-              return (
-                <Pressable
-                  key={`learn-${language.code}`}
-                  style={[
-                    styles.learningCard,
-                    selected &&
-                      styles.learningCardSelected,
-                  ]}
-                  onPress={() =>
-                    handleLearningLanguageChange(
-                      language.code as LearningLanguage,
-                    )
-                  }
+                <Text
+                  style={styles.sectionHint}
                 >
-                  <View>
+                  {copy.appLanguageHint}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.languageRow}>
+              {LANGUAGES.map((language) => {
+                const selected =
+                  currentLanguage ===
+                  language.code;
+
+                return (
+                  <Pressable
+                    key={language.code}
+                    style={[
+                      styles.languageCard,
+                      selected && {
+                        backgroundColor:
+                          roleConfig.lightColor,
+                        borderColor:
+                          roleConfig.color,
+                      },
+                    ]}
+                    onPress={() =>
+                      handleLanguageChange(
+                        language.code,
+                      )
+                    }
+                  >
                     <Text
                       style={[
-                        styles.learningNative,
-                        selected &&
-                          styles.learningSelectedText,
+                        styles.languageNative,
+                        selected && {
+                          color:
+                            roleConfig.color,
+                        },
                       ]}
                     >
                       {language.native}
@@ -636,228 +748,538 @@ export const LoginScreen: React.FC<Props> = ({
 
                     <Text
                       style={
-                        styles.learningName
+                        styles.languageName
                       }
                     >
                       {language.name}
                     </Text>
+
+                    {selected && (
+                      <View
+                        style={[
+                          styles.checkCircle,
+                          {
+                            backgroundColor:
+                              roleConfig.color,
+                          },
+                        ]}
+                      >
+                        <Ionicons
+                          name="checkmark"
+                          size={10}
+                          color="#FFFFFF"
+                        />
+                      </View>
+                    )}
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+
+          {/* STUDENT ONLY OPTIONS */}
+
+          {isStudent && (
+            <>
+              {/* LEARNING LANGUAGE */}
+
+              <View style={styles.card}>
+                <View
+                  style={styles.sectionHeader}
+                >
+                  <View
+                    style={[
+                      styles.sectionIcon,
+                      {
+                        backgroundColor:
+                          '#E8F8F1',
+                      },
+                    ]}
+                  >
+                    <Ionicons
+                      name="book-outline"
+                      size={18}
+                      color="#35B88A"
+                    />
                   </View>
 
                   <View
+                    style={
+                      styles.sectionHeaderText
+                    }
+                  >
+                    <Text
+                      style={
+                        styles.sectionTitle
+                      }
+                    >
+                      {
+                        copy.learningLanguage
+                      }
+                    </Text>
+
+                    <Text
+                      style={
+                        styles.sectionHint
+                      }
+                    >
+                      {
+                        copy.learningLanguageHint
+                      }
+                    </Text>
+                  </View>
+                </View>
+
+                <View
+                  style={styles.learningRow}
+                >
+                  {LANGUAGES.map(
+                    (language) => {
+                      const selected =
+                        currentLearningLanguage ===
+                        language.code;
+
+                      return (
+                        <Pressable
+                          key={`learn-${language.code}`}
+                          style={[
+                            styles.learningCard,
+                            selected && {
+                              backgroundColor:
+                                '#E8F8F1',
+                              borderColor:
+                                '#35B88A',
+                            },
+                          ]}
+                          onPress={() =>
+                            handleLearningLanguageChange(
+                              language.code as LearningLanguage,
+                            )
+                          }
+                        >
+                          <View>
+                            <Text
+                              style={[
+                                styles.learningNative,
+                                selected && {
+                                  color:
+                                    '#238060',
+                                },
+                              ]}
+                            >
+                              {
+                                language.native
+                              }
+                            </Text>
+
+                            <Text
+                              style={
+                                styles.learningName
+                              }
+                            >
+                              {
+                                language.name
+                              }
+                            </Text>
+                          </View>
+
+                          <View
+                            style={[
+                              styles.radio,
+                              selected && {
+                                borderColor:
+                                  '#35B88A',
+                              },
+                            ]}
+                          >
+                            {selected && (
+                              <View
+                                style={[
+                                  styles.radioDot,
+                                  {
+                                    backgroundColor:
+                                      '#35B88A',
+                                  },
+                                ]}
+                              />
+                            )}
+                          </View>
+                        </Pressable>
+                      );
+                    },
+                  )}
+                </View>
+              </View>
+
+              {/* AGE */}
+
+              <View style={styles.card}>
+                <View
+                  style={styles.sectionHeader}
+                >
+                  <View
                     style={[
-                      styles.radio,
-                      selected &&
-                        styles.radioSelected,
+                      styles.sectionIcon,
+                      {
+                        backgroundColor:
+                          '#F0EDFF',
+                      },
                     ]}
                   >
-                    {selected && (
-                      <View
-                        style={styles.radioDot}
-                      />
-                    )}
+                    <Ionicons
+                      name="happy-outline"
+                      size={18}
+                      color="#8878F4"
+                    />
                   </View>
-                </Pressable>
-              );
-            })}
-          </View>
-        </View>
 
-        {/* LOGIN CARD */}
+                  <View
+                    style={
+                      styles.sectionHeaderText
+                    }
+                  >
+                    <Text
+                      style={
+                        styles.sectionTitle
+                      }
+                    >
+                      {copy.age}
+                    </Text>
 
-        <View style={styles.loginCard}>
-          <View style={styles.sectionHeader}>
-            <View style={styles.sectionIcon}>
-              <Ionicons
-                name="lock-closed-outline"
-                size={19}
-                color="#21A873"
-              />
-            </View>
+                    <Text
+                      style={
+                        styles.sectionHint
+                      }
+                    >
+                      {copy.ageHint}
+                    </Text>
+                  </View>
+                </View>
 
-            <View style={styles.sectionHeaderText}>
-              <Text
-                style={styles.sectionTitle}
-              >
-                {copy.loginTitle}
-              </Text>
+                <View style={styles.ageRow}>
+                  {AGE_OPTIONS.map(
+                    (option) => {
+                      const selected =
+                        age === option;
 
-              <Text
-                style={styles.sectionHint}
-              >
-                {copy.loginHint}
-              </Text>
-            </View>
-          </View>
+                      return (
+                        <Pressable
+                          key={option}
+                          style={[
+                            styles.ageCard,
+                            selected && {
+                              backgroundColor:
+                                '#F0EDFF',
+                              borderColor:
+                                '#8878F4',
+                            },
+                          ]}
+                          onPress={() => {
+                            setAge(option);
+                            setError('');
+                          }}
+                        >
+                          <Text
+                            style={[
+                              styles.ageText,
+                              selected && {
+                                color:
+                                  '#6655D8',
+                              },
+                            ]}
+                          >
+                            {option}
+                          </Text>
+                        </Pressable>
+                      );
+                    },
+                  )}
+                </View>
+              </View>
+            </>
+          )}
 
-          {/* EMAIL */}
+          {/* LOGIN */}
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>
-              {copy.email}
-            </Text>
-
-            <View
-              style={styles.inputContainer}
-            >
-              <Ionicons
-                name="mail-outline"
-                size={18}
-                color="#7893A5"
-              />
-
-              <TextInput
-                value={email}
-                onChangeText={setEmail}
-                placeholder={
-                  copy.emailPlaceholder
-                }
-                placeholderTextColor="#9AAEBB"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                editable={!isLoading}
-                style={styles.input}
-              />
-            </View>
-          </View>
-
-          {/* PASSWORD */}
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>
-              {copy.password}
-            </Text>
-
-            <View
-              style={styles.inputContainer}
-            >
-              <Ionicons
-                name="lock-closed-outline"
-                size={18}
-                color="#7893A5"
-              />
-
-              <TextInput
-                value={password}
-                onChangeText={setPassword}
-                placeholder={
-                  copy.passwordPlaceholder
-                }
-                placeholderTextColor="#9AAEBB"
-                secureTextEntry={
-                  !showPassword
-                }
-                autoCapitalize="none"
-                autoCorrect={false}
-                editable={!isLoading}
-                style={styles.input}
-              />
-
-              <Pressable
-                onPress={() =>
-                  setShowPassword(
-                    (previous) =>
-                      !previous,
-                  )
-                }
-                hitSlop={10}
+          <View style={styles.loginCard}>
+            <View style={styles.sectionHeader}>
+              <View
+                style={[
+                  styles.sectionIcon,
+                  {
+                    backgroundColor:
+                      roleConfig.lightColor,
+                  },
+                ]}
               >
                 <Ionicons
-                  name={
-                    showPassword
-                      ? 'eye-off-outline'
-                      : 'eye-outline'
-                  }
-                  size={20}
+                  name="lock-closed-outline"
+                  size={18}
+                  color={roleConfig.color}
+                />
+              </View>
+
+              <View
+                style={styles.sectionHeaderText}
+              >
+                <Text
+                  style={styles.sectionTitle}
+                >
+                  {copy.loginTitle}
+                </Text>
+
+                <Text
+                  style={styles.sectionHint}
+                >
+                  {copy.loginHint}
+                </Text>
+              </View>
+            </View>
+
+            {/* EMAIL */}
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>
+                {copy.email}
+              </Text>
+
+              <View
+                style={[
+                  styles.inputContainer,
+                  {
+                    borderColor:
+                      email.length > 0
+                        ? roleConfig.color
+                        : '#DCE8EC',
+                  },
+                ]}
+              >
+                <Ionicons
+                  name="mail-outline"
+                  size={17}
                   color="#7893A5"
                 />
+
+                <TextInput
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder={
+                    copy.emailPlaceholder
+                  }
+                  placeholderTextColor="#9AAEBB"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  editable={!isLoading}
+                  style={styles.input}
+                />
+              </View>
+            </View>
+
+            {/* PASSWORD */}
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>
+                {copy.password}
+              </Text>
+
+              <View
+                style={[
+                  styles.inputContainer,
+                  {
+                    borderColor:
+                      password.length > 0
+                        ? roleConfig.color
+                        : '#DCE8EC',
+                  },
+                ]}
+              >
+                <Ionicons
+                  name="lock-closed-outline"
+                  size={17}
+                  color="#7893A5"
+                />
+
+                <TextInput
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder={
+                    copy.passwordPlaceholder
+                  }
+                  placeholderTextColor="#9AAEBB"
+                  secureTextEntry={
+                    !showPassword
+                  }
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  editable={!isLoading}
+                  style={styles.input}
+                />
+
+                <Pressable
+                  onPress={() =>
+                    setShowPassword(
+                      (previous) =>
+                        !previous,
+                    )
+                  }
+                  hitSlop={10}
+                >
+                  <Ionicons
+                    name={
+                      showPassword
+                        ? 'eye-off-outline'
+                        : 'eye-outline'
+                    }
+                    size={20}
+                    color="#7893A5"
+                  />
+                </Pressable>
+              </View>
+            </View>
+
+            {/* FORGOT PASSWORD */}
+
+            <Pressable
+              style={styles.forgotButton}
+              onPress={() => {}}
+            >
+              <Text
+                style={[
+                  styles.forgotText,
+                  {
+                    color:
+                      roleConfig.color,
+                  },
+                ]}
+              >
+                {copy.forgotPassword}
+              </Text>
+            </Pressable>
+
+            {/* ERROR */}
+
+            {error ? (
+              <View style={styles.errorBox}>
+                <Ionicons
+                  name="alert-circle"
+                  size={16}
+                  color="#C0392B"
+                />
+
+                <Text
+                  style={styles.errorText}
+                >
+                  {error}
+                </Text>
+              </View>
+            ) : null}
+
+            {/* LOGIN BUTTON */}
+
+            <Pressable
+              style={({ pressed }) => [
+                styles.loginButton,
+                {
+                  backgroundColor:
+                    roleConfig.color,
+                },
+                pressed &&
+                  !isLoading &&
+                  styles.loginButtonPressed,
+                isLoading &&
+                  styles.loginButtonDisabled,
+              ]}
+              onPress={handleLogin}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <ActivityIndicator
+                    color="#FFFFFF"
+                    size="small"
+                  />
+
+                  <Text
+                    style={
+                      styles.loginButtonText
+                    }
+                  >
+                    {copy.loggingIn}
+                  </Text>
+                </>
+              ) : (
+                <>
+                  <Text
+                    style={
+                      styles.loginButtonText
+                    }
+                  >
+                    {copy.login}
+                  </Text>
+
+                  <View
+                    style={styles.arrowCircle}
+                  >
+                    <Ionicons
+                      name="arrow-forward"
+                      size={16}
+                      color={
+                        roleConfig.color
+                      }
+                    />
+                  </View>
+                </>
+              )}
+            </Pressable>
+
+            {/* CREATE ACCOUNT */}
+
+            <View style={styles.signupRow}>
+              <Text style={styles.signupNormal}>
+                {copy.newToGyan}
+              </Text>
+
+              <Pressable
+                onPress={() => {}}
+              >
+                <Text
+                  style={[
+                    styles.signupLink,
+                    {
+                      color:
+                        roleConfig.color,
+                    },
+                  ]}
+                >
+                  {copy.createAccount}
+                </Text>
               </Pressable>
             </View>
-          </View>
-
-          {/* ERROR */}
-
-          {error ? (
-            <View style={styles.errorBox}>
-              <Ionicons
-                name="alert-circle"
-                size={17}
-                color="#C0392B"
-              />
-
-              <Text style={styles.errorText}>
-                {error}
-              </Text>
-            </View>
-          ) : null}
-
-          {/* LOGIN BUTTON */}
-
-          <Pressable
-            style={({ pressed }) => [
-              styles.loginButton,
-              pressed &&
-                !isLoading &&
-                styles.loginButtonPressed,
-              isLoading &&
-                styles.loginButtonDisabled,
-            ]}
-            onPress={handleLogin}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <>
-                <ActivityIndicator
-                  color="#FFFFFF"
-                  size="small"
-                />
-
-                <Text
-                  style={styles.loginButtonText}
-                >
-                  {copy.loggingIn}
-                </Text>
-              </>
-            ) : (
-              <>
-                <Text
-                  style={styles.loginButtonText}
-                >
-                  {copy.login}
-                </Text>
-
-                <Ionicons
-                  name="arrow-forward"
-                  size={20}
-                  color="#FFFFFF"
-                />
-              </>
-            )}
-          </Pressable>
-
-          {/* SECURITY STRIP */}
-
-          <View style={styles.securityStrip}>
-            <Ionicons
-              name="shield-checkmark"
-              size={17}
-              color="#24956E"
-            />
-
-            <Text style={styles.securityText}>
-              {t(
-                'login.securityMessage',
-                'Safe • Secure • For a brighter learning future',
-              )}
-            </Text>
           </View>
         </View>
 
         {/* FOOTER */}
 
-        <Text style={styles.footerText}>
-          {t('login.footer', 'Gyan • Learn • Play • Grow')}
-        </Text>
+        <View
+          style={[
+            styles.footer,
+            {
+              bottom:
+                Math.max(insets.bottom, 5),
+            },
+          ]}
+        >
+          <Ionicons
+            name="shield-checkmark"
+            size={13}
+            color="#35B88A"
+          />
+
+          <Text style={styles.footerText}>
+            {copy.safeFooter}
+          </Text>
+        </View>
       </View>
     </KeyboardAvoidingView>
   );
@@ -872,23 +1294,45 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     paddingHorizontal: 20,
-    justifyContent: 'space-between',
     overflow: 'hidden',
+  },
+
+  /* ---------------- BACKGROUND ---------------- */
+
+  backgroundCircle: {
+    position: 'absolute',
+    borderRadius: 200,
+    opacity: 0.55,
+  },
+
+  backgroundCircleOne: {
+    width: 230,
+    height: 230,
+    right: -110,
+    top: 105,
+  },
+
+  backgroundCircleTwo: {
+    width: 135,
+    height: 135,
+    left: -88,
+    bottom: 125,
+    backgroundColor: '#E7F8F1',
   },
 
   /* ---------------- TOP BAR ---------------- */
 
   topBar: {
-    height: 40,
+    height: 42,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
 
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 43,
+    height: 43,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
@@ -899,162 +1343,133 @@ const styles = StyleSheet.create({
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 1,
+    shadowOpacity: 0.06,
+    shadowRadius: 5,
+    elevation: 2,
   },
 
   roleBadge: {
-    minHeight: 31,
-    paddingHorizontal: 10,
+    minHeight: 32,
+    paddingHorizontal: 12,
     borderRadius: 18,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#F0EDFF',
+    gap: 5,
+  },
+
+  roleEmojiSmall: {
+    fontSize: 15,
   },
 
   roleBadgeText: {
     fontSize: 10,
     fontWeight: '800',
-    color: '#6655D8',
   },
 
-  /* ---------------- HEADER ---------------- */
+  /* ---------------- HERO ---------------- */
 
-  header: {
+  hero: {
     alignItems: 'center',
-    marginTop: 2,
-    marginBottom: 7,
+    marginTop: 4,
+    marginBottom: 9,
   },
 
-  logoCircle: {
-    width: 57,
-    height: 57,
-    borderRadius: 29,
+  /*
+   * Parent and Teacher get a slightly more generous
+   * hero because they have fewer form sections.
+   */
+  nonStudentHero: {
+    marginTop: 10,
+    marginBottom: 18,
+  },
+
+  heroEmojiCircle: {
+    width: 62,
+    height: 62,
+    borderRadius: 31,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#E8F8F2',
     borderWidth: 2,
-    borderColor: '#52CFA5',
-    shadowColor: '#21A873',
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
-    shadowOpacity: 0.08,
-    shadowRadius: 5,
-    elevation: 1,
   },
 
-  logoLeaf: {
-    fontSize: 27,
+  heroEmoji: {
+    fontSize: 32,
   },
 
   brandName: {
-    marginTop: 2,
-    fontSize: 15,
+    marginTop: 3,
+    fontSize: 16,
     fontWeight: '800',
     color: '#6655D8',
   },
 
-  title: {
+  heroTitle: {
     marginTop: 1,
-    fontSize: 21,
-    lineHeight: 26,
+    fontSize: 23,
+    lineHeight: 27,
     fontWeight: '800',
     color: '#173B5E',
+    textAlign: 'center',
   },
 
-  subtitle: {
-    marginTop: 1,
+  heroSubtitle: {
+    marginTop: 2,
     fontSize: 10,
-    color: '#6D8799',
+    lineHeight: 13,
+    color: '#7892A2',
+    textAlign: 'center',
   },
 
-  journeyPill: {
-    marginTop: 6,
-    paddingHorizontal: 13,
+  funPill: {
     height: 31,
+    marginTop: 7,
+    paddingHorizontal: 14,
     borderRadius: 17,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#F1EDFF',
   },
 
-  journeyIcon: {
-    fontSize: 13,
+  funSparkle: {
+    fontSize: 12,
   },
 
-  journeyText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#6655D8',
+  funText: {
+    fontSize: 9.5,
+    fontWeight: '800',
   },
 
-  /* ---------------- DECORATION ---------------- */
+  /* ---------------- CONTENT ---------------- */
 
-  leafDecoration: {
-    position: 'absolute',
-    width: 75,
-    height: 130,
-    opacity: 0.18,
-    pointerEvents: 'none',
+  content: {
+    flex: 1,
   },
 
-  leafLeft: {
-    left: -34,
-    top: 135,
+  /*
+   * Student keeps the original flexible layout.
+   */
+  studentContent: {
+    justifyContent: 'space-between',
   },
 
-  leafRight: {
-    right: -34,
-    top: 150,
-    transform: [{ scaleX: -1 }],
-  },
-
-  leafStem: {
-    position: 'absolute',
-    left: 36,
-    top: 12,
-    width: 3,
-    height: 115,
-    borderRadius: 2,
-    backgroundColor: '#4CC9A0',
-    transform: [{ rotate: '-12deg' }],
-  },
-
-  leafOne: {
-    position: 'absolute',
-    left: 20,
-    top: 25,
-    width: 34,
-    height: 18,
-    borderTopLeftRadius: 28,
-    borderBottomRightRadius: 28,
-    backgroundColor: '#65D5AF',
-    transform: [{ rotate: '-28deg' }],
-  },
-
-  leafTwo: {
-    position: 'absolute',
-    left: 34,
-    top: 57,
-    width: 35,
-    height: 18,
-    borderTopLeftRadius: 28,
-    borderBottomRightRadius: 28,
-    backgroundColor: '#65D5AF',
-    transform: [{ rotate: '-8deg' }],
+  /*
+   * Parent + Teacher:
+   *
+   * No space-between.
+   * No artificial vertical centering.
+   * The cards begin directly after the hero,
+   * exactly like the wireframe.
+   */
+  nonStudentContent: {
+    justifyContent: 'flex-start',
+    gap: 12,
   },
 
   /* ---------------- CARDS ---------------- */
 
   card: {
-    marginBottom: 7,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingHorizontal: 13,
+    paddingVertical: 9,
     borderRadius: 18,
     backgroundColor: '#FFFDFC',
     borderWidth: 1.5,
@@ -1064,14 +1479,13 @@ const styles = StyleSheet.create({
       width: 0,
       height: 3,
     },
-    shadowOpacity: 0.06,
-    shadowRadius: 7,
+    shadowOpacity: 0.055,
+    shadowRadius: 6,
     elevation: 2,
   },
 
   loginCard: {
-    marginBottom: 5,
-    paddingHorizontal: 12,
+    paddingHorizontal: 13,
     paddingVertical: 10,
     borderRadius: 18,
     backgroundColor: '#FFFDFC',
@@ -1082,8 +1496,8 @@ const styles = StyleSheet.create({
       width: 0,
       height: 3,
     },
-    shadowOpacity: 0.06,
-    shadowRadius: 7,
+    shadowOpacity: 0.055,
+    shadowRadius: 6,
     elevation: 2,
   },
 
@@ -1093,13 +1507,12 @@ const styles = StyleSheet.create({
   },
 
   sectionIcon: {
-    width: 36,
-    height: 36,
+    width: 35,
+    height: 35,
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 9,
-    backgroundColor: '#E7F8F1',
   },
 
   sectionHeaderText: {
@@ -1107,7 +1520,7 @@ const styles = StyleSheet.create({
   },
 
   sectionTitle: {
-    fontSize: 15,
+    fontSize: 14.5,
     lineHeight: 18,
     fontWeight: '800',
     color: '#173B5E',
@@ -1115,12 +1528,12 @@ const styles = StyleSheet.create({
 
   sectionHint: {
     marginTop: 1,
-    fontSize: 8.5,
-    lineHeight: 12,
+    fontSize: 8,
+    lineHeight: 11,
     color: '#7892A2',
   },
 
-  /* ---------------- APP LANGUAGES ---------------- */
+  /* ---------------- APP LANGUAGE ---------------- */
 
   languageRow: {
     flexDirection: 'row',
@@ -1130,7 +1543,7 @@ const styles = StyleSheet.create({
 
   languageCard: {
     flex: 1,
-    height: 58,
+    height: 55,
     borderRadius: 13,
     alignItems: 'center',
     justifyContent: 'center',
@@ -1139,30 +1552,16 @@ const styles = StyleSheet.create({
     borderColor: '#DEE8EC',
   },
 
-  languageCardSelected: {
-    backgroundColor: '#F1EEFF',
-    borderColor: '#8B7CF6',
-  },
-
   languageNative: {
-    fontSize: 13,
+    fontSize: 12.5,
     fontWeight: '800',
     color: '#173B5E',
   },
 
   languageName: {
     marginTop: 1,
-    fontSize: 8,
+    fontSize: 7.5,
     color: '#7D96A6',
-  },
-
-  selectedText: {
-    color: '#173B5E',
-  },
-
-  selectedSubText: {
-    color: '#6655D8',
-    fontWeight: '700',
   },
 
   checkCircle: {
@@ -1174,23 +1573,21 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#6655D8',
   },
 
-  /* ---------------- LEARNING LANGUAGES ---------------- */
+  /* ---------------- LEARNING LANGUAGE ---------------- */
 
   learningRow: {
     flexDirection: 'row',
     gap: 7,
-    marginTop: 8,
+    marginTop: 7,
   },
 
   learningCard: {
     flex: 1,
-    minHeight: 48,
-    paddingHorizontal: 9,
-    paddingVertical: 7,
-    borderRadius: 13,
+    height: 46,
+    paddingHorizontal: 8,
+    borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -1199,89 +1596,110 @@ const styles = StyleSheet.create({
     borderColor: '#DEE8EC',
   },
 
-  learningCardSelected: {
-    backgroundColor: '#E9FAF3',
-    borderColor: '#49C99A',
-  },
-
   learningNative: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '800',
     color: '#173B5E',
   },
 
   learningName: {
     marginTop: 1,
-    fontSize: 7.5,
+    fontSize: 7,
     color: '#7892A2',
   },
 
-  learningSelectedText: {
-    color: '#175E48',
-  },
-
   radio: {
-    width: 21,
-    height: 21,
-    borderRadius: 11,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
     borderColor: '#C7D6DE',
   },
 
-  radioSelected: {
-    borderColor: '#26956E',
+  radioDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
 
-  radioDot: {
-    width: 9,
-    height: 9,
-    borderRadius: 5,
-    backgroundColor: '#26956E',
+  /* ---------------- AGE ---------------- */
+
+  ageRow: {
+    flexDirection: 'row',
+    gap: 7,
+    marginTop: 7,
+  },
+
+  ageCard: {
+    flex: 1,
+    height: 40,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F8FAFB',
+    borderWidth: 1.5,
+    borderColor: '#DEE8EC',
+  },
+
+  ageText: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: '#35546D',
   },
 
   /* ---------------- LOGIN ---------------- */
 
   inputGroup: {
-    marginTop: 7,
+    marginTop: 6,
   },
 
   inputLabel: {
-    marginBottom: 4,
-    fontSize: 9,
+    marginBottom: 3,
+    fontSize: 8.5,
     fontWeight: '800',
     color: '#173B5E',
   },
 
   inputContainer: {
-    height: 42,
+    height: 40,
     paddingHorizontal: 10,
-    borderRadius: 12,
+    borderRadius: 11,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 7,
     backgroundColor: '#F8FAFB',
     borderWidth: 1.5,
-    borderColor: '#DCE8EC',
   },
 
   input: {
     flex: 1,
-    height: 40,
+    height: 38,
     paddingVertical: 0,
-    fontSize: 11,
+    fontSize: 10.5,
     color: '#173B5E',
   },
 
+  forgotButton: {
+    alignSelf: 'flex-end',
+    marginTop: 4,
+    paddingVertical: 1,
+  },
+
+  forgotText: {
+    fontSize: 8.5,
+    fontWeight: '800',
+  },
+
   errorBox: {
-    marginTop: 7,
-    paddingHorizontal: 9,
-    paddingVertical: 7,
-    borderRadius: 10,
+    marginTop: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 9,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 5,
     backgroundColor: '#FFF1EF',
     borderWidth: 1,
     borderColor: '#F4C7C1',
@@ -1289,21 +1707,20 @@ const styles = StyleSheet.create({
 
   errorText: {
     flex: 1,
-    fontSize: 8.5,
-    lineHeight: 12,
+    fontSize: 8,
+    lineHeight: 11,
     color: '#A93226',
   },
 
   loginButton: {
-    height: 44,
-    marginTop: 8,
+    height: 43,
+    marginTop: 7,
     borderRadius: 13,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    backgroundColor: '#8878F4',
-    shadowColor: '#6655D8',
+    gap: 9,
+    shadowColor: '#173B5E',
     shadowOffset: {
       width: 0,
       height: 3,
@@ -1314,7 +1731,7 @@ const styles = StyleSheet.create({
   },
 
   loginButtonPressed: {
-    opacity: 0.85,
+    opacity: 0.86,
     transform: [{ scale: 0.985 }],
   },
 
@@ -1323,34 +1740,54 @@ const styles = StyleSheet.create({
   },
 
   loginButtonText: {
-    fontSize: 14,
+    fontSize: 13.5,
     fontWeight: '800',
     color: '#FFFFFF',
   },
 
-  securityStrip: {
-    height: 31,
-    marginTop: 7,
-    borderRadius: 16,
-    flexDirection: 'row',
+  arrowCircle: {
+    width: 25,
+    height: 25,
+    borderRadius: 13,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    backgroundColor: '#E8F8F1',
+    backgroundColor: '#FFFFFF',
   },
 
-  securityText: {
-    fontSize: 8.5,
-    fontWeight: '700',
-    color: '#24956E',
+  signupRow: {
+    marginTop: 7,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 4,
+  },
+
+  signupNormal: {
+    fontSize: 9.5,
+    color: '#8AA2B0',
+  },
+
+  signupLink: {
+    fontSize: 10,
+    fontWeight: '800',
   },
 
   /* ---------------- FOOTER ---------------- */
 
+  footer: {
+    position: 'absolute',
+    left: 20,
+    right: 20,
+    height: 22,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+  },
+
   footerText: {
-    textAlign: 'center',
-    paddingVertical: 2,
     fontSize: 7.5,
+    fontWeight: '700',
     color: '#8AA2B0',
   },
 

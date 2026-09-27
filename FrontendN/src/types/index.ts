@@ -15,6 +15,8 @@ export type UserRole =
   | 'teacher';
 
 export type RootStackParamList = {
+  Splash: undefined;
+
   LanguageGate: undefined;
 
   RoleSelection: undefined;
