@@ -1,3 +1,4 @@
+
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
@@ -76,7 +77,16 @@ const userSchema = new mongoose.Schema(
       min: 0,
     },
 
+    // Last time the user was active in the app.
+    // This is separate from actual learning activity.
     lastActiveAt: {
+      type: Date,
+      default: null,
+    },
+
+    // Date of the user's most recent learning activity.
+    // Used to calculate consecutive daily learning streaks.
+    lastLearningDate: {
       type: Date,
       default: null,
     },

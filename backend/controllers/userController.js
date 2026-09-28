@@ -1,10 +1,12 @@
+
 const User = require("../models/User");
+
+const VALID_LANGUAGES = ["en", "hi", "mr"];
 
 // Get current user's profile
 const getMyProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id)
-      .select("-passwordHash");
+    const user = await User.findById(req.user._id).select("-passwordHash");
 
     if (!user) {
       return res.status(404).json({
@@ -15,9 +17,7 @@ const getMyProfile = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      data: {
-        user,
-      },
+      data: { user },
     });
   } catch (error) {
     console.error("Get profile error:", error);
@@ -32,11 +32,7 @@ const getMyProfile = async (req, res) => {
 // Update current user's profile
 const updateMyProfile = async (req, res) => {
   try {
-    const {
-      name,
-      age,
-      language,
-    } = req.body;
+    const { name, age, language } = req.body;
 
     const user = await User.findById(req.user._id);
 
@@ -47,37 +43,39 @@ const updateMyProfile = async (req, res) => {
       });
     }
 
-    // Update name if provided
     if (name !== undefined) {
-      if (!name.trim()) {
+      if (typeof name !== "string" || !name.trim()) {
         return res.status(400).json({
           success: false,
-          message: "Name cannot be empty",
+          message: "Name must be a non-empty string",
         });
       }
 
       user.name = name.trim();
     }
 
-    // Update age if provided
     if (age !== undefined) {
-      if (user.role === "student") {
-        if (age < 5 || age > 10) {
-          return res.status(400).json({
-            success: false,
-            message: "Student age must be between 5 and 10",
-          });
-        }
+      const parsedAge = Number(age);
+
+      if (!Number.isInteger(parsedAge) || parsedAge < 1 || parsedAge > 120) {
+        return res.status(400).json({
+          success: false,
+          message: "Age must be a valid whole number",
+        });
       }
 
-      user.age = age;
+      if (user.role === "student" && (parsedAge < 5 || parsedAge > 10)) {
+        return res.status(400).json({
+          success: false,
+          message: "Student age must be between 5 and 10",
+        });
+      }
+
+      user.age = parsedAge;
     }
 
-    // Update language if provided
     if (language !== undefined) {
-      const validLanguages = ["en", "hi", "mr"];
-
-      if (!validLanguages.includes(language)) {
+      if (!VALID_LANGUAGES.includes(language)) {
         return res.status(400).json({
           success: false,
           message: "Invalid language. Use en, hi or mr",
@@ -109,6 +107,13 @@ const updateMyProfile = async (req, res) => {
   } catch (error) {
     console.error("Update profile error:", error);
 
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
     return res.status(500).json({
       success: false,
       message: "Server error while updating profile",
@@ -116,12 +121,10 @@ const updateMyProfile = async (req, res) => {
   }
 };
 
-// Update only language
+// Update only the preferred language
 const updateLanguage = async (req, res) => {
   try {
     const { language } = req.body;
-
-    const validLanguages = ["en", "hi", "mr"];
 
     if (!language) {
       return res.status(400).json({
@@ -130,7 +133,7 @@ const updateLanguage = async (req, res) => {
       });
     }
 
-    if (!validLanguages.includes(language)) {
+    if (!VALID_LANGUAGES.includes(language)) {
       return res.status(400).json({
         success: false,
         message: "Invalid language. Use en, hi or mr",
@@ -147,7 +150,6 @@ const updateLanguage = async (req, res) => {
     }
 
     user.language = language;
-
     await user.save();
 
     return res.status(200).json({
@@ -159,6 +161,13 @@ const updateLanguage = async (req, res) => {
     });
   } catch (error) {
     console.error("Update language error:", error);
+
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
 
     return res.status(500).json({
       success: false,

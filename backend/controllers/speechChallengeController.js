@@ -1,3 +1,5 @@
+
+const mongoose = require("mongoose");
 const SpeechAttempt = require("../models/SpeechAttempt");
 const Progress = require("../models/Progress");
 const Reward = require("../models/Reward");
@@ -9,728 +11,427 @@ const {
   getXPProgress,
 } = require("../services/xpService");
 
-// --------------------------------------------------
-// VALIDATION HELPERS
-// --------------------------------------------------
+const { checkAchievements } = require("../services/achievementService");
 
-const SUPPORTED_LANGUAGES = [
-  "en",
-  "hi",
-  "mr",
-];
+const {
+  getTrustedSpeechChallengeAnswer,
+} = require("./gameController");
 
-const SUPPORTED_MODES = [
-  "letters",
-  "words",
-];
+const SUPPORTED_LANGUAGES = ["en", "hi", "mr"];
+const SUPPORTED_MODES = ["letters", "words"];
+const GAME_TYPE = "speech_word_challenge";
 
-// --------------------------------------------------
+const normalizeAnswer = (value) =>
+  String(value || "")
+    .normalize("NFKC")
+    .toLocaleLowerCase()
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/^[\p{P}\p{S}]+|[\p{P}\p{S}]+$/gu, "");
+
+const getUTCDateKey = (date = new Date()) =>
+  `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}-${String(date.getUTCDate()).padStart(2, "0")}`;
+
+const updateLearningStreak = (user) => {
+  const today = getUTCDateKey();
+
+  const yesterdayDate = new Date();
+  yesterdayDate.setUTCDate(yesterdayDate.getUTCDate() - 1);
+
+  const yesterday = getUTCDateKey(yesterdayDate);
+
+  const lastDate = user.lastLearningDate
+    ? getUTCDateKey(new Date(user.lastLearningDate))
+    : null;
+
+  if (lastDate === today) {
+    return;
+  }
+
+  user.streak =
+    lastDate === yesterday ? (user.streak || 0) + 1 : 1;
+
+  user.lastLearningDate = new Date(`${today}T00:00:00.000Z`);
+};
+
 // SUBMIT SPEECH ATTEMPT
-// --------------------------------------------------
-
-const submitSpeechAttempt = async (
-  req,
-  res
-) => {
+const submitSpeechAttempt = async (req, res) => {
   try {
+    const userId = req.user._id || req.user.id;
+
     const {
-      game_type = "speech_word_challenge",
       mode,
       language,
       age,
       item_id,
-      expected_answer,
-      recognized_answer = "",
-      is_correct,
+      recognized_answer,
       attempt_count = 1,
       duration_seconds = 0,
       latency_ms = 0,
-      language_returned,
+      session_id = null,
+      difficulty = 1,
+      language_returned = null,
       stt_error_type = "NONE",
-      session_id,
     } = req.body;
 
-    // ----------------------------------------------
-    // REQUIRED FIELDS
-    // ----------------------------------------------
-
-    if (
-      !mode ||
-      !language ||
-      age === undefined ||
-      !item_id ||
-      !expected_answer ||
-      is_correct === undefined
-    ) {
+    if (!SUPPORTED_LANGUAGES.includes(language)) {
       return res.status(400).json({
         success: false,
-        message:
-          "mode, language, age, item_id, expected_answer and is_correct are required",
+        message: "Language must be en, hi or mr",
       });
     }
 
-    // ----------------------------------------------
-    // VALIDATE GAME TYPE
-    // ----------------------------------------------
-
-    if (
-      game_type !==
-      "speech_word_challenge"
-    ) {
+    if (!SUPPORTED_MODES.includes(mode)) {
       return res.status(400).json({
         success: false,
-        message:
-          "Invalid game_type",
+        message: "Mode must be letters or words",
       });
     }
 
-    // ----------------------------------------------
-    // VALIDATE MODE
-    // ----------------------------------------------
-
     if (
-      !SUPPORTED_MODES.includes(mode)
+      typeof item_id !== "string" ||
+      !item_id.trim() ||
+      typeof recognized_answer !== "string" ||
+      !recognized_answer.trim()
     ) {
       return res.status(400).json({
         success: false,
-        message:
-          "Invalid mode. Use letters or words",
+        message: "item_id and recognized_answer are required",
       });
     }
 
-    // ----------------------------------------------
-    // VALIDATE LANGUAGE
-    // ----------------------------------------------
+    const parsedAttemptCount = Number(attempt_count);
+    const parsedDifficulty = Number(difficulty);
+    const parsedDuration = Number(duration_seconds);
+    const parsedLatency = Number(latency_ms);
 
     if (
-      !SUPPORTED_LANGUAGES.includes(
-        language
-      )
+      !Number.isInteger(parsedAttemptCount) ||
+      parsedAttemptCount < 1 ||
+      parsedAttemptCount > 100
     ) {
       return res.status(400).json({
         success: false,
-        message:
-          "Invalid language. Use en, hi or mr",
+        message: "attempt_count must be an integer between 1 and 100",
       });
     }
 
-    // ----------------------------------------------
-    // VALIDATE AGE
-    // ----------------------------------------------
-
-    const ageNumber = Number(age);
-
     if (
-      !Number.isInteger(ageNumber) ||
-      ageNumber < 3 ||
-      ageNumber > 18
+      !Number.isInteger(parsedDifficulty) ||
+      parsedDifficulty < 1 ||
+      parsedDifficulty > 3
     ) {
       return res.status(400).json({
         success: false,
-        message:
-          "Age must be between 3 and 18",
+        message: "difficulty must be an integer between 1 and 3",
       });
     }
 
-    // ----------------------------------------------
-    // VALIDATE CORRECTNESS
-    // ----------------------------------------------
+    const parsedAge =
+      age === undefined || age === null || age === ""
+        ? undefined
+        : Number(age);
 
     if (
-      typeof is_correct !==
-      "boolean"
+      parsedAge !== undefined &&
+      (!Number.isInteger(parsedAge) || parsedAge < 3 || parsedAge > 18)
     ) {
       return res.status(400).json({
         success: false,
-        message:
-          "is_correct must be a boolean",
+        message: "age must be an integer between 3 and 18",
       });
     }
 
-    // ----------------------------------------------
-    // VALIDATE ATTEMPT COUNT
-    // ----------------------------------------------
-
-    const attemptNumber =
-      Number(attempt_count);
-
     if (
-      !Number.isInteger(
-        attemptNumber
-      ) ||
-      attemptNumber < 1 ||
-      attemptNumber > 10
+      !Number.isFinite(parsedDuration) ||
+      parsedDuration < 0 ||
+      !Number.isFinite(parsedLatency) ||
+      parsedLatency < 0
     ) {
       return res.status(400).json({
         success: false,
-        message:
-          "attempt_count must be between 1 and 10",
+        message: "Duration and latency must be non-negative numbers",
       });
     }
 
-    // ----------------------------------------------
-    // VALIDATE DURATION
-    // ----------------------------------------------
-
-    const durationNumber =
-      Number(duration_seconds);
-
     if (
-      Number.isNaN(
-        durationNumber
-      ) ||
-      durationNumber < 0
+      language_returned !== null &&
+      language_returned !== "" &&
+      !SUPPORTED_LANGUAGES.includes(language_returned)
     ) {
       return res.status(400).json({
         success: false,
-        message:
-          "duration_seconds cannot be negative",
+        message: "Invalid language_returned value",
       });
     }
 
-    // ----------------------------------------------
-    // VALIDATE LATENCY
-    // ----------------------------------------------
-
-    const latencyNumber =
-      Number(latency_ms);
+    const trustedAnswer = getTrustedSpeechChallengeAnswer({
+      language,
+      mode,
+      itemId: item_id.trim(),
+    });
 
     if (
-      Number.isNaN(
-        latencyNumber
-      ) ||
-      latencyNumber < 0
+      !trustedAnswer ||
+      typeof trustedAnswer.expectedAnswer !== "string"
     ) {
-      return res.status(400).json({
+      return res.status(404).json({
         success: false,
-        message:
-          "latency_ms cannot be negative",
+        message: "Speech challenge item not found",
       });
     }
 
-    // ----------------------------------------------
-    // SAVE DETAILED SPEECH ATTEMPT
-    // ----------------------------------------------
+    const normalizedRecognized = normalizeAnswer(recognized_answer);
 
-    const attempt =
-      await SpeechAttempt.create({
-        user: req.user._id,
+    const acceptedAnswers = [
+      trustedAnswer.expectedAnswer,
+      ...(trustedAnswer.acceptedVariants || []),
+    ].map(normalizeAnswer);
 
-        game_type,
+    const isCorrect = acceptedAnswers.includes(normalizedRecognized);
 
-        mode,
-
-        language,
-
-        age: ageNumber,
-
-        item_id,
-
-        expected_answer,
-
-        recognized_answer,
-
-        is_correct,
-
-        attempt_count:
-          attemptNumber,
-
-        duration_seconds:
-          durationNumber,
-
-        latency_ms:
-          latencyNumber,
-
-        language_returned:
-          language_returned ||
-          language,
-
-        stt_error_type,
-
-        session_id:
-          session_id || null,
-      });
-
-    // ----------------------------------------------
-    // PROGRESS / XP
-    //
-    // Each submitted speech attempt is treated
-    // as one completed item.
-    // ----------------------------------------------
-
-    const itemsAttempted = 1;
-
-    const itemsCorrect =
-      is_correct ? 1 : 0;
-
-    const accuracy =
-      itemsCorrect /
-      itemsAttempted *
-      100;
-
-    // Speech challenge currently has
-    // difficulty 1-3.
-    //
-    // We use attempt count as a small
-    // performance factor through the
-    // existing XP service.
-    const difficulty =
-      Math.min(
-        Math.max(
-          attemptNumber,
-          1
-        ),
-        3
-      );
-
-    const xpEarned =
-      calculateXP({
-        accuracy,
-
-        difficulty,
-
-        timeTakenSeconds:
-          durationNumber,
-      });
-
-    // ----------------------------------------------
-    // CREATE NORMAL PROGRESS RECORD
-    // ----------------------------------------------
-
-    const progress =
-      await Progress.create({
-        user: req.user._id,
-
-        game_type:
-          "speech_word_challenge",
-
-        language:
-          language ||
-          req.user.language,
-
-        difficulty,
-
-        mode,
-
-        items_attempted:
-          itemsAttempted,
-
-        items_correct:
-          itemsCorrect,
-
-        accuracy:
-          Number(
-            accuracy.toFixed(2)
-          ),
-
-        time_taken_seconds:
-          durationNumber,
-
-        xp_earned:
-          xpEarned,
-      });
-
-    // ----------------------------------------------
-    // UPDATE USER XP
-    // ----------------------------------------------
-
-    const user =
-      await User.findById(
-        req.user._id
-      );
+    const user = await User.findById(userId);
 
     if (!user) {
       return res.status(404).json({
         success: false,
-        message:
-          "User not found",
+        message: "User not found",
       });
     }
 
-    const oldXP =
-      user.xpTotal || 0;
+    const xpEarned = calculateXP({
+      accuracy: isCorrect ? 100 : 0,
+      difficulty: parsedDifficulty,
+      timeTakenSeconds: parsedDuration,
+    });
 
-    const newXP =
-      oldXP + xpEarned;
+    const speechAttempt = await SpeechAttempt.create({
+      user: userId,
+      game_type: GAME_TYPE,
+      mode,
+      language,
+      age: parsedAge,
+      item_id: item_id.trim(),
+      expected_answer: trustedAnswer.expectedAnswer,
+      recognized_answer: recognized_answer.trim(),
+      is_correct: isCorrect,
+      attempt_count: parsedAttemptCount,
+      duration_seconds: parsedDuration,
+      latency_ms: parsedLatency,
+      language_returned: language_returned || null,
+      stt_error_type,
+      session_id,
+    });
 
-    const newLevel =
-      calculateLevel(newXP);
+    const progress = await Progress.create({
+      user: userId,
+      game_type: GAME_TYPE,
+      language,
+      difficulty: parsedDifficulty,
+      mode,
+      items_attempted: 1,
+      items_correct: isCorrect ? 1 : 0,
+      accuracy: isCorrect ? 100 : 0,
+      time_taken_seconds: Math.round(parsedDuration),
+      xp_earned: xpEarned,
+    });
 
-    user.xpTotal =
-      newXP;
+    user.xpTotal = Number(user.xpTotal || 0) + xpEarned;
+    user.level = calculateLevel(user.xpTotal);
+    user.lastActiveAt = new Date();
 
-    user.level =
-      newLevel;
+    updateLearningStreak(user);
 
-    user.lastActiveAt =
-      new Date();
-
+    // Always save XP, even if the user has already played today.
     await user.save();
 
-    // ----------------------------------------------
-    // CREATE REWARD
-    // ----------------------------------------------
+    await Reward.create({
+      user: userId,
+      xp: xpEarned,
+      reason: isCorrect
+        ? "Correct speech challenge answer"
+        : "Speech challenge attempt",
+      game_type: GAME_TYPE,
+    });
 
-    const reward =
-      await Reward.create({
-        user: user._id,
+    let achievements = [];
 
-        xp: xpEarned,
+    try {
+      achievements = await checkAchievements(userId);
+    } catch (error) {
+      console.error("Speech challenge achievement error:", error);
+    }
 
-        reason:
-          "Completed Speech Word Challenge",
-
-        game_type:
-          "speech_word_challenge",
-      });
-
-    // ----------------------------------------------
-    // XP DASHBOARD
-    // ----------------------------------------------
-
-    const xpProgress =
-      getXPProgress(
-        user.xpTotal
-      );
-
-    // ----------------------------------------------
-    // RESPONSE
-    // ----------------------------------------------
+    const xpProgress = getXPProgress(user.xpTotal);
 
     return res.status(201).json({
       success: true,
-
-      message:
-        "Speech attempt and progress recorded successfully",
-
+      message: "Speech attempt submitted successfully",
       data: {
         attempt: {
-          id:
-            attempt._id,
-
-          game_type:
-            attempt.game_type,
-
-          mode:
-            attempt.mode,
-
-          language:
-            attempt.language,
-
-          item_id:
-            attempt.item_id,
-
-          expected_answer:
-            attempt.expected_answer,
-
-          recognized_answer:
-            attempt.recognized_answer,
-
-          is_correct:
-            attempt.is_correct,
-
-          attempt_count:
-            attempt.attempt_count,
-
-          duration_seconds:
-            attempt.duration_seconds,
-
-          latency_ms:
-            attempt.latency_ms,
-
-          createdAt:
-            attempt.createdAt,
+          id: speechAttempt._id,
+          item_id: speechAttempt.item_id,
+          recognized_answer: speechAttempt.recognized_answer,
+          expected_answer: speechAttempt.expected_answer,
+          is_correct: speechAttempt.is_correct,
+          language,
+          mode,
+          xp_earned: xpEarned,
         },
-
         progress: {
-          id:
-            progress._id,
-
-          game_type:
-            progress.game_type,
-
-          language:
-            progress.language,
-
-          difficulty:
-            progress.difficulty,
-
-          mode:
-            progress.mode,
-
-          accuracy:
-            progress.accuracy,
-
-          items_attempted:
-            progress.items_attempted,
-
-          items_correct:
-            progress.items_correct,
-
-          time_taken_seconds:
-            progress.time_taken_seconds,
-
-          xp_earned:
-            progress.xp_earned,
+          id: progress._id,
+          accuracy: progress.accuracy,
+          items_attempted: progress.items_attempted,
+          items_correct: progress.items_correct,
         },
-
-        reward: {
-          id:
-            reward._id,
-
-          xpEarned,
-        },
-
         xp: {
-          total:
-            xpProgress.xpTotal,
-
-          level:
-            xpProgress.level,
-
-          xpEarnedInLevel:
-            xpProgress.xpEarnedInLevel,
-
-          xpToNextLevel:
-            xpProgress.xpToNextLevel,
+          total: user.xpTotal,
+          level: user.level,
+          ...xpProgress,
         },
+        streak: {
+          current: user.streak || 0,
+          lastLearningDate: user.lastLearningDate,
+        },
+        achievements,
       },
     });
   } catch (error) {
-    console.error(
-      "Submit speech attempt error:",
-      error
-    );
+    console.error("Submit speech attempt error:", error);
 
     return res.status(500).json({
       success: false,
-      message:
-        "Server error while recording speech attempt",
+      message: "Server error while submitting speech attempt",
     });
   }
 };
 
-// --------------------------------------------------
 // GET MY SPEECH ATTEMPTS
-// --------------------------------------------------
+const getMySpeechAttempts = async (req, res) => {
+  try {
+    const userId = req.user._id || req.user.id;
+    const { language, mode, limit = 50 } = req.query;
 
-const getMySpeechAttempts =
-  async (req, res) => {
-    try {
-      const {
-        language,
-        mode,
-        limit = 50,
-      } = req.query;
+    const filter = { user: userId };
 
-      const query = {
-        user: req.user._id,
-      };
-
-      if (
-        language &&
-        SUPPORTED_LANGUAGES.includes(
-          language
-        )
-      ) {
-        query.language =
-          language;
+    if (language) {
+      if (!SUPPORTED_LANGUAGES.includes(language)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid language",
+        });
       }
 
-      if (
-        mode &&
-        SUPPORTED_MODES.includes(
-          mode
-        )
-      ) {
-        query.mode =
-          mode;
+      filter.language = language;
+    }
+
+    if (mode) {
+      if (!SUPPORTED_MODES.includes(mode)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid mode",
+        });
       }
 
-      const limitNumber =
-        Math.min(
-          Math.max(
-            Number(limit) || 50,
-            1
-          ),
-          100
-        );
+      filter.mode = mode;
+    }
 
-      const attempts =
-        await SpeechAttempt.find(
-          query
-        )
-          .sort({
-            createdAt: -1,
-          })
-          .limit(
-            limitNumber
-          );
+    const parsedLimit = Math.min(
+      100,
+      Math.max(1, Number.parseInt(limit, 10) || 50)
+    );
 
-      return res.status(200).json({
-        success: true,
+    const attempts = await SpeechAttempt.find(filter)
+      .sort({ createdAt: -1 })
+      .limit(parsedLimit)
+      .lean();
 
-        count:
-          attempts.length,
+    return res.status(200).json({
+      success: true,
+      data: attempts,
+    });
+  } catch (error) {
+    console.error("Get speech attempts error:", error);
 
-        data: attempts,
-      });
-    } catch (error) {
-      console.error(
-        "Get speech attempts error:",
-        error
-      );
+    return res.status(500).json({
+      success: false,
+      message: "Server error while fetching speech attempts",
+    });
+  }
+};
 
-      return res.status(500).json({
+// GET SPEECH SUMMARY
+const getSpeechSummary = async (req, res) => {
+  try {
+    const rawUserId = req.user._id || req.user.id;
+
+    if (!mongoose.Types.ObjectId.isValid(rawUserId)) {
+      return res.status(400).json({
         success: false,
-        message:
-          "Server error while fetching speech attempts",
+        message: "Invalid user ID",
       });
     }
-  };
 
-// --------------------------------------------------
-// GET SPEECH SUMMARY
-// --------------------------------------------------
+    const userId = new mongoose.Types.ObjectId(rawUserId);
 
-const getSpeechSummary =
-  async (req, res) => {
-    try {
-      const {
-        language,
-        mode,
-      } = req.query;
-
-      const match = {
-        user: req.user._id,
-      };
-
-      if (
-        language &&
-        SUPPORTED_LANGUAGES.includes(
-          language
-        )
-      ) {
-        match.language =
-          language;
-      }
-
-      if (
-        mode &&
-        SUPPORTED_MODES.includes(
-          mode
-        )
-      ) {
-        match.mode =
-          mode;
-      }
-
-      const result =
-        await SpeechAttempt.aggregate([
-          {
-            $match: match,
-          },
-
-          {
-            $group: {
-              _id: null,
-
-              totalAttempts: {
-                $sum: 1,
-              },
-
-              correctAttempts: {
-                $sum: {
-                  $cond: [
-                    "$is_correct",
-                    1,
-                    0,
-                  ],
-                },
-              },
-
-              averageLatencyMs: {
-                $avg:
-                  "$latency_ms",
-              },
-
-              averageDurationSeconds:
-                {
-                  $avg:
-                    "$duration_seconds",
-                },
+    const summary = await SpeechAttempt.aggregate([
+      { $match: { user: userId } },
+      {
+        $group: {
+          _id: null,
+          totalAttempts: { $sum: 1 },
+          correctAttempts: {
+            $sum: {
+              $cond: [{ $eq: ["$is_correct", true] }, 1, 0],
             },
           },
-        ]);
-
-      const summary =
-        result[0] || {
-          totalAttempts: 0,
-          correctAttempts: 0,
-          averageLatencyMs: 0,
-          averageDurationSeconds: 0,
-        };
-
-      const accuracy =
-        summary.totalAttempts > 0
-          ? (
-              (summary.correctAttempts /
-                summary.totalAttempts) *
-              100
-            ).toFixed(2)
-          : "0.00";
-
-      return res.status(200).json({
-        success: true,
-
-        data: {
-          totalAttempts:
-            summary.totalAttempts,
-
-          correctAttempts:
-            summary.correctAttempts,
-
-          incorrectAttempts:
-            summary.totalAttempts -
-            summary.correctAttempts,
-
-          accuracy:
-            Number(accuracy),
-
-          averageLatencyMs:
-            Number(
-              (
-                summary.averageLatencyMs ||
-                0
-              ).toFixed(2)
-            ),
-
-          averageDurationSeconds:
-            Number(
-              (
-                summary.averageDurationSeconds ||
-                0
-              ).toFixed(2)
-            ),
+          averageLatencyMs: { $avg: "$latency_ms" },
+          totalDurationSeconds: { $sum: "$duration_seconds" },
         },
-      });
-    } catch (error) {
-      console.error(
-        "Get speech summary error:",
-        error
-      );
+      },
+      {
+        $project: {
+          _id: 0,
+          totalAttempts: 1,
+          correctAttempts: 1,
+          accuracy: {
+            $multiply: [
+              {
+                $divide: [
+                  "$correctAttempts",
+                  { $max: ["$totalAttempts", 1] },
+                ],
+              },
+              100,
+            ],
+          },
+          averageLatencyMs: {
+            $round: [{ $ifNull: ["$averageLatencyMs", 0] }, 2],
+          },
+          totalDurationSeconds: 1,
+        },
+      },
+    ]);
 
-      return res.status(500).json({
-        success: false,
-        message:
-          "Server error while calculating speech summary",
-      });
-    }
-  };
+    return res.status(200).json({
+      success: true,
+      data: summary[0] || {
+        totalAttempts: 0,
+        correctAttempts: 0,
+        accuracy: 0,
+        averageLatencyMs: 0,
+        totalDurationSeconds: 0,
+      },
+    });
+  } catch (error) {
+    console.error("Get speech summary error:", error);
 
-// --------------------------------------------------
-// EXPORTS
-// --------------------------------------------------
+    return res.status(500).json({
+      success: false,
+      message: "Server error while fetching speech summary",
+    });
+  }
+};
 
 module.exports = {
   submitSpeechAttempt,

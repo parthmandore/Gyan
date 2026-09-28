@@ -1,8 +1,4 @@
-// --------------------------------------------------
-// SPEECH SERVICE
-// --------------------------------------------------
 
-// Supported languages
 const SUPPORTED_LANGUAGES = {
   en: {
     code: "en",
@@ -10,14 +6,12 @@ const SUPPORTED_LANGUAGES = {
     ttsLanguage: "en-IN",
     recognitionLanguage: "en-IN",
   },
-
   hi: {
     code: "hi",
     name: "Hindi",
     ttsLanguage: "hi-IN",
     recognitionLanguage: "hi-IN",
   },
-
   mr: {
     code: "mr",
     name: "Marathi",
@@ -26,69 +20,44 @@ const SUPPORTED_LANGUAGES = {
   },
 };
 
+const normalizeBaseUrl = (url) => url.replace(/\/+$/, "");
+
+const WHISPER_BASE_URL = normalizeBaseUrl(
+  process.env.WHISPER_BASE_URL || "http://localhost:8000"
+);
+
+const AI_SERVICE_URL = normalizeBaseUrl(
+  process.env.AI_SERVICE_URL || "http://localhost:8000"
+);
+
+const AI_TIMEOUT = Number(process.env.AI_TIMEOUT || 60000);
+
 // --------------------------------------------------
-// FASTAPI WHISPER CONFIGURATION
+// ERROR HANDLING
 // --------------------------------------------------
 
-const WHISPER_BASE_URL =
-  process.env.WHISPER_BASE_URL ||
-  "http://localhost:8000";
+const isServiceUnavailable = (error) => {
+  return (
+    error?.name === "AbortError" ||
+    error?.name === "TimeoutError" ||
+    /ECONNREFUSED|ECONNRESET|ENOTFOUND|fetch failed|network error|timeout|timed out|service unavailable/i.test(
+      error?.message || ""
+    )
+  );
+};
 
-// --------------------------------------------------
-// GET SPEECH CONFIGURATION
-// --------------------------------------------------
+const createServiceError = (serviceName, error) => {
+  const unavailable = isServiceUnavailable(error);
+  const message = unavailable
+    ? `${serviceName} service unavailable: ${error.message}`
+    : error.message;
 
-const getSpeechConfig = async (language = "en") => {
-  const config = SUPPORTED_LANGUAGES[language];
+  const serviceError = new Error(message);
+  serviceError.code = unavailable
+    ? "AI_SERVICE_UNAVAILABLE"
+    : "AI_SERVICE_ERROR";
 
-  if (!config) {
-    throw new Error(
-      "Unsupported speech language"
-    );
-  }
-
-  const whisperHealth =
-    await checkWhisperHealth();
-
-  return {
-    language: config.code,
-
-    languageName: config.name,
-
-    // TTS will be connected to the
-    // multilingual TTS API later.
-    tts: {
-      language: config.ttsLanguage,
-
-      enabled: true,
-
-      provider: "multilingual-tts",
-
-      endpoint: "/synthesize",
-    },
-
-    // Speech-to-Text
-    recognition: {
-      language:
-        config.recognitionLanguage,
-
-      enabled:
-        whisperHealth.connected,
-
-      provider: "openai-whisper",
-
-      endpoint: "/speech/transcribe",
-    },
-
-    ai: {
-      enabled:
-        whisperHealth.connected,
-
-      provider: "openai-whisper",
-
-      status: whisperHealth.status,
-    },
-  };
+  return serviceError;
 };
 
 // --------------------------------------------------
@@ -96,36 +65,19 @@ const getSpeechConfig = async (language = "en") => {
 // --------------------------------------------------
 
 const validateSpeechText = (text) => {
-  if (!text) {
+  if (typeof text !== "string" || !text.trim()) {
     return {
       valid: false,
-      message: "Speech text is required",
-    };
-  }
-
-  if (typeof text !== "string") {
-    return {
-      valid: false,
-      message:
-        "Speech text must be a string",
+      message: "Speech text is required and must not be empty",
     };
   }
 
   const cleanedText = text.trim();
 
-  if (!cleanedText) {
-    return {
-      valid: false,
-      message:
-        "Speech text cannot be empty",
-    };
-  }
-
   if (cleanedText.length > 500) {
     return {
       valid: false,
-      message:
-        "Speech text cannot exceed 500 characters",
+      message: "Speech text cannot exceed 500 characters",
     };
   }
 
@@ -143,13 +95,46 @@ const validateLanguage = (language) => {
   if (!SUPPORTED_LANGUAGES[language]) {
     return {
       valid: false,
-      message:
-        "Unsupported language. Use en, hi or mr",
+      message: "Unsupported language. Use en, hi or mr",
     };
   }
 
+  return { valid: true };
+};
+
+// --------------------------------------------------
+// GET SPEECH CONFIGURATION
+// --------------------------------------------------
+
+const getSpeechConfig = async (language = "en") => {
+  const config = SUPPORTED_LANGUAGES[language];
+
+  if (!config) {
+    throw new Error("Unsupported speech language");
+  }
+
+  const whisperHealth = await checkWhisperHealth();
+
   return {
-    valid: true,
+    language: config.code,
+    languageName: config.name,
+    tts: {
+      language: config.ttsLanguage,
+      enabled: true,
+      provider: "gan-tts",
+      endpoint: "/tts",
+    },
+    recognition: {
+      language: config.recognitionLanguage,
+      enabled: whisperHealth.connected,
+      provider: "openai-whisper",
+      endpoint: "/speech/transcribe",
+    },
+    ai: {
+      enabled: whisperHealth.connected,
+      provider: "openai-whisper",
+      status: whisperHealth.status,
+    },
   };
 };
 
@@ -161,60 +146,34 @@ const transcribeSpeech = async ({
   audioBuffer,
   filename = "speech.wav",
   mimeType = "audio/wav",
-  language,
+  language = "en",
 }) => {
-  // Validate audio
-  if (!audioBuffer) {
-    throw new Error(
-      "Audio file is required"
-    );
+  if (!Buffer.isBuffer(audioBuffer) || audioBuffer.length === 0) {
+    throw new Error("A valid audio file is required");
   }
 
-  if (!Buffer.isBuffer(audioBuffer)) {
-    throw new Error(
-      "Invalid audio file"
-    );
-  }
-
-  // Validate language
-  const languageValidation =
-    validateLanguage(language);
+  const languageValidation = validateLanguage(language);
 
   if (!languageValidation.valid) {
-    throw new Error(
-      languageValidation.message
-    );
+    throw new Error(languageValidation.message);
   }
-
-  const endpoint =
-    `${WHISPER_BASE_URL}/speech/transcribe`;
 
   try {
     const formData = new FormData();
 
-    const audioBlob = new Blob(
-      [audioBuffer],
-      {
-        type: mimeType,
-      }
-    );
+    const audioBlob = new Blob([audioBuffer], {
+      type: mimeType,
+    });
 
-    formData.append(
-      "file",
-      audioBlob,
-      filename
-    );
-
-    formData.append(
-      "language",
-      language
-    );
+    formData.append("file", audioBlob, filename);
+    formData.append("language", language);
 
     const response = await fetch(
-      endpoint,
+      `${WHISPER_BASE_URL}/speech/transcribe`,
       {
         method: "POST",
         body: formData,
+        signal: AbortSignal.timeout(AI_TIMEOUT),
       }
     );
 
@@ -222,10 +181,8 @@ const transcribeSpeech = async ({
 
     try {
       data = await response.json();
-    } catch (error) {
-      throw new Error(
-        "Whisper FastAPI returned an invalid response"
-      );
+    } catch {
+      throw new Error("Whisper service returned an invalid response");
     }
 
     if (!response.ok) {
@@ -236,39 +193,22 @@ const transcribeSpeech = async ({
       );
     }
 
-    if (!data?.success) {
+    if (data?.success !== true) {
       throw new Error(
-        data?.message ||
-          "Whisper transcription failed"
+        data?.message || "Whisper transcription failed"
       );
     }
 
-    // Keep the same field names used by
-    // the existing FastAPI/frontend contract.
     return {
       success: true,
-
-      recognized_text:
-        data.recognized_text || "",
-
-      language_used:
-        data.language_used ||
-        language,
-
-      is_empty:
-        data.is_empty ?? false,
-
+      recognized_text: data.recognized_text || "",
+      language_used: data.language_used || language,
+      is_empty: data.is_empty ?? false,
       provider: "openai-whisper",
     };
   } catch (error) {
-    console.error(
-      "Whisper FastAPI connection error:",
-      error.message
-    );
-
-    throw new Error(
-      `Unable to connect to Whisper FastAPI service: ${error.message}`
-    );
+    console.error("Whisper error:", error.message);
+    throw createServiceError("Whisper", error);
   }
 };
 
@@ -278,9 +218,9 @@ const transcribeSpeech = async ({
 
 const checkWhisperHealth = async () => {
   try {
-    const response = await fetch(
-      `${WHISPER_BASE_URL}/health`
-    );
+    const response = await fetch(`${WHISPER_BASE_URL}/health`, {
+      signal: AbortSignal.timeout(5000),
+    });
 
     if (!response.ok) {
       return {
@@ -293,8 +233,8 @@ const checkWhisperHealth = async () => {
 
     try {
       data = await response.json();
-    } catch (error) {
-      data = null;
+    } catch {
+      // Health endpoint may return plain text.
     }
 
     return {
@@ -312,38 +252,78 @@ const checkWhisperHealth = async () => {
 };
 
 // --------------------------------------------------
-// TEMPORARY TTS
-// --------------------------------------------------
-// GAN TTS has been removed.
-// This will be replaced with the selected
-// multilingual TTS API.
+// GAN TTS - SYNTHESIZE SPEECH
 // --------------------------------------------------
 
 const synthesizeSpeech = async ({
   text,
-  language,
+  language = "en",
 }) => {
-  const validation =
-    validateSpeechText(text);
+  const textValidation = validateSpeechText(text);
 
-  if (!validation.valid) {
-    throw new Error(
-      validation.message
-    );
+  if (!textValidation.valid) {
+    throw new Error(textValidation.message);
   }
 
-  const languageValidation =
-    validateLanguage(language);
+  const languageValidation = validateLanguage(language);
 
   if (!languageValidation.valid) {
-    throw new Error(
-      languageValidation.message
-    );
+    throw new Error(languageValidation.message);
   }
 
-  throw new Error(
-    "Multilingual TTS API is not configured yet"
-  );
+  try {
+    const response = await fetch(`${AI_SERVICE_URL}/tts`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        text: textValidation.text,
+        language,
+      }),
+      signal: AbortSignal.timeout(AI_TIMEOUT),
+    });
+
+    let data;
+
+    try {
+      data = await response.json();
+    } catch {
+      throw new Error("GAN TTS service returned invalid JSON");
+    }
+
+    if (!response.ok || data?.success === false) {
+      throw new Error(
+        data?.detail ||
+          data?.message ||
+          `GAN TTS failed with status ${response.status}`
+      );
+    }
+
+    if (typeof data?.audio_url !== "string" || !data.audio_url.trim()) {
+      throw new Error(
+        "GAN TTS response is missing the audio_url field"
+      );
+    }
+
+    const returnedAudioUrl = data.audio_url.trim();
+
+    const audioUrl = /^https?:\/\//i.test(returnedAudioUrl)
+      ? returnedAudioUrl
+      : `${AI_SERVICE_URL}/${returnedAudioUrl.replace(/^\/+/, "")}`;
+
+    return {
+      success: true,
+      language: data.language || language,
+      audio_file: data.audio_file || null,
+      audio_url: audioUrl,
+      provider: "gan-tts",
+    };
+  } catch (error) {
+    console.error("GAN TTS error:", error.message);
+    throw createServiceError("GAN TTS", error);
+  }
 };
 
 // --------------------------------------------------
@@ -352,16 +332,10 @@ const synthesizeSpeech = async ({
 
 module.exports = {
   SUPPORTED_LANGUAGES,
-
   getSpeechConfig,
-
   validateSpeechText,
-
   validateLanguage,
-
   transcribeSpeech,
-
   checkWhisperHealth,
-
   synthesizeSpeech,
 };

@@ -1,9 +1,9 @@
+
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 const authMiddleware = async (req, res, next) => {
   try {
-    // Get Authorization header
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -13,8 +13,7 @@ const authMiddleware = async (req, res, next) => {
       });
     }
 
-    // Extract JWT token
-    const token = authHeader.split(" ")[1];
+    const token = authHeader.slice(7).trim();
 
     if (!token) {
       return res.status(401).json({
@@ -23,16 +22,25 @@ const authMiddleware = async (req, res, next) => {
       });
     }
 
-    // Verify token
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET
-    );
+    if (!process.env.JWT_SECRET) {
+      console.error("JWT_SECRET is not configured");
 
-    // Find user
-    const user = await User.findById(decoded.userId).select(
-      "-passwordHash"
-    );
+      return res.status(500).json({
+        success: false,
+        message: "Authentication service is not configured",
+      });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (!decoded.userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid authentication token",
+      });
+    }
+
+    const user = await User.findById(decoded.userId).select("-passwordHash");
 
     if (!user) {
       return res.status(401).json({
@@ -41,12 +49,20 @@ const authMiddleware = async (req, res, next) => {
       });
     }
 
-    // Attach user to request
     req.user = user;
 
-    next();
+    return next();
   } catch (error) {
-    console.error("Authentication error:", error.message);
+    if (error.name !== "JsonWebTokenError" &&
+        error.name !== "TokenExpiredError" &&
+        error.name !== "NotBeforeError") {
+      console.error("Authentication error:", error.message);
+
+      return res.status(500).json({
+        success: false,
+        message: "Authentication service error",
+      });
+    }
 
     return res.status(401).json({
       success: false,

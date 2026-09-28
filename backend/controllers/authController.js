@@ -1,70 +1,99 @@
+
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
-// Generate JWT token
+const VALID_ROLES = ["student", "parent", "teacher"];
+const VALID_LANGUAGES = ["en", "hi", "mr"];
+
 const generateToken = (userId) => {
+  if (!process.env.JWT_SECRET) {
+    throw new Error("JWT_SECRET is not configured");
+  }
+
   return jwt.sign(
-    { userId },
+    { userId: userId.toString() },
     process.env.JWT_SECRET,
     { expiresIn: "7d" }
   );
 };
 
+const getPublicUser = (user) => ({
+  id: user._id,
+  name: user.name,
+  email: user.email,
+  role: user.role,
+  age: user.age,
+  language: user.language || "en",
+  xpTotal: user.xpTotal,
+  level: user.level,
+  streak: user.streak,
+});
+
 // Register a new user
 const register = async (req, res) => {
   try {
-    const {
-      name,
-      email,
-      password,
-      role,
-      age,
-      language,
-    } = req.body;
+    const { name, email, password, role, age, language } = req.body;
 
-    // Check required fields
-    if (!name || !email || !password || !role) {
+    if (
+      typeof name !== "string" ||
+      !name.trim() ||
+      typeof email !== "string" ||
+      !email.trim() ||
+      typeof password !== "string" ||
+      !password ||
+      !role
+    ) {
       return res.status(400).json({
         success: false,
         message: "Name, email, password and role are required",
       });
     }
 
-    // Validate role
-    const validRoles = ["student", "parent", "teacher"];
+    if (password.length < 8) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 8 characters long",
+      });
+    }
 
-    if (!validRoles.includes(role)) {
+    if (!VALID_ROLES.includes(role)) {
       return res.status(400).json({
         success: false,
         message: "Invalid role",
       });
     }
 
-    // Validate language
-    const validLanguages = ["en", "hi", "mr"];
-
-    if (language && !validLanguages.includes(language)) {
+    if (language !== undefined && !VALID_LANGUAGES.includes(language)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid language",
+        message: "Invalid language. Use en, hi or mr",
       });
     }
 
-    // Validate student age
-    if (role === "student") {
-      if (!age || age < 5 || age > 10) {
+    let parsedAge = null;
+
+    if (age !== undefined && age !== null && age !== "") {
+      parsedAge = Number(age);
+
+      if (!Number.isInteger(parsedAge) || parsedAge < 1 || parsedAge > 120) {
         return res.status(400).json({
           success: false,
-          message: "Student age must be between 5 and 10",
+          message: "Age must be a valid whole number",
         });
       }
     }
 
-    // Check if email already exists
-    const existingUser = await User.findOne({
-      email: email.toLowerCase(),
-    });
+    if (role === "student" && (parsedAge === null || parsedAge < 5 || parsedAge > 10)) {
+      return res.status(400).json({
+        success: false,
+        message: "Student age must be between 5 and 10",
+      });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const existingUser = await User.findOne({ email: normalizedEmail });
 
     if (existingUser) {
       return res.status(409).json({
@@ -73,42 +102,43 @@ const register = async (req, res) => {
       });
     }
 
-    // Hash password
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // Create user
     const user = await User.create({
       name: name.trim(),
-      email: email.toLowerCase(),
+      email: normalizedEmail,
       passwordHash,
       role,
-      age: age || null,
+      age: parsedAge,
       language: language || "en",
     });
 
-    // Generate JWT
     const token = generateToken(user._id);
 
     return res.status(201).json({
       success: true,
       message: "Registration successful",
       data: {
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          age: user.age,
-          language: user.language,
-          xpTotal: user.xpTotal,
-          level: user.level,
-          streak: user.streak,
-        },
+        user: getPublicUser(user),
         token,
       },
     });
   } catch (error) {
     console.error("Registration error:", error);
+
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: "User with this email already exists",
+      });
+    }
+
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
 
     return res.status(500).json({
       success: false,
@@ -122,17 +152,20 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Check required fields
-    if (!email || !password) {
+    if (
+      typeof email !== "string" ||
+      !email.trim() ||
+      typeof password !== "string" ||
+      !password
+    ) {
       return res.status(400).json({
         success: false,
         message: "Email and password are required",
       });
     }
 
-    // Find user
     const user = await User.findOne({
-      email: email.toLowerCase(),
+      email: email.trim().toLowerCase(),
     });
 
     if (!user) {
@@ -142,7 +175,6 @@ const login = async (req, res) => {
       });
     }
 
-    // Check password
     const isPasswordCorrect = await bcrypt.compare(
       password,
       user.passwordHash
@@ -155,28 +187,16 @@ const login = async (req, res) => {
       });
     }
 
-    // Update last active time
     user.lastActiveAt = new Date();
     await user.save();
 
-    // Generate JWT
     const token = generateToken(user._id);
 
     return res.status(200).json({
       success: true,
       message: "Login successful",
       data: {
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          age: user.age,
-          language: user.language,
-          xpTotal: user.xpTotal,
-          level: user.level,
-          streak: user.streak,
-        },
+        user: getPublicUser(user),
         token,
       },
     });
@@ -193,20 +213,17 @@ const login = async (req, res) => {
 // Get currently logged-in user
 const getMe = async (req, res) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required",
+      });
+    }
+
     return res.status(200).json({
       success: true,
       data: {
-        user: {
-          id: req.user._id,
-          name: req.user.name,
-          email: req.user.email,
-          role: req.user.role,
-          age: req.user.age,
-          language: req.user.language,
-          xpTotal: req.user.xpTotal,
-          level: req.user.level,
-          streak: req.user.streak,
-        },
+        user: getPublicUser(req.user),
       },
     });
   } catch (error) {

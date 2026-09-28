@@ -1,3 +1,4 @@
+
 const mongoose = require("mongoose");
 
 const progressSchema = new mongoose.Schema(
@@ -6,11 +7,13 @@ const progressSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
+      index: true,
     },
 
     game_type: {
       type: String,
       required: true,
+      trim: true,
     },
 
     language: {
@@ -24,6 +27,10 @@ const progressSchema = new mongoose.Schema(
       required: true,
       min: 1,
       max: 5,
+      validate: {
+        validator: Number.isInteger,
+        message: "Difficulty must be a whole number",
+      },
     },
 
     mode: {
@@ -35,12 +42,25 @@ const progressSchema = new mongoose.Schema(
       type: Number,
       required: true,
       min: 0,
+      validate: {
+        validator: Number.isInteger,
+        message: "Items attempted must be a whole number",
+      },
     },
 
     items_correct: {
       type: Number,
       required: true,
       min: 0,
+      validate: {
+        validator: function (value) {
+          return (
+            Number.isInteger(value) &&
+            value <= this.items_attempted
+          );
+        },
+        message: "Items correct cannot exceed items attempted",
+      },
     },
 
     accuracy: {
@@ -67,14 +87,7 @@ const progressSchema = new mongoose.Schema(
   }
 );
 
-progressSchema.index({
-  user: 1,
-  createdAt: -1,
-});
-
-progressSchema.index({
-  user: 1,
-  game_type: 1,
-});
+progressSchema.index({ user: 1, createdAt: -1 });
+progressSchema.index({ user: 1, game_type: 1 });
 
 module.exports = mongoose.model("Progress", progressSchema);

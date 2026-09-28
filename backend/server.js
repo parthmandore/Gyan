@@ -1,3 +1,4 @@
+
 require("dotenv").config();
 
 const express = require("express");
@@ -13,45 +14,27 @@ const {
   gameConfigRouter,
 } = require("./routes/gameRoutes");
 
-const progressRoutes =
-  require("./routes/progressRoutes");
-
-const rewardRoutes =
-  require("./routes/rewardRoutes");
-
-const achievementRoutes =
-  require("./routes/achievementRoutes");
-
-const parentRoutes =
-  require("./routes/parentRoutes");
-
-const teacherRoutes =
-  require("./routes/teacherRoutes");
-
-const speechRoutes =
-  require("./routes/speechRoutes");
-
-const speechChallengeRoutes =
-  require("./routes/speechChallengeRoutes");
+const progressRoutes = require("./routes/progressRoutes");
+const rewardRoutes = require("./routes/rewardRoutes");
+const achievementRoutes = require("./routes/achievementRoutes");
+const parentRoutes = require("./routes/parentRoutes");
+const teacherRoutes = require("./routes/teacherRoutes");
+const speechRoutes = require("./routes/speechRoutes");
+const speechChallengeRoutes = require("./routes/speechChallengeRoutes");
 
 const app = express();
 
-// --------------------------------------------------
-// DATABASE
-// --------------------------------------------------
-
-connectDB();
+const PORT = process.env.PORT || 3000;
 
 // --------------------------------------------------
 // MIDDLEWARE
 // --------------------------------------------------
 
 app.use(cors());
-
-app.use(express.json());
+app.use(express.json({ limit: "1mb" }));
 
 // --------------------------------------------------
-// HEALTH CHECK
+// HEALTH CHECKS
 // --------------------------------------------------
 
 app.get("/", (req, res) => {
@@ -61,120 +44,140 @@ app.get("/", (req, res) => {
   });
 });
 
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Gyan backend is running",
+  });
+});
+
 // --------------------------------------------------
-// AUTH
+// AUTHENTICATION
 // --------------------------------------------------
 
-app.use(
-  "/api/auth",
-  authRoutes
-);
+app.use("/api/auth", authRoutes);
 
 // --------------------------------------------------
 // USERS
 // --------------------------------------------------
 
-app.use(
-  "/api/users",
-  userRoutes
-);
+app.use("/api/users", userRoutes);
 
 // --------------------------------------------------
 // GAMES
 // --------------------------------------------------
 
-app.use(
-  "/api/games",
-  gameRouter
-);
+app.use("/api/games", gameRouter);
 
 // --------------------------------------------------
-// GAME CONFIG
+// GAME CONFIGURATION
 // --------------------------------------------------
 
-app.use(
-  "/api/game-config",
-  gameConfigRouter
-);
+app.use("/api/game-config", gameConfigRouter);
 
 // --------------------------------------------------
 // PROGRESS
 // --------------------------------------------------
 
-app.use(
-  "/api/progress",
-  progressRoutes
-);
+app.use("/api/progress", progressRoutes);
 
 // --------------------------------------------------
 // REWARDS
 // --------------------------------------------------
 
-app.use(
-  "/api/rewards",
-  rewardRoutes
-);
+app.use("/api/rewards", rewardRoutes);
 
 // --------------------------------------------------
 // ACHIEVEMENTS
 // --------------------------------------------------
 
-app.use(
-  "/api/achievements",
-  achievementRoutes
-);
+app.use("/api/achievements", achievementRoutes);
 
 // --------------------------------------------------
-// PARENT
+// PARENT DASHBOARD
 // --------------------------------------------------
 
-app.use(
-  "/api/parents",
-  parentRoutes
-);
+app.use("/api/parents", parentRoutes);
 
 // --------------------------------------------------
-// TEACHER
+// TEACHER DASHBOARD
 // --------------------------------------------------
 
-app.use(
-  "/api/teachers",
-  teacherRoutes
-);
+app.use("/api/teachers", teacherRoutes);
 
 // --------------------------------------------------
-// SPEECH
+// TEXT-TO-SPEECH AND SPEECH-TO-TEXT
 // --------------------------------------------------
 
-app.use(
-  "/api/speech",
-  speechRoutes
-);
+app.use("/api/speech", speechRoutes);
 
 // --------------------------------------------------
 // SPEECH WORD CHALLENGE
 // --------------------------------------------------
 
-app.use(
-  "/api/speech-challenge",
-  speechChallengeRoutes
-);
+app.use("/api/speech-challenge", speechChallengeRoutes);
 
 // --------------------------------------------------
-// SERVER
+// 404 HANDLER
 // --------------------------------------------------
 
-const PORT =
-  process.env.PORT || 3000;
-app.get("/health", (req, res) => {
-    res.json({
-        success: true,
-        message: "Gyan backend is running"
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Route not found: ${req.method} ${req.originalUrl}`,
+  });
+});
+
+// --------------------------------------------------
+// ERROR HANDLER
+// --------------------------------------------------
+
+app.use((err, req, res, next) => {
+  console.error("Express error:", err.message);
+
+  if (res.headersSent) {
+    return next(err);
+  }
+
+  if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid JSON request body",
     });
+  }
+
+  if (err.code === "LIMIT_FILE_SIZE") {
+    return res.status(413).json({
+      success: false,
+      message: "Uploaded file exceeds the allowed size limit",
+    });
+  }
+
+  return res.status(err.status || 500).json({
+    success: false,
+    message:
+      err.status && err.status < 500
+        ? err.message
+        : "Internal server error",
+  });
 });
 
-app.listen(PORT, () => {
-  console.log(
-    `Server running on port ${PORT}`
-  );
-});
+// --------------------------------------------------
+// START SERVER AFTER DATABASE CONNECTION
+// --------------------------------------------------
+
+const startServer = async () => {
+  try {
+    await connectDB();
+
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Gyan backend running on port ${PORT}`);
+      console.log(`Health check: http://localhost:${PORT}/health`);
+    });
+  } catch (error) {
+    console.error("Server startup failed:", error.message);
+    process.exit(1);
+  }
+};
+
+startServer();
