@@ -187,7 +187,7 @@ export const StorybookGardenBackground: React.FC = React.memo(() => {
   }));
 
   return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+    <View style={styles.container} pointerEvents="none">
       {/* 1. Sky Gradient: Soft pastel morning azure fading to peach horizon */}
       <LinearGradient
         colors={['#7DD3FC', '#BAE6FD', '#FEF08A', '#FED7AA']}
@@ -400,6 +400,14 @@ export const StorybookGardenBackground: React.FC = React.memo(() => {
 StorybookGardenBackground.displayName = 'StorybookGardenBackground';
 
 const styles = StyleSheet.create({
+  container: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    overflow: 'hidden',
+  },
   skyGradient: {
     ...StyleSheet.absoluteFill,
     height: '65%',

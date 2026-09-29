@@ -15,8 +15,14 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+
+import type { RootStackParamList } from '../types';
+
+type NavigationProp =
+  NativeStackNavigationProp<RootStackParamList>;
 
 const COLORS = {
   background: '#F1FBFB',
@@ -170,7 +176,7 @@ const teacherDashboardData = {
 };
 
 const TeacherDashboardScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp>();
   const { width } = useWindowDimensions();
   const { t } = useTranslation();
 
@@ -209,9 +215,12 @@ const TeacherDashboardScreen: React.FC = () => {
               styles.backButton,
               pressed && styles.pressed,
             ]}
-            onPress={() => navigation.goBack()}
+            onPress={() => navigation.replace('RoleSelection')}
             accessibilityRole="button"
-            accessibilityLabel={t('teacher.goBack')}
+            accessibilityLabel={t(
+              'teacher.goBack',
+              'Back to role selection',
+            )}
           >
             <Ionicons
               name="arrow-back"

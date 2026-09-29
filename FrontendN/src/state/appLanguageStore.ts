@@ -1,15 +1,14 @@
 /**
  * Purpose: Central App Language, Learning Language & Age Store
- * using Zustand & AsyncStorage persistence.
+ * Compatible with the finalized Gyan frontend and the game modules.
  * Module: State Management
- * Folder: frontend/src/state
  */
 
 import { create } from 'zustand';
 
 export type AppLanguage = 'en' | 'hi' | 'mr';
 export type LearningLanguage = 'en' | 'hi' | 'mr';
-export type AppAge = 5 | 6;
+export type AppAge = 5 | 6 | 7;
 
 const LANGUAGE_STORAGE_KEY = '@gyan_app_language';
 const LEARNING_LANGUAGE_STORAGE_KEY = '@gyan_learning_language';
@@ -35,9 +34,6 @@ const isValidLearningLanguage = (
   return value === 'en' || value === 'hi' || value === 'mr';
 };
 
-/**
- * Read a value from persistent storage.
- */
 const getStoredValue = async (
   key: string,
 ): Promise<string | null> => {
@@ -65,9 +61,6 @@ const getStoredValue = async (
   }
 };
 
-/**
- * Save a value to persistent storage.
- */
 const setStoredValue = async (
   key: string,
   value: string,
@@ -95,57 +88,43 @@ const setStoredValue = async (
   }
 };
 
-/**
- * Persistence check for initial app language.
- */
 export const getInitialLanguage =
   async (): Promise<AppLanguage | null> => {
     const stored = await getStoredValue(
       LANGUAGE_STORAGE_KEY,
     );
 
-    if (isValidLanguage(stored)) {
-      return stored;
-    }
-
-    return null;
+    return isValidLanguage(stored) ? stored : null;
   };
 
-/**
- * Persistence check for learning language.
- */
 export const getInitialLearningLanguage =
   async (): Promise<LearningLanguage | null> => {
     const stored = await getStoredValue(
       LEARNING_LANGUAGE_STORAGE_KEY,
     );
 
-    if (isValidLearningLanguage(stored)) {
-      return stored;
-    }
-
-    return null;
+    return isValidLearningLanguage(stored)
+      ? stored
+      : null;
   };
 
-/**
- * Persistence check for age.
- */
 export const getInitialAge =
   async (): Promise<AppAge | null> => {
     const stored = await getStoredValue(
       AGE_STORAGE_KEY,
     );
 
-    if (stored === '5' || stored === '6') {
+    if (
+      stored === '5' ||
+      stored === '6' ||
+      stored === '7'
+    ) {
       return parseInt(stored, 10) as AppAge;
     }
 
     return null;
   };
 
-/**
- * Persist selected app language.
- */
 export const setPersistedLanguage = async (
   lang: AppLanguage,
 ): Promise<void> => {
@@ -155,9 +134,6 @@ export const setPersistedLanguage = async (
   );
 };
 
-/**
- * Persist selected learning language.
- */
 export const setPersistedLearningLanguage =
   async (
     lang: LearningLanguage,
@@ -168,9 +144,6 @@ export const setPersistedLearningLanguage =
     );
   };
 
-/**
- * Persist selected age.
- */
 export const setPersistedAge = async (
   age: AppAge,
 ): Promise<void> => {
@@ -180,12 +153,34 @@ export const setPersistedAge = async (
   );
 };
 
+/**
+ * The store intentionally exposes both naming styles:
+ *
+ * Finalized Gyan frontend:
+ *   selectedLanguage
+ *   selectedLearningLanguage
+ *   selectedAge
+ *
+ * Game modules:
+ *   appLanguage
+ *   motherTongue
+ *   learningLanguage
+ *
+ * They all represent the same underlying selections.
+ */
 export interface AppLanguageState {
+  // Finalized frontend API
   selectedLanguage: AppLanguage | null;
   selectedLearningLanguage:
     | LearningLanguage
     | null;
   selectedAge: AppAge | null;
+
+  // Game compatibility API
+  appLanguage: AppLanguage | null;
+  motherTongue: AppLanguage | null;
+  learningLanguage: LearningLanguage | null;
+
   isInitialized: boolean;
 
   initLanguage: () => Promise<AppLanguage | null>;
@@ -206,6 +201,19 @@ export interface AppLanguageState {
   setSelectedAge: (
     age: AppAge,
   ) => Promise<void>;
+
+  // Compatibility aliases used by game modules
+  setAppLanguage: (
+    lang: AppLanguage,
+  ) => Promise<void>;
+
+  setMotherTongue: (
+    lang: AppLanguage,
+  ) => Promise<void>;
+
+  setLearningLanguage: (
+    lang: LearningLanguage,
+  ) => Promise<void>;
 }
 
 export const useAppLanguageStore =
@@ -213,18 +221,29 @@ export const useAppLanguageStore =
     selectedLanguage: null,
     selectedLearningLanguage: null,
     selectedAge: null,
+
+    appLanguage: null,
+    motherTongue: null,
+    learningLanguage: null,
+
     isInitialized: false,
 
     initLanguage: async () => {
       const lang = await getInitialLanguage();
-      const learningLanguage =
+      const storedLearningLanguage =
         await getInitialLearningLanguage();
       const age = await getInitialAge();
 
       set({
         selectedLanguage: lang,
+        appLanguage: lang,
+        motherTongue: lang,
+
         selectedLearningLanguage:
-          learningLanguage,
+          storedLearningLanguage,
+        learningLanguage:
+          storedLearningLanguage,
+
         selectedAge: age ?? 5,
         isInitialized: true,
       });
@@ -263,15 +282,15 @@ export const useAppLanguageStore =
     },
 
     initLearningLanguage: async () => {
-      const learningLanguage =
+      const stored =
         await getInitialLearningLanguage();
 
       set({
-        selectedLearningLanguage:
-          learningLanguage,
+        selectedLearningLanguage: stored,
+        learningLanguage: stored,
       });
 
-      return learningLanguage;
+      return stored;
     },
 
     initAge: async () => {
@@ -291,6 +310,8 @@ export const useAppLanguageStore =
     ) => {
       set({
         selectedLanguage: lang,
+        appLanguage: lang,
+        motherTongue: lang,
       });
 
       await setPersistedLanguage(lang);
@@ -329,6 +350,7 @@ export const useAppLanguageStore =
     ) => {
       set({
         selectedLearningLanguage: lang,
+        learningLanguage: lang,
       });
 
       await setPersistedLearningLanguage(lang);
@@ -342,6 +364,51 @@ export const useAppLanguageStore =
       });
 
       await setPersistedAge(age);
+    },
+
+    setAppLanguage: async (
+      lang: AppLanguage,
+    ) => {
+      set({
+        selectedLanguage: lang,
+        appLanguage: lang,
+        motherTongue: lang,
+      });
+
+      await setPersistedLanguage(lang);
+
+      const i18nInstance = getI18n();
+
+      if (
+        i18nInstance &&
+        typeof i18nInstance.changeLanguage ===
+          'function'
+      ) {
+        await i18nInstance.changeLanguage(lang);
+      }
+    },
+
+    setMotherTongue: async (
+      lang: AppLanguage,
+    ) => {
+      set({
+        selectedLanguage: lang,
+        appLanguage: lang,
+        motherTongue: lang,
+      });
+
+      await setPersistedLanguage(lang);
+    },
+
+    setLearningLanguage: async (
+      lang: LearningLanguage,
+    ) => {
+      set({
+        selectedLearningLanguage: lang,
+        learningLanguage: lang,
+      });
+
+      await setPersistedLearningLanguage(lang);
     },
   }));
 

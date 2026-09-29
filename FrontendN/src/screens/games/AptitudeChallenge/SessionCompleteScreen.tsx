@@ -1,0 +1,652 @@
+/**
+ * Purpose: Session Complete and Rewards Screen for Aptitude & Logical Thinking Games.
+ *          Celebrates brain-training achievements with stars, XP breakdown, spoken praise,
+ *          persistent progress recording, and navigation to replay or games catalog.
+ * Module: Aptitude Challenge — Screens
+ * Folder: FrontendN/src/screens/games/AptitudeChallenge
+ */
+
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  StatusBar,
+  useWindowDimensions,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+import { CartoonBackground } from '../../../components/CartoonBackground';
+import { BigTouchTarget } from '../../../components/BigTouchTarget';
+import { MascotCharacter } from '../../../components/MascotCharacter';
+import { CuteStar } from '../../../components/CuteStar';
+import {
+  GameAnalysisReportModal,
+  GameQuestionReportItem,
+} from '../../../components/GameAnalysisReportModal';
+import { useAppLanguageStore } from '../../../state/appLanguageStore';
+import { useProgressStore } from '../../../state/useProgressStore';
+import { useAptitudeGameStore } from './store/useAptitudeGameStore';
+import { speakPhrase, stopSpeech } from '../../../services/speechService';
+import {
+  AptitudeChallengeStackParamList,
+  AptitudeGameType,
+} from './types';
+import { RootStackParamList } from '../../../types';
+
+type RouteProps = RouteProp<
+  AptitudeChallengeStackParamList,
+  'AptitudeChallengeSessionComplete'
+>;
+
+type NavProp = NativeStackNavigationProp<
+  RootStackParamList,
+  'Games'
+>;
+
+export const SessionCompleteScreen: React.FC = React.memo(() => {
+  const { t } = useTranslation();
+  const navigation = useNavigation<NavProp>();
+  const route = useRoute<RouteProps>();
+  const { width: screenWidth } = useWindowDimensions();
+
+  const [showReportModal, setShowReportModal] = useState(false);
+
+  const motherTongue =
+    useAppLanguageStore((s) => s.motherTongue) || 'en';
+
+  const learningLanguage =
+    useAppLanguageStore((s) => s.learningLanguage) ||
+    motherTongue;
+
+  const selectedAge =
+    useAppLanguageStore((s) => s.selectedAge) || 5;
+
+  const totalXp = useProgressStore((s) => s.totalXp);
+  const currentLevel = useProgressStore((s) => s.currentLevel);
+
+  const recordSessionCompletion = useProgressStore(
+    (s) => s.recordSessionCompletion,
+  );
+
+  const resetSession = useAptitudeGameStore(
+    (s) => s.resetSession,
+  );
+
+  const attempts = useAptitudeGameStore(
+    (s) => s.attempts,
+  );
+
+  /*
+   * Stable session ID.
+   *
+   * This allows the progress store's anti-duplication
+   * protection to identify this exact game completion.
+   */
+  const sessionIdRef = useRef(
+    `aptitude-challenge-${Date.now()}-${Math.random()
+      .toString(36)
+      .substring(2, 8)}`,
+  );
+
+  const {
+    gameType = 'pattern_match' as AptitudeGameType,
+    starsEarned = 3,
+    xpEarned = 50,
+    itemsCorrect = 5,
+    sessionLength = 5,
+    accuracy = 100,
+  } = (route.params as any) || {};
+
+  /*
+   * Record the completed aptitude session.
+   *
+   * This updates the local progress store and triggers
+   * the existing backend synchronization in
+   * useProgressStore.
+   */
+  useEffect(() => {
+    const saveCompletedSession = async () => {
+      try {
+        await recordSessionCompletion({
+          sessionId: sessionIdRef.current,
+          gameId: `aptitude_challenge_${gameType}`,
+          category: 'aptitude',
+          learningLanguage,
+          motherTongue,
+          age: selectedAge,
+          timestamp: Date.now(),
+          itemsAttempted: sessionLength,
+          itemsCorrect,
+          accuracy,
+          starsEarned,
+          xpEarned,
+          durationSeconds: 0,
+          xpToAdd: xpEarned,
+        });
+      } catch (error) {
+        /*
+         * Keep the result screen usable even if
+         * backend synchronization fails.
+         */
+        console.warn(
+          '[AptitudeChallenge] Failed to record completed session:',
+          error,
+        );
+      }
+    };
+
+    saveCompletedSession();
+  }, [
+    accuracy,
+    gameType,
+    itemsCorrect,
+    learningLanguage,
+    motherTongue,
+    recordSessionCompletion,
+    selectedAge,
+    sessionLength,
+    starsEarned,
+    xpEarned,
+  ]);
+
+  useEffect(() => {
+    const praiseText = t(
+      'aptitudeChallenge.sessionCompletePraise',
+      { lng: motherTongue },
+    );
+
+    speakPhrase(praiseText, {
+      language: motherTongue,
+    });
+
+    const unsubscribe = navigation.addListener(
+      'beforeRemove',
+      () => {
+        stopSpeech();
+      },
+    );
+
+    return () => {
+      unsubscribe();
+      stopSpeech();
+    };
+  }, [motherTongue, navigation, t]);
+
+  const handlePlayAgain = () => {
+    stopSpeech();
+    resetSession();
+
+    navigation.navigate('Games', {
+      screen: 'AptitudeChallengeGame' as any,
+      params: { gameType },
+    });
+  };
+
+  const handleBackToCatalog = () => {
+    stopSpeech();
+    resetSession();
+    navigation.navigate('GameCatalog' as any);
+  };
+
+  const containerWidth = Math.min(
+    screenWidth - 32,
+    420,
+  );
+
+  const reportItems: GameQuestionReportItem[] =
+    attempts.map((att) => ({
+      roundNumber: att.roundNumber,
+      questionLabel: `Pattern ${att.roundNumber}`,
+      userAnswer:
+        att.selectedOptionId ||
+        (att.isCorrect ? 'Correct' : 'Incorrect'),
+      correctAnswer: 'Correct Option',
+      isCorrect: att.isCorrect,
+      attemptsCount: att.attemptCount,
+      xpEarned: att.isCorrect
+        ? att.attemptCount === 1
+          ? 15
+          : 10
+        : 0,
+    }));
+
+  return (
+    <View style={styles.outerContainer}>
+      <CartoonBackground theme="puzzle" />
+
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="#EFF6FF"
+      />
+
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.header}>
+          <BigTouchTarget
+            onPress={handleBackToCatalog}
+            accessibilityLabel="Go back to Games Catalog"
+            style={styles.homeButton}
+          >
+            <Text style={styles.homeButtonText}>🏠</Text>
+          </BigTouchTarget>
+        </View>
+
+        <View style={styles.contentContainer}>
+          <View
+            style={[
+              styles.mainCard,
+              { width: containerWidth },
+            ]}
+          >
+            {/* Mascot */}
+            <View style={styles.mascotWrapper}>
+              <MascotCharacter state="celebrating" />
+            </View>
+
+            {/* Title */}
+            <Text style={styles.title}>
+              {t(
+                'aptitudeChallenge.sessionCompleteTitle',
+                'Brain Adventure Complete!',
+              )}
+            </Text>
+
+            <Text style={styles.subtitle}>
+              {t(
+                'aptitudeChallenge.sessionCompleteDesc',
+                {
+                  defaultValue:
+                    'You solved {{correct}} of 5 questions correctly!',
+                  correct: itemsCorrect,
+                },
+              )}
+            </Text>
+
+            {/* Stars Row */}
+            <View style={styles.starsRow}>
+              {[1, 2, 3].map((starIndex) => (
+                <View
+                  key={starIndex}
+                  style={
+                    starIndex === 2
+                      ? styles.centerStar
+                      : undefined
+                  }
+                >
+                  <CuteStar
+                    size={
+                      starIndex === 2
+                        ? 'lg'
+                        : 'md'
+                    }
+                    variant="gold"
+                    style={{
+                      opacity:
+                        starIndex <= starsEarned
+                          ? 1
+                          : 0.25,
+                    }}
+                  />
+                </View>
+              ))}
+            </View>
+
+            {/* Reward Stats */}
+            <View style={styles.statsContainer}>
+              <View style={styles.statBox}>
+                <Text style={styles.statEmoji}>⚡</Text>
+
+                <Text style={styles.statValue}>
+                  +{xpEarned}
+                </Text>
+
+                <Text style={styles.statLabel}>
+                  {t(
+                    'common.xp',
+                    'XP Earned',
+                  )}
+                </Text>
+              </View>
+
+              <View style={styles.statDivider} />
+
+              <View style={styles.statBox}>
+                <Text style={styles.statEmoji}>🎯</Text>
+
+                <Text style={styles.statValue}>
+                  {accuracy}%
+                </Text>
+
+                <Text style={styles.statLabel}>
+                  {t(
+                    'common.accuracy',
+                    'Accuracy',
+                  )}
+                </Text>
+              </View>
+
+              <View style={styles.statDivider} />
+
+              <View style={styles.statBox}>
+                <Text style={styles.statEmoji}>⏱️</Text>
+
+                <Text style={styles.statValue}>
+                  {sessionLength}s
+                </Text>
+
+                <Text style={styles.statLabel}>
+                  {t(
+                    'common.time',
+                    'Time',
+                  )}
+                </Text>
+              </View>
+            </View>
+
+            {/* Level / Total XP Info */}
+            <View style={styles.levelPill}>
+              <Text style={styles.levelText}>
+                🏆{' '}
+                {t(
+                  'common.level',
+                  'Level',
+                )}{' '}
+                {currentLevel} • {totalXp}{' '}
+                {t(
+                  'common.totalXp',
+                  'Total XP',
+                )}
+              </Text>
+            </View>
+
+            {/* Action Buttons */}
+            <View style={styles.actionButtons}>
+              <BigTouchTarget
+                onPress={() =>
+                  setShowReportModal(true)
+                }
+                accessibilityLabel="View Detailed Question Report"
+                accessibilityRole="button"
+                style={styles.viewReportBtn}
+              >
+                <Text
+                  style={styles.viewReportBtnText}
+                >
+                  📋 View Detailed Report
+                </Text>
+              </BigTouchTarget>
+
+              <BigTouchTarget
+                onPress={handlePlayAgain}
+                accessibilityLabel="Play this game again"
+                style={styles.playAgainBtn}
+              >
+                <Text
+                  style={styles.playAgainBtnText}
+                >
+                  {t(
+                    'common.playAgain',
+                    'Play Again 🔄',
+                  )}
+                </Text>
+              </BigTouchTarget>
+
+              <BigTouchTarget
+                onPress={handleBackToCatalog}
+                accessibilityLabel="Explore more games"
+                style={styles.catalogBtn}
+              >
+                <Text
+                  style={styles.catalogBtnText}
+                >
+                  {t(
+                    'common.moreGames',
+                    'More Games 🎮',
+                  )}
+                </Text>
+              </BigTouchTarget>
+            </View>
+          </View>
+        </View>
+      </SafeAreaView>
+
+      <GameAnalysisReportModal
+        visible={showReportModal}
+        onClose={() =>
+          setShowReportModal(false)
+        }
+        gameTitle="Aptitude Challenge"
+        items={reportItems}
+      />
+    </View>
+  );
+});
+
+const styles = StyleSheet.create({
+  outerContainer: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+  },
+
+  safeArea: {
+    flex: 1,
+  },
+
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 6,
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+  },
+
+  homeButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+
+  homeButtonText: {
+    fontSize: 22,
+  },
+
+  contentContainer: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  mainCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    alignItems: 'center',
+    borderWidth: 2.5,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+
+  mascotWrapper: {
+    marginBottom: 6,
+  },
+
+  title: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#1E293B',
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+
+  subtitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#64748B',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+
+  starsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    marginVertical: 6,
+  },
+
+  centerStar: {
+    marginBottom: 8,
+  },
+
+  statsContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    width: '100%',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    marginTop: 4,
+    marginBottom: 8,
+  },
+
+  statBox: {
+    alignItems: 'center',
+    flex: 1,
+  },
+
+  statEmoji: {
+    fontSize: 16,
+    marginBottom: 2,
+  },
+
+  statValue: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#0F172A',
+  },
+
+  statLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#64748B',
+    marginTop: 2,
+  },
+
+  statDivider: {
+    width: 1,
+    height: 28,
+    backgroundColor: '#CBD5E1',
+  },
+
+  levelPill: {
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 14,
+    paddingVertical: 4,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#F59E0B',
+    marginBottom: 10,
+  },
+
+  levelText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#B45309',
+  },
+
+  actionButtons: {
+    width: '100%',
+    gap: 6,
+  },
+
+  viewReportBtn: {
+    width: '100%',
+    height: 44,
+    minHeight: 44,
+    borderRadius: 22,
+    backgroundColor: '#EFF6FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#3B82F6',
+    elevation: 2,
+  },
+
+  viewReportBtnText: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#1D4ED8',
+  },
+
+  playAgainBtn: {
+    width: '100%',
+    height: 48,
+    minHeight: 48,
+    borderRadius: 24,
+    backgroundColor: '#3B82F6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#2563EB',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+
+  playAgainBtnText: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#FFFFFF',
+  },
+
+  catalogBtn: {
+    width: '100%',
+    height: 44,
+    minHeight: 44,
+    borderRadius: 22,
+    backgroundColor: '#F1F5F9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
+  },
+
+  catalogBtnText: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#475569',
+  },
+});

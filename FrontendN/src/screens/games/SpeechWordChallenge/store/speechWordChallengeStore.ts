@@ -1,11 +1,17 @@
 /**
  * Purpose: Zustand state store for Speech Word Challenge.
+ *          Tracks round progress, scores, and detailed session attempt records for the Speech Report.
  * Module: Speech Word Challenge
  * Folder: frontend/src/screens/games/SpeechWordChallenge/store
  */
 
 import { create } from 'zustand';
-import { SpeechChallengeItem, SpeechWordChallengeState, RecordingState } from '../types';
+import {
+  SpeechChallengeItem,
+  SpeechWordChallengeState,
+  RecordingState,
+  SpeechRoundAttempt,
+} from '../types';
 
 export const useSpeechWordChallengeStore = create<SpeechWordChallengeState>((set) => ({
   // Session Metrics
@@ -15,6 +21,7 @@ export const useSpeechWordChallengeStore = create<SpeechWordChallengeState>((set
   itemsAttempted: 0,
   itemsCorrect: 0,
   roundResults: Array(10).fill('pending'),
+  sessionAttempts: [],
   sessionStartTime: null,
 
   // Round State
@@ -60,6 +67,11 @@ export const useSpeechWordChallengeStore = create<SpeechWordChallengeState>((set
       };
     }),
 
+  recordDetailedAttempt: (attempt: SpeechRoundAttempt) =>
+    set((state) => ({
+      sessionAttempts: [...state.sessionAttempts, attempt],
+    })),
+
   recordEmptyAttempt: () =>
     set({
       lastMatchResult: 'empty',
@@ -89,6 +101,7 @@ export const useSpeechWordChallengeStore = create<SpeechWordChallengeState>((set
       itemsAttempted: 0,
       itemsCorrect: 0,
       roundResults: Array(10).fill('pending'),
+      sessionAttempts: [],
       sessionStartTime: null,
       currentItem: null,
       recordingState: 'idle',

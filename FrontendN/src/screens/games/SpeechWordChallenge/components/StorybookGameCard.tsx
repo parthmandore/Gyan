@@ -1,7 +1,8 @@
 /**
- * Purpose: Hero Storybook Game Card showcasing the educational target object,
- *          instruction banner, and mascot companion.
- * Module: Speech Word Challenge
+ * Purpose: Hero Storybook Game Card showcasing the educational challenge item.
+ *          Age 5: Shows Large Letter + Optional illustration badge.
+ *          Age 6: Shows Large Educational Image; expected answer word is completely hidden!
+ * Module: Speech Word Challenge — Components
  * Folder: frontend/src/screens/games/SpeechWordChallenge/components
  */
 
@@ -13,6 +14,7 @@ import { Typography } from '../../../../theme/typography';
 
 interface StorybookGameCardProps {
   item: SpeechChallengeItem;
+  age?: number;
   mascotState?: MascotState;
   onReplayPrompt?: () => void;
   showHint?: boolean;
@@ -22,11 +24,14 @@ interface StorybookGameCardProps {
 export const StorybookGameCard: React.FC<StorybookGameCardProps> = React.memo(
   ({
     item,
+    age = 5,
     mascotState = 'idle',
     onReplayPrompt,
     showHint = false,
     instructionText = 'Say the word',
   }) => {
+    const isLetterMode = item.mode === 'letters' || age === 5;
+
     return (
       <View style={styles.cardContainer}>
         {/* Glass Highlight Ribbon */}
@@ -42,7 +47,7 @@ export const StorybookGameCard: React.FC<StorybookGameCardProps> = React.memo(
             {onReplayPrompt && (
               <Pressable
                 onPress={onReplayPrompt}
-                accessibilityLabel="Listen again"
+                accessibilityLabel="Listen to instruction"
                 accessibilityRole="button"
                 style={({ pressed }) => [
                   styles.audioReplayBtn,
@@ -55,18 +60,36 @@ export const StorybookGameCard: React.FC<StorybookGameCardProps> = React.memo(
           </View>
         </View>
 
-        {/* Hero Educational Image Stage */}
-        <View style={styles.heroImageStage}>
+        {/* Hero Visual Stage */}
+        <View style={styles.heroVisualStage}>
           <View style={styles.innerRadialBacking} />
-          <Text style={styles.heroImageText}>{item.image}</Text>
+
+          {isLetterMode ? (
+            /* Age 5: Large Letter + Associated Emojis */
+            <View style={styles.letterStage}>
+              <Text style={styles.heroLetterText}>{item.displayLetter || item.expectedWord.toUpperCase()}</Text>
+              {item.image ? (
+                <View style={styles.letterAssociatedBadge}>
+                  <Text style={styles.associatedEmoji}>{item.image}</Text>
+                </View>
+              ) : null}
+            </View>
+          ) : (
+            /* Age 6: Large Image Only (Expected Word Hidden!) */
+            <View style={styles.wordStage}>
+              <Text style={styles.heroImageText}>{item.image}</Text>
+            </View>
+          )}
         </View>
 
-        {/* Target Word Text */}
-        <View style={styles.wordDisplayRow}>
-          <Text style={styles.displayWordText}>{item.displayWord}</Text>
-        </View>
+        {/* Age 5 Label / Age 6 Hidden Word Area */}
+        {isLetterMode && (
+          <View style={styles.letterPromptRow}>
+            <Text style={styles.letterPromptText}>⭐ {item.displayLetter || item.expectedWord.toUpperCase()} ⭐</Text>
+          </View>
+        )}
 
-        {/* Optional Gentle Phonetic Hint */}
+        {/* Optional Gentle Phonetic Hint on Retry */}
         {showHint && item.phoneticHint && (
           <View style={styles.hintContainer}>
             <Text style={styles.hintText}>💡 {item.phoneticHint}</Text>
@@ -102,12 +125,13 @@ const styles = StyleSheet.create({
   },
   highlightRibbon: {
     position: 'absolute',
-    top: 4,
-    left: 16,
-    right: 16,
-    height: 9,
-    borderRadius: 5,
-    backgroundColor: 'rgba(255, 255, 255, 0.65)',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    borderTopLeftRadius: 26,
+    borderTopRightRadius: 26,
   },
   instructionBanner: {
     flexDirection: 'row',
@@ -117,104 +141,138 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   mascotWrapper: {
-    width: 60,
-    height: 60,
+    width: 54,
+    height: 54,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   mascot: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: 'transparent',
+    width: 54,
+    height: 54,
   },
   speechBubble: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     backgroundColor: '#FEF3C7',
     borderRadius: 18,
     borderWidth: 2,
     borderColor: '#FDE68A',
+    borderBottomWidth: 3,
+    borderBottomColor: '#FCD34D',
     paddingHorizontal: 12,
     paddingVertical: 8,
-    shadowColor: '#D97706',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 4,
-    elevation: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   instructionText: {
     fontFamily: Typography.fonts.bold,
     fontSize: 14,
-    color: '#92400E',
+    color: '#78350F',
     flex: 1,
   },
   audioReplayBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: '#F59E0B',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#FDE68A',
     marginLeft: 6,
   },
   speakerIcon: {
-    fontSize: 16,
+    fontSize: 15,
   },
-  heroImageStage: {
+  heroVisualStage: {
     width: 170,
-    height: 170,
-    borderRadius: 85,
-    backgroundColor: '#FFF7ED',
-    borderWidth: 4,
+    height: 150,
+    borderRadius: 24,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 3,
     borderColor: '#FFEDD5',
+    borderBottomWidth: 5,
+    borderBottomColor: '#FED7AA',
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
-    marginVertical: 6,
-    shadowColor: '#EA580C',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 4,
+    marginVertical: 4,
+    shadowColor: '#C2410C',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
   innerRadialBacking: {
     position: 'absolute',
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    backgroundColor: '#FEF3C7',
-    opacity: 0.6,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#FFF7ED',
+  },
+  letterStage: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  heroLetterText: {
+    fontFamily: Typography.fonts.bold,
+    fontSize: 72,
+    color: '#EA580C',
+    textShadowColor: 'rgba(234, 88, 12, 0.2)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+  },
+  letterAssociatedBadge: {
+    position: 'absolute',
+    bottom: -8,
+    right: -24,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: '#FED7AA',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  associatedEmoji: {
+    fontSize: 22,
+  },
+  wordStage: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   heroImageText: {
-    fontSize: 88,
-    textAlign: 'center',
+    fontSize: 84,
   },
-  wordDisplayRow: {
-    marginTop: 10,
-    alignItems: 'center',
+  letterPromptRow: {
+    marginTop: 8,
+    backgroundColor: '#FFF7ED',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
   },
-  displayWordText: {
+  letterPromptText: {
     fontFamily: Typography.fonts.bold,
-    fontSize: 30,
-    color: '#7C2D12',
-    letterSpacing: 0.5,
-    textAlign: 'center',
+    fontSize: 16,
+    color: '#9A3412',
   },
   hintContainer: {
     marginTop: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 5,
-    borderRadius: 14,
-    backgroundColor: '#FEF3C7',
-    borderWidth: 1.5,
-    borderColor: '#FDE68A',
+    backgroundColor: '#FEF9C3',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: '#FDE047',
   },
   hintText: {
-    fontFamily: Typography.fonts.bold,
-    fontSize: 13,
-    color: '#B45309',
+    fontFamily: Typography.fonts.medium,
+    fontSize: 12,
+    color: '#854D0E',
   },
 });

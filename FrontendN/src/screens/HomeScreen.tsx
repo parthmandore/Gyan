@@ -40,6 +40,19 @@ export const HomeScreen: React.FC = () => {
         style={styles.interactionLayer}
         pointerEvents="box-none"
       >
+        {/* Back to Role Selection */}
+        <Pressable
+          style={styles.backButton}
+          onPress={() => navigation.replace('RoleSelection')}
+          accessibilityRole="button"
+          accessibilityLabel="Back to role selection"
+        >
+          <View style={styles.backButtonContent}>
+            <View style={styles.backArrow} />
+          </View>
+        </Pressable>
+
+        {/* Profile */}
         <Pressable
           style={styles.profileButton}
           onPress={() => navigation.navigate('RoleSelection')}
@@ -50,6 +63,7 @@ export const HomeScreen: React.FC = () => {
           )}
         />
 
+        {/* Speak and Listen */}
         <Pressable
           style={styles.speakButton}
           onPress={() => navigation.navigate('SpeechSynthesis')}
@@ -60,6 +74,7 @@ export const HomeScreen: React.FC = () => {
           )}
         />
 
+        {/* Play and Match */}
         <Pressable
           style={styles.playButton}
           onPress={() => navigation.navigate('GameCatalog')}
@@ -70,6 +85,7 @@ export const HomeScreen: React.FC = () => {
           )}
         />
 
+        {/* Continue Learning */}
         <Pressable
           style={styles.continueButton}
           onPress={() => navigation.navigate('GameCatalog')}
@@ -80,6 +96,7 @@ export const HomeScreen: React.FC = () => {
           )}
         />
 
+        {/* Daily Goal */}
         <Pressable
           style={styles.goalButton}
           onPress={() => navigation.navigate('GameCatalog')}
@@ -90,6 +107,7 @@ export const HomeScreen: React.FC = () => {
           )}
         />
 
+        {/* Your Rewards */}
         <Pressable
           style={styles.rewardsButton}
           onPress={() => navigation.navigate('GameCatalog')}
@@ -100,6 +118,7 @@ export const HomeScreen: React.FC = () => {
           )}
         />
 
+        {/* Basics */}
         <Pressable
           style={styles.basicsButton}
           onPress={() => navigation.navigate('GameCatalog')}
@@ -110,6 +129,7 @@ export const HomeScreen: React.FC = () => {
           )}
         />
 
+        {/* Words */}
         <Pressable
           style={styles.wordsButton}
           onPress={() => navigation.navigate('GameCatalog')}
@@ -159,6 +179,37 @@ const styles = StyleSheet.create({
     bottom: 0,
     zIndex: 10,
     elevation: 10,
+  },
+
+  backButton: {
+    position: 'absolute',
+    top: '2%',
+    left: '3%',
+    width: '12%',
+    height: '8%',
+    backgroundColor: 'rgba(255,255,255,0.75)',
+    borderRadius: 30,
+    zIndex: 50,
+    elevation: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  backButtonContent: {
+    width: 30,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  backArrow: {
+    width: 14,
+    height: 14,
+    borderLeftWidth: 3,
+    borderBottomWidth: 3,
+    borderColor: '#4A4A68',
+    transform: [{ rotate: '45deg' }],
+    marginLeft: 5,
   },
 
   profileButton: {
