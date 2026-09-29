@@ -1,12 +1,20 @@
 /**
  * Purpose: Cross-platform microphone audio recording hook for Web and Mobile with
  *          auto gain control, echo cancellation, noise suppression, and trailing buffer.
+ *          Migrated to modern expo-audio for Expo SDK 57.
  * Module: Speech Word Challenge
  * Folder: frontend/src/screens/games/SpeechWordChallenge/hooks
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Platform } from 'react-native';
+import {
+  useAudioRecorder as useExpoAudioRecorder,
+  RecordingPresets,
+  requestRecordingPermissionsAsync,
+  getRecordingPermissionsAsync,
+  setAudioModeAsync,
+} from 'expo-audio';
 
 export interface UseAudioRecorderReturn {
   isRecording: boolean;
@@ -29,14 +37,23 @@ export const useAudioRecorder = (): UseAudioRecorderReturn => {
   const streamRef = useRef<any>(null);
   const timerRef = useRef<any>(null);
 
-  // Check initial permissions
+  // Modern Expo Audio recorder for native Android / iOS
+  const expoRecorder = useExpoAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const expoRecorderRef = useRef(expoRecorder);
+  expoRecorderRef.current = expoRecorder;
+
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      // Cleanup stream and timer on unmount
       if (timerRef.current) clearInterval(timerRef.current);
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track: any) => track.stop());
       }
+      try {
+        if (expoRecorderRef.current && expoRecorderRef.current.isRecording) {
+          expoRecorderRef.current.stop();
+        }
+      } catch {}
     };
   }, []);
 
@@ -82,7 +99,6 @@ export const useAudioRecorder = (): UseAudioRecorderReturn => {
 
         setIsRecording(true);
 
-        // Duration timer & 4.0s auto-stop for kids
         const startTime = Date.now();
         timerRef.current = setInterval(() => {
           const elapsed = (Date.now() - startTime) / 1000;
@@ -91,8 +107,32 @@ export const useAudioRecorder = (): UseAudioRecorderReturn => {
 
         return true;
       } else {
-        // Mobile fallback / placeholder
+        // Native Mobile (Android & iOS) via expo-audio
+        const perm = await requestRecordingPermissionsAsync();
+        if (!perm.granted) {
+          setPermissionGranted(false);
+          setError('Microphone permission was denied.');
+          return false;
+        }
+        setPermissionGranted(true);
+
+        await setAudioModeAsync({
+          allowsRecording: true,
+          playsInSilentMode: true,
+        });
+
+        const rec = expoRecorderRef.current;
+        await rec.prepareToRecordAsync();
+        rec.record();
+
         setIsRecording(true);
+
+        const startTime = Date.now();
+        timerRef.current = setInterval(() => {
+          const elapsed = (Date.now() - startTime) / 1000;
+          setRecordingDuration(elapsed);
+        }, 100);
+
         return true;
       }
     } catch (err: any) {
@@ -121,7 +161,7 @@ export const useAudioRecorder = (): UseAudioRecorderReturn => {
         return null;
       }
 
-      // Small 150ms trailing buffer to avoid cutting off trailing consonants (e.g. /l/ in "bowl")
+      // Small 150ms trailing buffer to avoid cutting off trailing consonants
       await new Promise((r) => setTimeout(r, 150));
 
       return new Promise<Blob | null>((resolve) => {
@@ -147,8 +187,27 @@ export const useAudioRecorder = (): UseAudioRecorderReturn => {
         }
       });
     } else {
-      setIsRecording(false);
-      return null;
+      // Native Mobile (Android & iOS) via expo-audio
+      const rec = expoRecorderRef.current;
+      if (!rec) {
+        setIsRecording(false);
+        return null;
+      }
+
+      try {
+        await new Promise((r) => setTimeout(r, 150));
+        await rec.stop();
+        await setAudioModeAsync({
+          allowsRecording: false,
+        });
+        const uri = rec.uri;
+        setIsRecording(false);
+        return uri;
+      } catch (err: any) {
+        console.warn('[useAudioRecorder] Error stopping mobile recording:', err);
+        setIsRecording(false);
+        return null;
+      }
     }
   }, []);
 
@@ -166,6 +225,12 @@ export const useAudioRecorder = (): UseAudioRecorderReturn => {
       streamRef.current.getTracks().forEach((track: any) => track.stop());
       streamRef.current = null;
     }
+    try {
+      const rec = expoRecorderRef.current;
+      if (rec && rec.isRecording) {
+        rec.stop();
+      }
+    } catch {}
     audioChunksRef.current = [];
     setIsRecording(false);
     setRecordingDuration(0);

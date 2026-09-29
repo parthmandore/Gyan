@@ -79,12 +79,12 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = React.memo(
         withSpring(isBigCelebration ? 1.3 : 1.1, { damping: 10, stiffness: 160 }),
       );
 
-      // Text pop-in with spring bounce
+      // Text pop-in with spring bounce (gentle scale peak to avoid clipping screen edges)
       textOpacity.value = withTiming(1, { duration: 250 });
       textScale.value = withSequence(
         withTiming(0.4, { duration: 0 }),
-        withSpring(1.25, { damping: 8, stiffness: 200 }),
-        withSpring(1.0, { damping: 12, stiffness: 140 }),
+        withSpring(1.08, { damping: 10, stiffness: 200 }),
+        withSpring(1.0, { damping: 14, stiffness: 140 }),
       );
 
       if (lottieRef.current) {
@@ -180,8 +180,8 @@ const styles = StyleSheet.create({
     marginTop: 12,
     zIndex: 102,
     backgroundColor: Colors.celebration.badgeBg,
-    paddingHorizontal: 28,
-    paddingVertical: 14,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
     borderRadius: 24,
     borderWidth: 3,
     borderColor: Colors.celebration.badgeBorder,
@@ -190,17 +190,23 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 6,
+    maxWidth: '88%',
+    marginHorizontal: 16,
   },
   correctText: {
     fontFamily: Typography.fonts.bold,
-    fontSize: Typography.sizes.lg,
+    fontSize: 20,
+    lineHeight: 26,
     color: Colors.celebration.badgeText,
+    textAlign: 'center',
+    flexShrink: 1,
   },
   subtitleText: {
     fontFamily: Typography.fonts.semibold,
     fontSize: Typography.sizes.sm,
     color: Colors.celebration.badgeText,
     marginTop: 4,
+    textAlign: 'center',
   },
   checkmarkText: {
     fontFamily: Typography.fonts.bold,

@@ -17,7 +17,11 @@ export type UserRole =
 export type RootStackParamList = {
   Splash: undefined;
 
-  LanguageGate: undefined;
+  LanguageGate:
+    | undefined
+    | {
+        initialStep?: 'appLanguage' | 'learningLanguage';
+      };
 
   RoleSelection: undefined;
 

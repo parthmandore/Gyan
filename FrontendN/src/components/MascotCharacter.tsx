@@ -5,7 +5,7 @@
  */
 
 import React, { useRef, useEffect, useState } from 'react';
-import { StyleSheet, ViewStyle, AccessibilityInfo } from 'react-native';
+import { StyleSheet, ViewStyle, AccessibilityInfo, Text } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -104,6 +104,9 @@ export const MascotCharacter: React.FC<MascotCharacterProps> = React.memo(
         accessibilityHint={t('accessibility.tapToRepeatPrompt')}
         style={[styles.container, animatedStyle, style]}
       >
+        <Text style={styles.fallbackEmoji}>
+          {state === 'celebrating' ? '🏆' : state === 'encouraging' ? '🌟' : '🦉'}
+        </Text>
         <LottieView
           ref={animationRef}
           source={{
@@ -122,15 +125,17 @@ MascotCharacter.displayName = 'MascotCharacter';
 
 const styles = StyleSheet.create({
   container: {
-    width: 120,
-    height: 120,
+    width: 100,
+    height: 100,
     minWidth: 84,
     minHeight: 84,
-    borderRadius: 60,
-    backgroundColor: Colors.neutral.background,
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
-    overflow: 'hidden',
+  },
+  fallbackEmoji: {
+    position: 'absolute',
+    fontSize: 54,
   },
   lottie: {
     width: '100%',

@@ -34,7 +34,7 @@ export interface AchievementsResponse {
 }
 
 // TEMPORARY MOCK — REPLACE WHEN BACKEND IS AVAILABLE
-const MOCK_ACHIEVEMENTS: AchievementsResponse = {
+const getMockAchievements = (): AchievementsResponse => ({
   success: true,
   data: {
     earned: [
@@ -54,19 +54,22 @@ const MOCK_ACHIEVEMENTS: AchievementsResponse = {
       },
     ],
   },
-};
+});
 
 export const fetchAchievements = async (): Promise<AchievementsResponse> => {
   try {
     const response = await apiClient.get<AchievementsResponse>(
       '/api/achievements',
     );
+    if (!response || !response.data) {
+      return getMockAchievements();
+    }
     return response.data;
   } catch (error) {
     // TEMPORARY MOCK — REPLACE WHEN BACKEND IS AVAILABLE
     console.warn(
       '[achievementsService] Backend API offline. Returning temporary mock achievements.',
     );
-    return MOCK_ACHIEVEMENTS;
+    return getMockAchievements();
   }
 };
